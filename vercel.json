@@ -13,16 +13,11 @@
     "NODE_ENV": "production"
   },
   "framework": "vite",
-  "functions": {
-    "apps/api/src/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "installCommand": "pnpm install",
   "outputDirectory": "apps/web/dist",
   "rewrites": [
     {
-      "destination": "/apps/api/src/$1",
+      "destination": "/api/$1",
       "source": "/api/(.*)"
     }
   ]
