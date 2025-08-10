@@ -1,20 +1,29 @@
 {
   "buildCommand": "pnpm build",
-  "installCommand": "pnpm install",
+  "builds": [
+    {
+      "config": {
+        "distDir": "dist"
+      },
+      "src": "apps/web/package.json",
+      "use": "@vercel/static-build"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
   "framework": "vite",
-  "outputDirectory": "apps/web/dist",
   "functions": {
     "apps/api/src/**/*.ts": {
       "runtime": "nodejs18.x"
     }
   },
+  "installCommand": "pnpm install",
+  "outputDirectory": "apps/web/dist",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/apps/api/src/$1"
+      "destination": "/apps/api/src/$1",
+      "source": "/api/(.*)"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
