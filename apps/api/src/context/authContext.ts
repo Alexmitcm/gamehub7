@@ -26,8 +26,8 @@ const authContext = async (ctx: Context, next: Next) => {
     // Verify the JWT token using Lens JWKS
     const { payload } = await jwtVerify(token as string, JWKS);
 
-    // Extract the verified payload
-    const verifiedPayload = payload as JwtPayload;
+    // Extract the verified payload and cast to our custom type
+    const verifiedPayload = payload as unknown as JwtPayload;
 
     if (!verifiedPayload.act?.sub) {
       ctx.set("account", null);
@@ -65,7 +65,7 @@ const authContext = async (ctx: Context, next: Next) => {
     // Only log unexpected errors
     if (
       error instanceof Error &&
-      error.code !== "ERR_JWS_SIGNATURE_VERIFICATION_FAILED"
+      (error as any).code !== "ERR_JWS_SIGNATURE_VERIFICATION_FAILED"
     ) {
       console.error("Unexpected JWT verification error:", error);
     }
