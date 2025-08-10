@@ -47,12 +47,8 @@
     "react-dom": "^19.1.1",
     "react-easy-crop": "^5.5.0",
     "react-helmet-async": "^2.0.5",
-<<<<<<< Updated upstream
     "react-hook-form": "^7.62.0",
-=======
-    "react-hook-form": "^7.61.1",
     "react-hot-toast": "^2.5.2",
->>>>>>> Stashed changes
     "react-hotkeys-hook": "^5.1.0",
     "react-markdown": "^10.1.0",
     "react-router": "^7.7.1",

@@ -1,0 +1,74 @@
+name: Dependency Update
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Every Monday at 2 AM UTC
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: '10.4.1'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Check for outdated packages
+        id: check
+        run: |
+          echo "Checking for outdated packages..."
+          OUTDATED=$(pnpm outdated --format=json | jq -r '.[] | select(.current != .latest) | .name + "@" + .latest')
+          if [ -n "$OUTDATED" ]; then
+            echo "outdated=$OUTDATED" >> $GITHUB_OUTPUT
+            echo "has_updates=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_updates=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Update dependencies
+        if: steps.check.outputs.has_updates == 'true'
+        run: |
+          echo "Updating dependencies..."
+          pnpm update --latest
+          
+      - name: Create Pull Request
+        if: steps.check.outputs.has_updates == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'chore: update dependencies'
+          body: |
+            ## Dependency Updates
+            
+            This PR updates the following dependencies to their latest versions:
+            
+            ${{ steps.check.outputs.outdated }}
+            
+            ### Changes Made
+            - Updated outdated packages to latest versions
+            - Regenerated lockfile
+            
+            ### Testing Required
+            - [ ] Run tests locally
+            - [ ] Verify build process
+            - [ ] Check for breaking changes
+            
+          branch: dependency-updates
+          delete-branch: true
+          commit-message: 'chore: update dependencies to latest versions'

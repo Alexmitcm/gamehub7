@@ -14,7 +14,14 @@
     "prepare": "husky install",
     "start": "pnpm --recursive --parallel run start",
     "test": "pnpm --recursive --parallel run test",
-    "typecheck": "pnpm --recursive --parallel run typecheck"
+    "typecheck": "pnpm --recursive --parallel run typecheck",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:reset": "supabase db reset",
+    "supabase:push": "supabase db push",
+    "supabase:gen-types": "supabase gen types typescript --local > apps/web/src/lib/database.types.local.ts",
+    "supabase:deploy": "bash scripts/deploy-supabase.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.4",

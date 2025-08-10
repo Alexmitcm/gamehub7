@@ -1,0 +1,105 @@
+name: 0Xgamehub Project Board
+description: Project management board for 0Xgamehub development
+visibility: public
+
+columns:
+  - name: 📋 Backlog
+    description: Ideas and planned features
+    limit: 20
+    
+  - name: 🚀 To Do
+    description: Ready to be worked on
+    limit: 10
+    
+  - name: 🔄 In Progress
+    description: Currently being developed
+    limit: 5
+    
+  - name: 🧪 Testing
+    description: Ready for testing and review
+    limit: 5
+    
+  - name: ✅ Done
+    description: Completed and deployed
+    limit: 10
+    
+  - name: 🚫 Blocked
+    description: Blocked by external dependencies
+    limit: 3
+
+workflows:
+  - name: Feature Development
+    description: Standard feature development workflow
+    rules:
+      - from: "📋 Backlog"
+        to: "🚀 To Do"
+        condition: "Issue is assigned and ready for development"
+        
+      - from: "🚀 To Do"
+        to: "🔄 In Progress"
+        condition: "Development has started"
+        
+      - from: "🔄 In Progress"
+        to: "🧪 Testing"
+        condition: "Feature is implemented and ready for testing"
+        
+      - from: "🧪 Testing"
+        to: "✅ Done"
+        condition: "Testing passed and ready for deployment"
+        
+      - from: "🔄 In Progress"
+        to: "🚫 Blocked"
+        condition: "Development is blocked by external dependency"
+        
+      - from: "🚫 Blocked"
+        to: "🔄 In Progress"
+        condition: "Blocking issue is resolved"
+
+  - name: Bug Fixes
+    description: Bug fix workflow
+    rules:
+      - from: "📋 Backlog"
+        to: "🚀 To Do"
+        condition: "Bug is confirmed and prioritized"
+        
+      - from: "🚀 To Do"
+        to: "🔄 In Progress"
+        condition: "Fix development has started"
+        
+      - from: "🔄 In Progress"
+        to: "🧪 Testing"
+        condition: "Fix is implemented and ready for testing"
+        
+      - from: "🧪 Testing"
+        to: "✅ Done"
+        condition: "Fix is tested and deployed"
+
+automation:
+  - name: Auto-assign to project
+    description: Automatically add new issues to the project board
+    triggers:
+      - on: issue.opened
+        action: add_to_project
+        project: "0Xgamehub Project Board"
+        column: "📋 Backlog"
+        
+  - name: Move to In Progress
+    description: Move issues to In Progress when development starts
+    triggers:
+      - on: issue.assigned
+        action: move_to_column
+        column: "🔄 In Progress"
+        
+  - name: Move to Testing
+    description: Move issues to Testing when PR is created
+    triggers:
+      - on: pull_request.opened
+        action: move_to_column
+        column: "🧪 Testing"
+        
+  - name: Move to Done
+    description: Move issues to Done when PR is merged
+    triggers:
+      - on: pull_request.merged
+        action: move_to_column
+        column: "✅ Done"

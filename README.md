@@ -1,149 +1,243 @@
-# Hey Monorepo
+# 🎮 0Xgamehub
 
-## Requirements
+A comprehensive social media platform with premium features, referral systems, and blockchain integration built with modern web technologies.
 
-To start working with the Hey monorepo, ensure the following tools are installed:
+## ✨ Features
 
-- [Node.js](https://nodejs.org/en/download/) (v18 or higher) – the JavaScript runtime used in this project.
-- [pnpm](https://pnpm.io/installation) – the package manager used throughout this repository.
-- [Postgres App](https://postgresapp.com/) – the Postgres database used in development.
+### 🚀 Core Features
+- **Social Media Platform**: Post, share, and interact with content
+- **Premium Subscriptions**: Tiered premium features and benefits
+- **Referral System**: Multi-level referral tree with rewards
+- **Blockchain Integration**: Smart contract integration for gaming and rewards
+- **Admin Panel**: Comprehensive management and monitoring tools
 
-## Installation
+### 🎯 Premium Features
+- **Premium Profiles**: Enhanced user profiles with special badges
+- **Referral Rewards**: Earn rewards through user referrals
+- **Game Vault Integration**: Blockchain-based gaming rewards
+- **VIP Access**: Exclusive features for premium users
 
-This repository uses [pnpm workspaces](https://pnpm.io/workspaces) to manage multiple packages within a monorepo structure.
+### 🔧 Technical Features
+- **Monorepo Architecture**: Efficient package management with pnpm workspaces
+- **TypeScript**: Full type safety across the application
+- **Modern UI**: Built with React, TailwindCSS, and HeadlessUI
+- **Real-time Updates**: WebSocket integration for live data
+- **Responsive Design**: Mobile-first approach with PWA support
 
-### Clone the Repository
+## 🏗️ Architecture
 
-```bash
-git clone git@github.com:heyverse/hey.git
+```
+0Xgamehub/
+├── apps/
+│   ├── api/          # Backend API (Hono + Prisma)
+│   └── web/          # Frontend React App (Vite)
+├── packages/
+│   ├── data/         # Shared data and constants
+│   ├── helpers/      # Utility functions
+│   ├── indexer/      # Blockchain indexing
+│   └── types/        # Shared TypeScript types
+└── .github/          # GitHub Actions and templates
 ```
 
-### Install NVM and pnpm
+## 🛠️ Tech Stack
 
-On macOS, you can install both with Homebrew:
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development and building
+- **TailwindCSS** for styling
+- **HeadlessUI** for accessible components
+- **Zustand** for state management
+- **TanStack Query** for data fetching
 
-```bash
-brew install nvm pnpm
-```
+### Backend
+- **Hono** for fast API development
+- **Prisma** with PostgreSQL for database
+- **Redis** for caching and sessions
+- **JWT** for authentication
+- **WebSocket** for real-time features
 
-### Install Node.js
+### Blockchain
+- **Ethereum** smart contracts
+- **Web3.js** for blockchain interaction
+- **Hardhat** for development and testing
 
-Use `nvm` to install the required Node.js version:
+### DevOps
+- **pnpm** for package management
+- **GitHub Actions** for CI/CD
+- **Docker** for containerization
+- **Biome** for linting and formatting
 
-```bash
-nvm install
-```
+## 🚀 Getting Started
 
-### Install Dependencies
+### Prerequisites
+- Node.js 18+ 
+- pnpm 10.4.1+
+- PostgreSQL 14+
+- Redis 6+
+- Git
 
-From the repository root, install dependencies with pnpm:
+### Installation
 
-```bash
-pnpm install
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Alexmitcm/0Xgamehub.git
+   cd 0Xgamehub
+   ```
 
-### Set up Environment Variables
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-Copy the `.env.example` file to `.env` for each package or application that requires configuration:
+3. **Set up environment variables**
+   ```bash
+   cp apps/api/.env.example apps/api/.env
+   # Edit the .env file with your configuration
+   ```
 
-```bash
-cp .env.example .env
-```
+4. **Set up the database**
+   ```bash
+   cd apps/api
+   pnpm prisma migrate dev
+   pnpm prisma generate
+   ```
 
-Repeat this process for all relevant packages and applications in the monorepo.
+5. **Start development servers**
+   ```bash
+   # Start all services
+   pnpm dev
+   
+   # Or start individually
+   pnpm --filter @hey/api dev
+   pnpm --filter @hey/web dev
+   ```
 
-### Environment Variables
+## 📁 Project Structure
 
-The example environment files define the following variables:
+### Apps
+- **API**: Backend REST API with GraphQL support
+- **Web**: React frontend application
 
-#### API (`apps/api/.env.example`)
+### Packages
+- **Data**: Shared constants, enums, and configurations
+- **Helpers**: Utility functions and helpers
+- **Indexer**: Blockchain event indexing
+- **Types**: Shared TypeScript interfaces
 
-- `LENS_NETWORK` – Lens network to use (`mainnet`, `testnet`, or `staging`).
-- `DATABASE_URL` – Connection string for the main Postgres database.
-- `LENS_DATABASE_URL` – Read-only Postgres connection for Lens data.
-- `REDIS_URL` – Redis connection string for caching.
-- `PRIVATE_KEY` – Private key used to sign Lens requests.
-- `EVER_ACCESS_KEY` – Access key for 4EVERLAND storage.
-- `EVER_ACCESS_SECRET` – Secret key for 4EVERLAND storage.
-- `SHARED_SECRET` – Token for internal API authorization.
+## 🔧 Development
 
-#### Web (`apps/web/.env.example`)
-
-- `LENS_NETWORK` – Lens network used by the web app.
-
-### Start the Development Server
-
-To run the application in development mode:
-
-```bash
-pnpm dev
-```
-
-## Code Generation
-
-Generate Prisma clients and GraphQL types across all workspaces:
-
-```bash
-pnpm codegen
-```
-
-## Build and Test
-
-### Build the application
-
-Compile the application:
-
-```bash
-pnpm build
-```
-
-### Type-check the project
-
-Validate the codebase with the TypeScript type checker:
-
-```bash
-pnpm typecheck
-```
-
-### Run tests
-
-Execute unit tests across all workspaces:
+### Available Scripts
 
 ```bash
-pnpm test
+# Development
+pnpm dev              # Start all services
+pnpm build            # Build all packages
+pnpm test             # Run all tests
+pnpm typecheck        # Type checking
+
+# Linting and Formatting
+pnpm biome:check      # Run Biome linter
+pnpm biome:fix        # Fix Biome issues
+
+# Package Management
+pnpm dep:check        # Check for dependency issues
+pnpm dep:fix          # Fix dependency issues
 ```
 
-Each workspace provides its own `vitest.config.ts`, so test behavior is scoped
-to that package. Vitest prints a summary for each workspace showing how many
-files and tests passed along with the execution time.
+### Code Quality
 
-### Lint and Format Code
+- **Biome**: Linting and formatting
+- **TypeScript**: Strict type checking
+- **ESLint**: Additional linting rules
+- **Prettier**: Code formatting
 
-Check code quality and formatting with Biome:
+## 🚀 Deployment
 
-```bash
-pnpm biome:check
-```
+### CI/CD Pipeline
 
-Automatically fix linting and formatting issues:
+The project includes comprehensive GitHub Actions workflows:
 
-```bash
-pnpm biome:fix
-```
+- **CI Pipeline**: Lint, type check, build, and test
+- **Dependency Updates**: Automated dependency management
+- **Security Audits**: Regular security checks
+- **Deployment**: Staging and production deployments
 
-### Maintenance Scripts
+### Environment Setup
 
-Convenient Node.js helpers are in the `script` directory:
+1. **Staging**: `develop` branch
+2. **Production**: `main` branch
+3. **Automated testing** on all pull requests
+4. **Security scanning** on every build
 
-- `node script/clean.mjs` removes all `node_modules`, `.next` directories,
-  `pnpm-lock.yaml`, and `tsconfig.tsbuildinfo` files.
-- `node script/update-dependencies.mjs` updates packages across the monorepo,
-  removes old installs and commits the changes in a new branch.
-- `node script/sort-package-json.mjs` sorts all `package.json` files in the
-  repository.
+## 📊 Project Management
 
-## License
+### Issue Templates
+- **Bug Reports**: Structured bug reporting
+- **Feature Requests**: Detailed feature proposals
+- **Pull Request Template**: Comprehensive PR guidelines
 
-This project is released under the **GNU AGPL-3.0** license. See the [LICENSE](./LICENSE) file for details.
+### Project Board
+- **Backlog**: Ideas and planned features
+- **To Do**: Ready for development
+- **In Progress**: Currently being developed
+- **Testing**: Ready for review
+- **Done**: Completed features
 
-🌸
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Follow TypeScript best practices
+- Write comprehensive tests
+- Update documentation as needed
+- Follow the established code style
+- Ensure accessibility compliance
+
+## 📚 Documentation
+
+- [API Documentation](./apps/api/README.md)
+- [Frontend Guide](./apps/web/README.md)
+- [Premium Features](./apps/web/src/components/Premium/README.md)
+- [Admin Panel](./apps/web/ADMIN_PANEL_README.md)
+
+## 🔒 Security
+
+- Regular security audits
+- Dependency vulnerability scanning
+- Input validation and sanitization
+- JWT token management
+- Rate limiting and DDoS protection
+
+## 📈 Performance
+
+- Code splitting and lazy loading
+- Database query optimization
+- Redis caching strategy
+- CDN integration
+- Bundle size optimization
+
+## 🆘 Support
+
+- **Issues**: [GitHub Issues](https://github.com/Alexmitcm/0Xgamehub/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Alexmitcm/0Xgamehub/discussions)
+- **Wiki**: [Project Wiki](https://github.com/Alexmitcm/0Xgamehub/wiki)
+
+## 📄 License
+
+This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with modern web technologies
+- Inspired by leading social media platforms
+- Community-driven development approach
+
+---
+
+**Made with ❤️ by the 0Xgamehub team**

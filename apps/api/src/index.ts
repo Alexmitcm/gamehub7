@@ -54,6 +54,6 @@ app.notFound((ctx) =>
 
 const port = Number.parseInt(process.env.PORT || "3010", 10);
 
-serve({ fetch: app.fetch, port, hostname: "0.0.0.0" }, (info) => {
+serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {
   logger.info(`Server running on port ${info.port}`);
 });
