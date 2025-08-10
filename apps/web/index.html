@@ -26,11 +26,16 @@
     <link rel="stylesheet" href="/src/font.css" />
     <link rel="stylesheet" href="/src/styles.css" />
 
-    <script
-      defer
-      src="https://static.cloudflareinsights.com/beacon.min.js"
-      data-cf-beacon='{"token": "a61f7c1dd7804a898198b96e267680b0"}'
-    ></script>
+    <!-- Cloudflare Insights - disabled in development -->
+    <script>
+      if (window.location.hostname !== 'localhost') {
+        const script = document.createElement('script');
+        script.defer = true;
+        script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+        script.setAttribute('data-cf-beacon', '{"token": "a61f7c1dd7804a898198b96e267680b0"}');
+        document.head.appendChild(script);
+      }
+    </script>
   </head>
   <body>
     <main id="_hey_"></main>

@@ -29,6 +29,15 @@ import PreferencesSettings from "@/components/Settings/Preferences";
 import SessionsSettings from "@/components/Settings/Sessions";
 import UsernameSettings from "@/components/Settings/Username";
 import Custom404 from "@/components/Shared/404";
+import AdminPanel from "./components/Admin";
+import {
+  PremiumPage,
+  PremiumTestPage,
+  ProDashboard
+} from "./components/Premium";
+import ClaimRewardsPage from "./components/Settings/ClaimRewards";
+import TestClaimRewardsPage from "./components/Settings/ClaimRewards/TestClaimRewardsPage";
+import ReferralDashboard from "./components/Settings/ReferralDashboard";
 import RewardsSettings from "./components/Settings/Rewards";
 import Staff from "./components/Staff";
 
@@ -69,6 +78,7 @@ const Routes = () => {
             />
             <Route element={<AccountMonetizeSettings />} path="monetize" />
             <Route element={<RewardsSettings />} path="rewards" />
+            <Route element={<ClaimRewardsPage />} path="claim-rewards" />
             <Route element={<BlockedSettings />} path="blocked" />
             <Route element={<DeveloperSettings />} path="developer" />
             <Route element={<FundsSettings />} path="funds" />
@@ -76,15 +86,21 @@ const Routes = () => {
             <Route element={<PreferencesSettings />} path="preferences" />
             <Route element={<SessionsSettings />} path="sessions" />
             <Route element={<UsernameSettings />} path="username" />
+            <Route element={<ProDashboard />} path="onchain-dashboard" />
+            <Route element={<ReferralDashboard />} path="referral-dashboard" />
           </Route>
           <Route path="staff">
             <Route element={<Staff />} index />
           </Route>
+          <Route element={<AdminPanel />} path="admin" />
           <Route element={<Support />} path="support" />
           <Route element={<Terms />} path="terms" />
           <Route element={<Privacy />} path="privacy" />
           <Route element={<Guidelines />} path="guidelines" />
           <Route element={<Copyright />} path="copyright" />
+          <Route element={<PremiumTestPage />} path="premium-test" />
+          <Route element={<PremiumPage />} path="premium" />
+          <Route element={<TestClaimRewardsPage />} path="test-claim-rewards" />
           <Route element={<Custom404 />} path="*" />
         </Route>
       </RouterRoutes>

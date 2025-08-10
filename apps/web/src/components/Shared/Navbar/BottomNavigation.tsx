@@ -1,5 +1,6 @@
 import {
   BellIcon,
+  BoltIcon,
   GlobeAltIcon as GlobeOutline,
   HomeIcon,
   MagnifyingGlassIcon
@@ -93,11 +94,24 @@ const BottomNavigation = () => {
     }
   ];
 
+  // Add On-Chain Dashboard for logged-in users
+  const loggedInNavigationItems = currentAccount
+    ? [
+        ...navigationItems,
+        {
+          label: "On-Chain",
+          outline: <BoltIcon className="size-6" />,
+          path: "/settings/onchain-dashboard",
+          solid: <BoltIcon className="size-6" />
+        }
+      ]
+    : navigationItems;
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[5] border-gray-200 border-t bg-white pb-safe md:hidden dark:border-gray-800 dark:bg-black">
       {showMobileDrawer && <MobileDrawerMenu />}
       <div className="flex justify-between">
-        {navigationItems.map(({ path, label, outline, solid }) => (
+        {loggedInNavigationItems.map(({ path, label, outline, solid }) => (
           <NavigationItem
             isActive={pathname === path}
             key={path}

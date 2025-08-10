@@ -4,6 +4,7 @@ import type { PostFragment } from "@hey/indexer";
 import { Fragment } from "react";
 import MenuTransition from "@/components/Shared/MenuTransition";
 import cn from "@/helpers/cn";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import stopEventPropagation from "@/helpers/stopEventPropagation";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import Bookmark from "./Bookmark";
@@ -21,6 +22,7 @@ interface PostMenuProps {
 
 const PostMenu = ({ post }: PostMenuProps) => {
   const { currentAccount } = useAccountStore();
+  const hasPremiumAccess = useHasPremiumAccess();
   const canEdit =
     post.operations?.canEdit.__typename === "PostOperationValidationPassed";
   const iconClassName = "w-[15px] sm:w-[18px]";
@@ -58,7 +60,8 @@ const PostMenu = ({ post }: PostMenuProps) => {
           <div className="divider" />
           {currentAccount?.address === post?.author?.address ? (
             <>
-              {canEdit && currentAccount?.hasSubscribed ? (
+              {canEdit &&
+              (currentAccount?.hasSubscribed || hasPremiumAccess) ? (
                 <Edit post={post} />
               ) : null}
               <Delete post={post} />

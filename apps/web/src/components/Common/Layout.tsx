@@ -2,7 +2,7 @@ import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { BANNER_IDS } from "@hey/data/constants";
 import { useMeQuery } from "@hey/indexer";
 import { useIsClient } from "@uidotdev/usehooks";
-import { memo, useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { Toaster, type ToasterProps } from "sonner";
 import FullPageLoader from "@/components/Shared/FullPageLoader";
@@ -14,6 +14,7 @@ import BottomNavigation from "@/components/Shared/Navbar/BottomNavigation";
 import { Spinner } from "@/components/Shared/UI";
 import reloadAllTabs from "@/helpers/reloadAllTabs";
 import { useTheme } from "@/hooks/useTheme";
+import { useLensAuthSync } from "@/hooks/useLensAuthSync";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { hydrateAuthTokens, signOut } from "@/store/persisted/useAuthStore";
 import { usePreferencesStore } from "@/store/persisted/usePreferencesStore";
@@ -28,6 +29,9 @@ const Layout = () => {
   const { resetPreferences } = usePreferencesStore();
   const isMounted = useIsClient();
   const { accessToken } = hydrateAuthTokens();
+  
+  // Auto-sync Lens authentication with our backend
+  useLensAuthSync();
 
   // Disable scroll restoration on route change
   useEffect(() => {
@@ -86,4 +90,4 @@ const Layout = () => {
   );
 };
 
-export default memo(Layout);
+export default Layout;

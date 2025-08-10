@@ -16,6 +16,7 @@ import {
 import { STATIC_IMAGES_URL } from "@hey/data/constants";
 import { type MouseEvent, memo, type ReactNode, useCallback } from "react";
 import { Link, useLocation } from "react-router";
+import OnChainDashboard from "@/components/Shared/Navbar/NavItems/OnChainDashboard";
 import Pro from "@/components/Shared/Navbar/NavItems/Pro";
 import { Image, Tooltip } from "@/components/Shared/UI";
 import useHasNewNotifications from "@/hooks/useHasNewNotifications";
@@ -128,6 +129,7 @@ const Navbar = () => {
       {currentAccount ? (
         <>
           <Pro />
+          <OnChainDashboard />
           <SignedAccount />
         </>
       ) : (

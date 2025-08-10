@@ -13,3 +13,309 @@ model Preference {
   includeLowScore Boolean  @default(false)
   createdAt       DateTime @default(now())
 }
+
+model PremiumProfile {
+  id              String    @id @default(cuid())
+  walletAddress   String    @unique
+  profileId       String    @unique
+  isActive        Boolean   @default(true)
+  linkedAt        DateTime  @default(now())
+  deactivatedAt   DateTime?
+
+  // Enhanced user data
+  user User? @relation(fields: [walletAddress], references: [walletAddress])
+
+  @@index([walletAddress])
+  @@index([profileId])
+}
+
+// New comprehensive user management tables
+model User {
+  walletAddress   String   @id
+  email           String?  @unique
+  username        String?  @unique
+  displayName     String?
+  avatarUrl       String?
+  bio             String?
+  location        String?
+  website         String?
+  twitterHandle   String?
+  
+  // Registration data
+  registrationDate DateTime @default(now())
+  referrerAddress  String?
+  registrationTxHash String?
+  
+  // Simplified premium status - only STANDARD or PREMIUM
+  status          UserStatus @default(Standard)
+  premiumUpgradedAt DateTime?
+  
+  // User preferences and settings
+  preferences     UserPreferences?
+  
+  // Activity tracking
+  lastActiveAt    DateTime @default(now())
+  totalLogins     Int      @default(0)
+  
+  // Relations
+  premiumProfile  PremiumProfile?
+  userStats       UserStats?
+  userRewards     UserReward[]
+  userQuests      UserQuest[]
+  userCoins       UserCoin[]
+  userNotifications UserNotification[]
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([walletAddress])
+  @@index([email])
+  @@index([username])
+  @@index([status])
+  @@index([registrationDate])
+}
+
+model UserPreferences {
+  walletAddress   String   @id
+  emailNotifications Boolean @default(true)
+  pushNotifications Boolean @default(true)
+  marketingEmails Boolean @default(false)
+  privacyLevel    PrivacyLevel @default(Public)
+  language        String   @default("en")
+  timezone        String   @default("UTC")
+  
+  // Premium features preferences
+  autoLinkProfile Boolean  @default(true)
+  showPremiumBadge Boolean @default(true)
+  
+  // Relations
+  user User @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserStats {
+  walletAddress   String   @id
+  
+  // Activity stats
+  totalPosts      Int      @default(0)
+  totalComments   Int      @default(0)
+  totalLikes      Int      @default(0)
+  totalFollowers  Int      @default(0)
+  totalFollowing  Int      @default(0)
+  
+  // Premium stats
+  daysAsPremium   Int      @default(0)
+  referralCount   Int      @default(0)
+  totalEarnings   Decimal  @default(0) @db.Decimal(20, 8)
+  
+  // Quest stats
+  questsCompleted Int      @default(0)
+  questsInProgress Int     @default(0)
+  
+  // Relations
+  user User @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserReward {
+  id              String   @id @default(cuid())
+  walletAddress   String
+  
+  // Reward details
+  type            RewardType
+  amount          Decimal  @db.Decimal(20, 8)
+  currency        String   @default("USDT")
+  status          RewardStatus @default(Pending)
+  
+  // Source information
+  sourceType      RewardSourceType
+  sourceId        String?
+  sourceMetadata  Json?
+  
+  // Transaction details
+  txHash          String?
+  claimedAt       DateTime?
+  
+  // Relations
+  user User @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([walletAddress])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserQuest {
+  id              String   @id @default(cuid())
+  walletAddress   String
+  
+  // Quest details
+  questId         String
+  title           String
+  description     String
+  type            QuestType
+  status          QuestStatus @default(Active)
+  
+  // Progress tracking
+  currentProgress Int      @default(0)
+  targetProgress  Int
+  completedAt     DateTime?
+  
+  // Rewards
+  rewardAmount    Decimal? @db.Decimal(20, 8)
+  rewardCurrency  String   @default("USDT")
+  
+  // Relations
+  user User @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([walletAddress])
+  @@index([questId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserCoin {
+  id              String   @id @default(cuid())
+  walletAddress   String
+  
+  // Coin details
+  coinType        CoinType
+  amount          Int      @default(0)
+  earnedAt        DateTime @default(now())
+  
+  // Source information
+  sourceType      CoinSourceType
+  sourceId        String?
+  sourceMetadata  Json?
+  
+  // Relations
+  user User @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+
+  @@index([walletAddress])
+  @@index([coinType])
+  @@index([earnedAt])
+}
+
+model UserNotification {
+  id              String   @id @default(cuid())
+  walletAddress   String
+  
+  // Notification details
+  type            NotificationType
+  title           String
+  message         String
+  priority        NotificationPriority @default(Normal)
+  
+  // Status
+  isRead          Boolean  @default(false)
+  readAt          DateTime?
+  
+  // Action data
+  actionUrl       String?
+  actionMetadata  Json?
+  
+  // Relations
+  user User @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+
+  @@index([walletAddress])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// Enums - Simplified User Status
+enum UserStatus {
+  Standard
+  Premium
+}
+
+enum PrivacyLevel {
+  Public
+  Private
+  FriendsOnly
+}
+
+enum RewardType {
+  Referral
+  Quest
+  Activity
+  Bonus
+  Welcome
+}
+
+enum RewardStatus {
+  Pending
+  Claimed
+  Failed
+  Expired
+}
+
+enum RewardSourceType {
+  Registration
+  Referral
+  Quest
+  Activity
+  Admin
+}
+
+enum QuestType {
+  Welcome
+  Referral
+  Activity
+  Social
+  Premium
+}
+
+enum QuestStatus {
+  Active
+  Completed
+  Expired
+  Failed
+}
+
+enum CoinType {
+  Experience
+  Achievement
+  Social
+  Premium
+}
+
+enum CoinSourceType {
+  Registration
+  Referral
+  Quest
+  Activity
+  Social
+}
+
+enum NotificationType {
+  Welcome
+  Premium
+  Quest
+  Reward
+  Referral
+  System
+  Marketing
+}
+
+enum NotificationPriority {
+  Low
+  Normal
+  High
+  Urgent
+}

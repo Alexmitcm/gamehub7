@@ -8,6 +8,8 @@ import Slug from "@/components/Shared/Slug";
 import { Image } from "@/components/Shared/UI";
 import cn from "@/helpers/cn";
 import getMentions from "@/helpers/getMentions";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
+import { useAccountStore } from "@/store/persisted/useAccountStore";
 import AccountLink from "./AccountLink";
 import AccountPreview from "./AccountPreview";
 import FollowUnfollowButton from "./FollowUnfollowButton";
@@ -33,6 +35,9 @@ const SingleAccount = ({
   showBio = false,
   showUserPreview = true
 }: SingleAccountProps) => {
+  const { currentAccount } = useAccountStore();
+  const hasPremiumAccess = useHasPremiumAccess();
+
   const UserAvatar = () => (
     <Image
       alt={account.address}
@@ -56,7 +61,10 @@ const SingleAccount = ({
         )}
       >
         <div className="truncate font-semibold">{getAccount(account).name}</div>
-        {(isVerified || account.hasSubscribed) && (
+        {(isVerified ||
+          account.hasSubscribed ||
+          (currentAccount?.address === account.address &&
+            hasPremiumAccess)) && (
           <CheckBadgeIcon className="size-4 text-brand-500" />
         )}
       </div>

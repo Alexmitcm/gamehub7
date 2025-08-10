@@ -7,6 +7,7 @@ import ProFeatureNotice from "@/components/Shared/ProFeatureNotice";
 import { Image, Tooltip } from "@/components/Shared/UI";
 import errorToast from "@/helpers/errorToast";
 import { hono } from "@/helpers/fetcher";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { usePreferencesStore } from "@/store/persisted/usePreferencesStore";
 
@@ -21,6 +22,7 @@ const icons = [
 const AppIcon = () => {
   const { currentAccount } = useAccountStore();
   const { appIcon, setAppIcon } = usePreferencesStore();
+  const hasPremiumAccess = useHasPremiumAccess();
 
   const { mutate, isPending } = useMutation({
     mutationFn: ({ appIcon }: { appIcon: number }) =>
@@ -36,7 +38,7 @@ const AppIcon = () => {
     mutate({ appIcon: iconId });
   };
 
-  if (!currentAccount?.hasSubscribed) {
+  if (!(currentAccount?.hasSubscribed || hasPremiumAccess)) {
     return <ProFeatureNotice className="m-5" feature="custom app icons" />;
   }
 

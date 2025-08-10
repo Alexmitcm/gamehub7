@@ -7,12 +7,14 @@ import NotLoggedIn from "@/components/Shared/NotLoggedIn";
 import PageLayout from "@/components/Shared/PageLayout";
 import ProFeatureNotice from "@/components/Shared/ProFeatureNotice";
 import { Card, CardHeader } from "@/components/Shared/UI";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import SuperJoin from "./SuperJoin";
 
 const MonetizeSettings = () => {
   const { address } = useParams<{ address: string }>();
   const { currentAccount } = useAccountStore();
+  const hasPremiumAccess = useHasPremiumAccess();
 
   const { data, loading, error } = useGroupQuery({
     skip: !address,
@@ -39,7 +41,7 @@ const MonetizeSettings = () => {
 
   return (
     <PageLayout title="Monetize settings">
-      {currentAccount?.hasSubscribed ? (
+      {currentAccount?.hasSubscribed || hasPremiumAccess ? (
         <SuperJoin group={group} />
       ) : (
         <Card>

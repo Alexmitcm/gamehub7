@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import ProFeatureNotice from "@/components/Shared/ProFeatureNotice";
 import ToggleWithHelper from "@/components/Shared/ToggleWithHelper";
 import { Button } from "@/components/Shared/UI";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import { usePostRulesStore } from "@/store/non-persisted/post/usePostRulesStore";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 
@@ -13,6 +14,7 @@ interface RulesProps {
 const Rules = ({ setShowModal }: RulesProps) => {
   const { currentAccount } = useAccountStore();
   const { rules = {}, setRules } = usePostRulesStore();
+  const hasPremiumAccess = useHasPremiumAccess();
 
   const handleToggle = (key: keyof FollowersOnlyPostRuleConfig) => {
     const updated = { ...rules };
@@ -29,7 +31,7 @@ const Rules = ({ setShowModal }: RulesProps) => {
 
   return (
     <>
-      {currentAccount?.hasSubscribed ? null : (
+      {currentAccount?.hasSubscribed || hasPremiumAccess ? null : (
         <>
           <ProFeatureNotice className="m-5" feature="post rules settings" />
           <div className="divider" />
@@ -38,7 +40,7 @@ const Rules = ({ setShowModal }: RulesProps) => {
       <div className="m-5 space-y-5">
         <ToggleWithHelper
           description="Only people who follow you can reply"
-          disabled={!currentAccount?.hasSubscribed}
+          disabled={!(currentAccount?.hasSubscribed || hasPremiumAccess)}
           heading={
             <span className="font-semibold">
               Restrict <b>replies</b> to followers
@@ -49,7 +51,7 @@ const Rules = ({ setShowModal }: RulesProps) => {
         />
         <ToggleWithHelper
           description="Only people who follow you can quote this post"
-          disabled={!currentAccount?.hasSubscribed}
+          disabled={!(currentAccount?.hasSubscribed || hasPremiumAccess)}
           heading={
             <span className="font-semibold">
               Restrict <b>quotes</b> to followers
@@ -60,7 +62,7 @@ const Rules = ({ setShowModal }: RulesProps) => {
         />
         <ToggleWithHelper
           description="Only people who follow you can repost this"
-          disabled={!currentAccount?.hasSubscribed}
+          disabled={!(currentAccount?.hasSubscribed || hasPremiumAccess)}
           heading={
             <span className="font-semibold">
               Restrict <b>reposts</b> to followers
@@ -82,7 +84,7 @@ const Rules = ({ setShowModal }: RulesProps) => {
         >
           Cancel
         </Button>
-        {currentAccount?.hasSubscribed ? (
+        {currentAccount?.hasSubscribed || hasPremiumAccess ? (
           <Button onClick={() => setShowModal(false)}>Save</Button>
         ) : null}
       </div>

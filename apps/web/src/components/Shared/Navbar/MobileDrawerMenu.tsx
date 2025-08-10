@@ -59,6 +59,10 @@ const MobileDrawerMenu = () => {
             <Link onClick={handleCloseDrawer} to="/settings">
               <Settings className={cn(itemClass, "px-4")} />
             </Link>
+            <OnChainDashboardMobile
+              className={cn(itemClass, "px-4")}
+              onClick={handleCloseDrawer}
+            />
             <Link onClick={handleCloseDrawer} to="/groups">
               <Groups className={cn(itemClass, "px-4")} />
             </Link>

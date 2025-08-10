@@ -9,19 +9,38 @@ const JWKS = createRemoteJWKSet(new URL(jwksUri), {
 });
 
 const authMiddleware = async (c: Context, next: Next) => {
-  const token = c.get("token");
+  // Try to get token from multiple sources
+  let token = c.get("token"); // From authContext
 
   if (!token) {
-    return c.body("Unauthorized", 401);
+    // Try Authorization header
+    const authHeader = c.req.header("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7); // Remove "Bearer " prefix
+    }
+  }
+
+  if (!token) {
+    // Try X-Access-Token header as fallback
+    token = c.req.header("X-Access-Token");
+  }
+
+  if (!token) {
+    return c.json({ error: "Unauthorized - No token provided" }, 401);
   }
 
   try {
-    await jwtVerify(token, JWKS);
-  } catch {
-    return c.body("Unauthorized", 401);
-  }
+    const { payload } = await jwtVerify(token, JWKS);
 
-  return next();
+    // Set the verified payload in context for use in route handlers
+    c.set("jwtPayload", payload);
+    c.set("verifiedToken", token);
+
+    return next();
+  } catch (error) {
+    console.error("JWT verification failed:", error);
+    return c.json({ error: "Unauthorized - Invalid token" }, 401);
+  }
 };
 
 export default authMiddleware;

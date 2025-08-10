@@ -8,6 +8,7 @@ export enum AccountFeedType {
   Collects = "COLLECTS",
   Feed = "FEED",
   Media = "MEDIA",
+  Referral = "REFERRAL",
   Replies = "REPLIES"
 }
 

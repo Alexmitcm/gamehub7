@@ -17,6 +17,7 @@ import getAccountAttribute from "@/helpers/getAccountAttribute";
 import getFavicon from "@/helpers/getFavicon";
 import getMentions from "@/helpers/getMentions";
 import { useTheme } from "@/hooks/useTheme";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import { useProModalStore } from "@/store/non-persisted/modal/useProModalStore";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import Followerings from "./Followerings";
@@ -39,6 +40,7 @@ const Details = ({
   const { currentAccount } = useAccountStore();
   const { setShow: setShowProModal } = useProModalStore();
   const [showLightBox, setShowLightBox] = useState<boolean>(false);
+  const hasPremiumAccess = useHasPremiumAccess();
   const { theme } = useTheme();
 
   const handleShowLightBox = useCallback(() => {
@@ -108,7 +110,8 @@ const Details = ({
       <div className="space-y-1 py-2">
         <div className="flex items-center gap-1.5">
           <H3 className="truncate">{getAccount(account).name}</H3>
-          {account.hasSubscribed ? (
+          {account.hasSubscribed ||
+          (currentAccount?.address === account.address && hasPremiumAccess) ? (
             <Tooltip content="Verified" placement="right">
               <CheckBadgeIcon className="size-5 text-brand-500" />
             </Tooltip>

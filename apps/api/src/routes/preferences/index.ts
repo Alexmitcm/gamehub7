@@ -8,7 +8,7 @@ import updatePreferences from "./updatePreferences";
 
 const app = new Hono();
 
-app.get("/get", rateLimiter({ requests: 100 }), authMiddleware, getPreferences);
+app.get("/get", rateLimiter({ requests: 100 }), getPreferences);
 app.post(
   "/update",
   rateLimiter({ requests: 50 }),

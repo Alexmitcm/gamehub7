@@ -1,12 +1,22 @@
 import { Status } from "@hey/data/enums";
 import type { Context } from "hono";
-import prisma from "@/prisma/client";
 import handleApiError from "@/utils/handleApiError";
 import { getRedis, setRedis } from "@/utils/redis";
+import prisma from "../../prisma/client";
 
 const getPreferences = async (ctx: Context) => {
   try {
     const account = ctx.get("account");
+
+    // If user is not authenticated, return default preferences
+    if (!account) {
+      const data = {
+        appIcon: 0,
+        includeLowScore: false
+      };
+
+      return ctx.json({ data, status: Status.Success });
+    }
 
     const cacheKey = `preferences:${account}`;
     const cachedValue = await getRedis(cacheKey);

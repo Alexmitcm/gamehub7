@@ -24,11 +24,18 @@
     "@hono/node-server": "^1.18.1",
     "@hono/zod-validator": "^0.7.2",
     "@lens-chain/sdk": "^1.0.3",
+<<<<<<< Updated upstream
     "@prisma/client": "^6.13.0",
+=======
+    "@prisma/client": "^6.12.0",
+    "@supabase/supabase-js": "^2.53.0",
+    "@types/jsonwebtoken": "^9.0.10",
+>>>>>>> Stashed changes
     "dotenv": "^17.2.1",
     "hono": "^4.8.12",
     "hono-rate-limiter": "^0.4.2",
     "jose": "^6.0.12",
+    "jsonwebtoken": "^9.0.2",
     "linkedom": "^0.18.11",
     "pg-promise": "^11.15.0",
     "redis": "^5.7.0",

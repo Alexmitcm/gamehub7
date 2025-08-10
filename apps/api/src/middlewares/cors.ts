@@ -9,7 +9,7 @@ const allowedOrigins = [
 ];
 
 const cors = corsMiddleware({
-  allowHeaders: ["Content-Type", "X-Access-Token"],
+  allowHeaders: ["Content-Type", "X-Access-Token", "Authorization"],
   allowMethods: ["GET", "POST", "OPTIONS"],
   credentials: true,
   origin: allowedOrigins

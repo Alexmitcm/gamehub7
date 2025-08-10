@@ -2,6 +2,7 @@ import {
   AdjustmentsVerticalIcon,
   ArrowRightIcon,
   AtSymbolIcon,
+  ChartBarIcon,
   CodeBracketIcon,
   CreditCardIcon,
   CurrencyDollarIcon,
@@ -9,7 +10,8 @@ import {
   GiftIcon,
   GlobeAltIcon,
   NoSymbolIcon,
-  PaintBrushIcon
+  PaintBrushIcon,
+  UsersIcon
 } from "@heroicons/react/24/outline";
 import type { AccountFragment } from "@hey/indexer";
 import { Link } from "react-router";
@@ -42,6 +44,11 @@ const AccountSettings = () => {
       icon: <GiftIcon className="size-5" />,
       title: "Rewards",
       url: "/settings/rewards"
+    },
+    {
+      icon: <GiftIcon className="size-5" />,
+      title: "Claim Rewards",
+      url: "/settings/claim-rewards"
     },
     {
       icon: <CreditCardIcon className="size-5" />,
@@ -77,6 +84,16 @@ const AccountSettings = () => {
       icon: <CodeBracketIcon className="size-5" />,
       title: "Developer",
       url: "/settings/developer"
+    },
+    {
+      icon: <ChartBarIcon className="size-5" />,
+      title: "OnChain Dashboard",
+      url: "/settings/onchain-dashboard"
+    },
+    {
+      icon: <UsersIcon className="size-5" />,
+      title: "Referral Dashboard",
+      url: "/settings/referral-dashboard"
     }
   ];
 

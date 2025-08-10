@@ -25,7 +25,8 @@ const EMPTY_MESSAGES: Record<AccountFeedType, string> = {
   [AccountFeedType.Feed]: "has nothing in their feed yet!",
   [AccountFeedType.Media]: "has no media yet!",
   [AccountFeedType.Replies]: "hasn't replied yet!",
-  [AccountFeedType.Collects]: "hasn't collected anything yet!"
+  [AccountFeedType.Collects]: "hasn't collected anything yet!",
+  [AccountFeedType.Referral]: "has no referral data yet!"
 };
 
 const AccountFeed = ({ username, address, type }: AccountFeedProps) => {

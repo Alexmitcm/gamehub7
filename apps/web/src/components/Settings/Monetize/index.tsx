@@ -3,11 +3,13 @@ import NotLoggedIn from "@/components/Shared/NotLoggedIn";
 import PageLayout from "@/components/Shared/PageLayout";
 import ProFeatureNotice from "@/components/Shared/ProFeatureNotice";
 import { Card, CardHeader } from "@/components/Shared/UI";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import SuperFollow from "./SuperFollow";
 
 const MonetizeSettings = () => {
   const { currentAccount } = useAccountStore();
+  const hasPremiumAccess = useHasPremiumAccess();
 
   if (!currentAccount) {
     return <NotLoggedIn />;
@@ -15,7 +17,7 @@ const MonetizeSettings = () => {
 
   return (
     <PageLayout title="Monetize settings">
-      {currentAccount?.hasSubscribed ? (
+      {currentAccount?.hasSubscribed || hasPremiumAccess ? (
         <SuperFollow />
       ) : (
         <Card>

@@ -5,6 +5,7 @@ import type { ApolloClientError } from "@hey/types/errors";
 import { toast } from "sonner";
 import { Button, Card, H5 } from "@/components/Shared/UI";
 import errorToast from "@/helpers/errorToast";
+import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import { useProModalStore } from "@/store/non-persisted/modal/useProModalStore";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { useProStore } from "@/store/persisted/useProStore";
@@ -13,6 +14,7 @@ const ProBanner = () => {
   const { currentAccount } = useAccountStore();
   const { proBannerDismissed, setProBannerDismissed } = useProStore();
   const { setShow: setShowProModal } = useProModalStore();
+  const hasPremiumAccess = useHasPremiumAccess();
 
   const onError = (error: ApolloClientError) => {
     errorToast(error);
@@ -27,7 +29,7 @@ const ProBanner = () => {
     variables: { request: { post: BANNER_IDS.PRO } }
   });
 
-  if (currentAccount?.hasSubscribed || proBannerDismissed) {
+  if (currentAccount?.hasSubscribed || hasPremiumAccess || proBannerDismissed) {
     return null;
   }
 
