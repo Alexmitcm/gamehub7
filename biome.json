@@ -71,6 +71,7 @@
       "style": {
         "noInferrableTypes": "error",
         "noNegationElse": "error",
+        "noParameterAssign": "error",
         "noUnusedTemplateLiteral": "error",
         "noUselessElse": "error",
         "useAsConstAssertion": "error",

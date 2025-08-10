@@ -1,245 +1,151 @@
-# 🎮 0Xgamehub
+# Hey Monorepo
 
-A comprehensive social media platform with premium features, referral systems, and blockchain integration built with modern web technologies.
+## Requirements
 
-> **🚀 Deployment Status**: Latest commit `76afcf68` - All Vercel deployment issues resolved ✅
+To start working with the Hey monorepo, ensure the following tools are installed:
 
-## ✨ Features
+- [Node.js](https://nodejs.org/en/download/) (v18 or higher) – the JavaScript runtime used in this project.
+- [pnpm](https://pnpm.io/installation) – the package manager used throughout this repository.
+- [Postgres App](https://postgresapp.com/) – the Postgres database used in development.
 
-### 🚀 Core Features
-- **Social Media Platform**: Post, share, and interact with content
-- **Premium Subscriptions**: Tiered premium features and benefits
-- **Referral System**: Multi-level referral tree with rewards
-- **Blockchain Integration**: Smart contract integration for gaming and rewards
-- **Admin Panel**: Comprehensive management and monitoring tools
+## Installation
 
-### 🎯 Premium Features
-- **Premium Profiles**: Enhanced user profiles with special badges
-- **Referral Rewards**: Earn rewards through user referrals
-- **Game Vault Integration**: Blockchain-based gaming rewards
-- **VIP Access**: Exclusive features for premium users
+This repository uses [pnpm workspaces](https://pnpm.io/workspaces) to manage multiple packages within a monorepo structure.
 
-### 🔧 Technical Features
-- **Monorepo Architecture**: Efficient package management with pnpm workspaces
-- **TypeScript**: Full type safety across the application
-- **Modern UI**: Built with React, TailwindCSS, and HeadlessUI
-- **Real-time Updates**: WebSocket integration for live data
-- **Responsive Design**: Mobile-first approach with PWA support
-
-## 🏗️ Architecture
-
-```
-0Xgamehub/
-├── apps/
-│   ├── api/          # Backend API (Hono + Prisma)
-│   └── web/          # Frontend React App (Vite)
-├── packages/
-│   ├── data/         # Shared data and constants
-│   ├── helpers/      # Utility functions
-│   ├── indexer/      # Blockchain indexing
-│   └── types/        # Shared TypeScript types
-└── .github/          # GitHub Actions and templates
-```
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 18** with TypeScript
-- **Vite** for fast development and building
-- **TailwindCSS** for styling
-- **HeadlessUI** for accessible components
-- **Zustand** for state management
-- **TanStack Query** for data fetching
-
-### Backend
-- **Hono** for fast API development
-- **Prisma** with PostgreSQL for database
-- **Redis** for caching and sessions
-- **JWT** for authentication
-- **WebSocket** for real-time features
-
-### Blockchain
-- **Ethereum** smart contracts
-- **Web3.js** for blockchain interaction
-- **Hardhat** for development and testing
-
-### DevOps
-- **pnpm** for package management
-- **GitHub Actions** for CI/CD
-- **Docker** for containerization
-- **Biome** for linting and formatting
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- pnpm 10.4.1+
-- PostgreSQL 14+
-- Redis 6+
-- Git
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Alexmitcm/0Xgamehub.git
-   cd 0Xgamehub
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp apps/api/.env.example apps/api/.env
-   # Edit the .env file with your configuration
-   ```
-
-4. **Set up the database**
-   ```bash
-   cd apps/api
-   pnpm prisma migrate dev
-   pnpm prisma generate
-   ```
-
-5. **Start development servers**
-   ```bash
-   # Start all services
-   pnpm dev
-   
-   # Or start individually
-   pnpm --filter @hey/api dev
-   pnpm --filter @hey/web dev
-   ```
-
-## 📁 Project Structure
-
-### Apps
-- **API**: Backend REST API with GraphQL support
-- **Web**: React frontend application
-
-### Packages
-- **Data**: Shared constants, enums, and configurations
-- **Helpers**: Utility functions and helpers
-- **Indexer**: Blockchain event indexing
-- **Types**: Shared TypeScript interfaces
-
-## 🔧 Development
-
-### Available Scripts
+### Clone the Repository
 
 ```bash
-# Development
-pnpm dev              # Start all services
-pnpm build            # Build all packages
-pnpm test             # Run all tests
-pnpm typecheck        # Type checking
-
-# Linting and Formatting
-pnpm biome:check      # Run Biome linter
-pnpm biome:fix        # Fix Biome issues
-
-# Package Management
-pnpm dep:check        # Check for dependency issues
-pnpm dep:fix          # Fix dependency issues
+git clone git@github.com:heyverse/hey.git
 ```
 
-### Code Quality
+### Install NVM and pnpm
 
-- **Biome**: Linting and formatting
-- **TypeScript**: Strict type checking
-- **ESLint**: Additional linting rules
-- **Prettier**: Code formatting
+On macOS you can install both with Homebrew:
 
-## 🚀 Deployment
+```bash
+brew install nvm pnpm
+```
 
-### CI/CD Pipeline
+### Install Node.js
 
-The project includes comprehensive GitHub Actions workflows:
+Use `nvm` to install the required Node.js version:
 
-- **CI Pipeline**: Lint, type check, build, and test
-- **Dependency Updates**: Automated dependency management
-- **Security Audits**: Regular security checks
-- **Deployment**: Staging and production deployments
+```bash
+nvm install
+```
 
-### Environment Setup
+### Install Dependencies
 
-1. **Staging**: `develop` branch
-2. **Production**: `main` branch
-3. **Automated testing** on all pull requests
-4. **Security scanning** on every build
+From the repository root, install dependencies with pnpm:
 
-## 📊 Project Management
+```bash
+pnpm install
+```
 
-### Issue Templates
-- **Bug Reports**: Structured bug reporting
-- **Feature Requests**: Detailed feature proposals
-- **Pull Request Template**: Comprehensive PR guidelines
+### Set up Environment Variables
 
-### Project Board
-- **Backlog**: Ideas and planned features
-- **To Do**: Ready for development
-- **In Progress**: Currently being developed
-- **Testing**: Ready for review
-- **Done**: Completed features
+Copy the `.env.example` file to `.env` for each package or application that requires configuration:
 
-## 🤝 Contributing
+```bash
+cp .env.example .env
+```
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Repeat this process for all relevant packages and applications in the monorepo.
 
-### Development Guidelines
+### Environment Variables
 
-- Follow TypeScript best practices
-- Write comprehensive tests
-- Update documentation as needed
-- Follow the established code style
-- Ensure accessibility compliance
+The example environment files define the following variables:
 
-## 📚 Documentation
+#### API (`apps/api/.env.example`)
 
-- [API Documentation](./apps/api/README.md)
-- [Frontend Guide](./apps/web/README.md)
-- [Premium Features](./apps/web/src/components/Premium/README.md)
-- [Admin Panel](./apps/web/ADMIN_PANEL_README.md)
+- `NEXT_PUBLIC_LENS_NETWORK` – Lens network to use (`mainnet`, `testnet`, or `staging`).
+- `DATABASE_URL` – Connection string for the main Postgres database.
+- `LENS_DATABASE_URL` – Read-only Postgres connection for Lens data.
+- `REDIS_URL` – Redis connection string for caching.
+- `PRIVATE_KEY` – Private key used to sign Lens requests.
+- `EVER_ACCESS_KEY` – Access key for 4EVERLAND storage.
+- `EVER_ACCESS_SECRET` – Secret key for 4EVERLAND storage.
+- `SHARED_SECRET` – Token for internal API authorization.
+- `OPENROUTER_API_KEY` – API key for OpenRouter AI services.
 
-## 🔒 Security
+#### Web (`apps/web/.env.example`)
 
-- Regular security audits
-- Dependency vulnerability scanning
-- Input validation and sanitization
-- JWT token management
-- Rate limiting and DDoS protection
+- `VITE_IS_PRODUCTION` – Boolean flag indicating production mode for Vite.
+- `NEXT_PUBLIC_LENS_NETWORK` – Lens network used by the web app.
 
-## 📈 Performance
+### Start the Development Server
 
-- Code splitting and lazy loading
-- Database query optimization
-- Redis caching strategy
-- CDN integration
-- Bundle size optimization
+To run the application in development mode:
 
-## 🆘 Support
+```bash
+pnpm dev
+```
 
-- **Issues**: [GitHub Issues](https://github.com/Alexmitcm/0Xgamehub/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Alexmitcm/0Xgamehub/discussions)
-- **Wiki**: [Project Wiki](https://github.com/Alexmitcm/0Xgamehub/wiki)
+## Code Generation
 
-## 📄 License
+Generate Prisma clients and GraphQL types across all workspaces:
 
-This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+```bash
+pnpm codegen
+```
 
-## 🙏 Acknowledgments
+## Build and Test
 
-- Built with modern web technologies
-- Inspired by leading social media platforms
-- Community-driven development approach
+### Build the application
 
----
+Compile the application:
 
-**Made with ❤️ by the 0Xgamehub team**
+```bash
+pnpm build
+```
+
+### Type-check the project
+
+Validate the codebase with the TypeScript type checker:
+
+```bash
+pnpm typecheck
+```
+
+### Run tests
+
+Execute unit tests across all workspaces:
+
+```bash
+pnpm test
+```
+
+Each workspace provides its own `vitest.config.ts`, so test behavior is scoped
+to that package. Vitest prints a summary for each workspace showing how many
+files and tests passed along with the execution time.
+
+### Lint and Format Code
+
+Check code quality and formatting with Biome:
+
+```bash
+pnpm biome:check
+```
+
+Automatically fix linting and formatting issues:
+
+```bash
+pnpm biome:fix
+```
+
+### Maintenance Scripts
+
+Convenient Node.js helpers are in the `script` directory:
+
+- `node script/clean.mjs` removes all `node_modules`, `.next` directories,
+  `pnpm-lock.yaml`, and `tsconfig.tsbuildinfo` files.
+- `node script/update-dependencies.mjs` updates packages across the monorepo,
+  removes old installs and commits the changes in a new branch.
+- `node script/sort-package-json.mjs` sorts all `package.json` files in the
+  repository.
+
+## License
+
+This project is released under the **GNU AGPL-3.0** license. See the [LICENSE](./LICENSE) file for details.
+
+🌸

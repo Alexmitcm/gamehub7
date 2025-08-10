@@ -14,3 +14,9 @@ export type STS = {
   secretAccessKey: string;
   sessionToken: string;
 };
+
+export type Live = {
+  id: string;
+  playbackId: string;
+  streamKey: string;
+};

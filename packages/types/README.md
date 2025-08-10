@@ -1,6 +1,6 @@
 # Types
 
-This package provides TypeScript definitions shared across the Hey monorepo.
+TypeScript definitions shared across the Hey monorepo.
 
 ## Commands
 

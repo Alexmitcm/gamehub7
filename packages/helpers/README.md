@@ -1,6 +1,6 @@
 # Helpers
 
-This package includes utility functions shared by the API and web apps.
+Utility functions shared by the API and web apps.
 
 ## Commands
 

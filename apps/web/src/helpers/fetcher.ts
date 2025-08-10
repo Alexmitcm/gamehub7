@@ -1,6 +1,6 @@
 import { HEY_API_URL } from "@hey/data/constants";
 import { Status } from "@hey/data/enums";
-import type { Oembed, Preferences, STS } from "@hey/types/api";
+import type { Live, Oembed, Preferences, STS } from "@hey/types/api";
 import { hydrateAuthTokens } from "@/store/persisted/useAuthStore";
 import { isTokenExpiringSoon, refreshTokens } from "./tokenManager";
 
@@ -106,16 +106,18 @@ export const hono = {
       lensAccessToken: string
     ): Promise<{
       success: boolean;
-      walletAddress: string;
-      status: "Standard" | "Premium";
-      linkedProfileId?: string;
-      email?: string;
-      username?: string;
-      displayName?: string;
-      avatarUrl?: string;
-      registrationDate: string;
-      lastActiveAt: string;
-      totalLogins: number;
+      user: {
+        walletAddress: string;
+        status: "Standard" | "Premium";
+        linkedProfileId?: string;
+        email?: string;
+        username?: string;
+        displayName?: string;
+        avatarUrl?: string;
+        registrationDate: string;
+        lastActiveAt: string;
+        totalLogins: number;
+      };
       token: string;
       isNewUser: boolean;
       message: string;
@@ -127,8 +129,8 @@ export const hono = {
     }
   },
   live: {
-    create: ({ record }: { record: boolean }): Promise<any> => {
-      return fetchApi("/live/create", {
+    create: ({ record }: { record: boolean }): Promise<Live> => {
+      return fetchApi<Live>("/live/create", {
         body: JSON.stringify({ record }),
         method: "POST"
       });
@@ -168,6 +170,48 @@ export const hono = {
         method: "POST"
       });
     },
+    debug: (walletAddress: string): Promise<any> => {
+      return fetchApi("/premium/debug", {
+        body: JSON.stringify({ walletAddress }),
+        method: "POST"
+      });
+    },
+    getAvailableProfiles: (
+      walletAddress: string
+    ): Promise<{
+      profiles: Array<{
+        id: string;
+        handle: string;
+        ownedBy: string;
+        isDefault: boolean;
+      }>;
+      canLink: boolean;
+      linkedProfile?: {
+        profileId: string;
+        handle: string;
+        linkedAt: string;
+      } | null;
+    }> => {
+      return fetchApi("/premium/available-profiles", {
+        body: JSON.stringify({ walletAddress }),
+        method: "POST"
+      });
+    },
+    getSimpleStatus: (
+      walletAddress: string,
+      profileId?: string
+    ): Promise<{
+      userStatus: "Standard" | "ProLinked";
+      linkedProfile?: {
+        profileId: string;
+        linkedAt: string;
+      };
+    }> => {
+      return fetchApi("/premium/simple-status", {
+        body: JSON.stringify({ profileId, walletAddress }),
+        method: "POST"
+      });
+    },
     getUserStatus: (
       walletAddress: string
     ): Promise<{
@@ -202,10 +246,8 @@ export const hono = {
     profiles: ({
       query
     }: {
-      walletAddress: string;
-    }): Promise<{
-      profiles: any[];
-    }> => {
+      query: { walletAddress: string };
+    }): Promise<{ profiles: any[] }> => {
       return fetchApi(
         `/premium/profiles?walletAddress=${query.walletAddress}`,
         { method: "GET" }
@@ -224,10 +266,12 @@ export const hono = {
     verifyRegistration: ({
       json
     }: {
-      userAddress: string;
-      referrerAddress: string;
-      transactionHash: string;
-      blockNumber: number;
+      json: {
+        userAddress: string;
+        referrerAddress: string;
+        transactionHash: string;
+        blockNumber: number;
+      };
     }): Promise<any> => {
       return fetchApi("/premium/verify-registration", {
         body: JSON.stringify(json),

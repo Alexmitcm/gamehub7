@@ -1,6 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import EnvironmentPlugin from "vite-plugin-environment";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 const dependenciesToChunk = {
@@ -70,6 +71,15 @@ export default defineConfig({
   plugins: [
     tsconfigPaths(),
     react(),
-    tailwindcss()
-  ]
+    tailwindcss(),
+    EnvironmentPlugin({
+      NEXT_PUBLIC_LENS_NETWORK: "mainnet",
+      VITE_API_URL: "http://localhost:3009",
+      VITE_IS_PRODUCTION: false
+    })
+  ],
+  server: {
+    port: 4783,
+    strictPort: false
+  }
 });

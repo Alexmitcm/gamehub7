@@ -17,8 +17,10 @@ const Terms = () => {
               <H4 className="mb-5">1. Overview</H4>
               <div className="space-y-5">
                 <p className="leading-7">
-                  The Site provides information about user-generated content and
-                  interactions on the Lens Protocol.
+                  The website "hey.xyz" (the "Site") offers information, tools
+                  and services to you to allow you to interact with the Lens
+                  Protocol - a composable and decentralised social graph
+                  protocol.
                 </p>
                 <p className="leading-7">
                   By visiting the Site, you agree to be bound by the following
@@ -36,14 +38,15 @@ const Terms = () => {
                   accessing the Site, you consent to the Agreement.
                 </p>
                 <p className="leading-7">
-                  Any new features or tools which are added to the Site are also
-                  subject to the Terms. You can review the most current version
-                  of the Terms at any time on this page. We reserve the right to
-                  update, change or replace any part of these Terms by posting
-                  updates and/or changes to our Site. It is your responsibility
-                  to check this page periodically for changes. Your continued
-                  use of or access to the Site following the posting of any
-                  changes constitutes acceptance of those changes.
+                  Any new features or tools which are added to Site shall also
+                  be subject to the Terms. You can review the most current
+                  version of the Terms at any time on this page. We reserve the
+                  right to update, change or replace any part of these Terms by
+                  posting updates and/or changes to our Site. It is your
+                  responsibility to check this page periodically for changes.
+                  Your continued use of or access to the Site following the
+                  posting of any changes constitutes acceptance of those
+                  changes.
                 </p>
               </div>
               {/* 1. Overview ends */}
@@ -53,21 +56,21 @@ const Terms = () => {
                 You may not use our Site for any illegal or unauthorised purpose
                 nor may you, in the use of the Service, violate any laws in your
                 jurisdiction (including but not limited to copyright laws). We
-                reserve the right to refuse service to anyone for any reason at
-                any time. We may stop (permanently or temporarily) providing the
-                Services or any features of the Site to you or to users
-                generally.
+                reserve the right to refuse the services to anyone for any
+                reason at any time. We may stop (permanently or temporarily)
+                providing the services or any features within the Site to you or
+                to users generally.
               </p>
               {/* 2. General Conditions ends */}
               {/* 3. Services begins */}
               <H4 className="mt-8 mb-5">3. Services</H4>
               <div className="space-y-5">
                 <p className="leading-7">
-                  On the Site, Lens user accounts are referred to as 'accounts.'
+                  User Lens accounts are referred to as the Account on the Site.
                 </p>
                 <p className="leading-7">
                   The Site allows you to interact with the Lens, including
-                  posts, reposts, comments and other content-related actions.
+                  posts, reposts, comments and other content related actions.
                 </p>
                 <p className="leading-7">
                   We reserve the right - but are not obligated to - limit the
@@ -84,8 +87,8 @@ const Terms = () => {
                     your accounts.
                   </li>
                   <li className="leading-7">
-                    You bear sole responsibility for evaluating the Site and its
-                    features.
+                    You bear sole responsibility for evaluating the Site and
+                    features before using them.
                   </li>
                 </ul>
                 <p className="leading-7">
@@ -104,18 +107,17 @@ const Terms = () => {
                   responsible for the safekeeping of the private key associated
                   with the blockchain address used to interact with the Lens.{" "}
                   <b className="leading-7">
-                    The transactions on the blockchain, including the transfer
-                    of tokens and the data attached to them, are permanent and
-                    cannot be undone.
+                    The transactions on blockchain including transfer of tokens
+                    and data attached to it are permanent and cannot be undone.
                   </b>
                 </p>
                 <p className="leading-7">
                   Our Site lets you upload text, pictures, and videos hosted on
                   a third-party provider, the Lens Storage Node. We are not
-                  responsible for any action or omission taken by the Lens
-                  Storage Node as it pertains to the user interface or
-                  otherwise. The use and access of any third-party products or
-                  services, including through the Site, is at your own risk.
+                  responsible for any action or omission taken by Lens Storage
+                  Node as it pertains to the user interface or otherwise. The
+                  use and access of any third-party products or services,
+                  including through the Site, is at your own risk.
                 </p>
                 <p className="leading-7">
                   The Lens is deployed on blockchain-based networks, and we are
@@ -129,9 +131,9 @@ const Terms = () => {
               </H4>
               <div className="space-y-5">
                 <p className="leading-7">
-                  We are not responsible for mistakes or inaccuracies in content
-                  published on this Site. Accounts are fully responsible for
-                  their actions on the Site.
+                  We are not responsible for any mistakes or inaccuracies on
+                  contents published on this Site. Accounts are fully
+                  responsible for what they are doing in the Site.
                 </p>
                 <p className="leading-7">
                   As a Site, we offer information about the content and
@@ -143,10 +145,11 @@ const Terms = () => {
               {/* 5. Modification of Services begins */}
               <H4 className="mt-8 mb-5">5. Modification of Services</H4>
               <p className="leading-7">
-                We reserve the right to modify or discontinue the Site (or any
-                part of it) without notice. We shall not be liable to you or any
-                third-party for any modification, information change, suspension
-                or discontinuance of the Site.
+                We reserve the right at any time to modify or discontinue the
+                Site (or any part or content thereof) without notice at any
+                time. We shall not be liable to you or any third-party for any
+                modification, information change, suspension or discontinuance
+                of the Site.
               </p>
               {/* 5. Modification of Services ends */}
               {/* 6. Third-Party Services & Websites begins */}
@@ -279,7 +282,7 @@ const Terms = () => {
                   any time by not accessing the Site.
                 </p>
                 <p className="leading-7">
-                  If in our sole judgment you fail to comply with the terms, we
+                  If in our sole judgment you fail to comply with terms, we
                   reserve the right to terminate our Agreement with you and deny
                   you access to the Site.
                 </p>

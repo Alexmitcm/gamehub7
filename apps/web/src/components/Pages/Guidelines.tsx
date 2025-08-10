@@ -15,15 +15,15 @@ const Guidelines = () => {
                 <p className="leading-7">
                   To protect all users on Hey and to prevent spam, we put some
                   rules in place. Please read them carefully and remember them
-                  whenever you post something on Hey or change your account.
+                  whenever you are posting something on Hey or you are changing
+                  your Account.
                 </p>
               </div>
               {/* Safety begins */}
               <H4 className="mt-8 mb-5">Safety</H4>
               <div className="space-y-5">
                 <p className="leading-7">
-                  You are not allowed to display, share, or promote any of the
-                  following:
+                  You are not allowed to display, share or promote any form of
                 </p>
                 <ul className="list-inside list-disc space-y-2">
                   <li>Violence</li>
@@ -50,7 +50,7 @@ const Guidelines = () => {
                 </ul>
                 <p className="leading-7">
                   Please try to keep Hey family-friendly (especially considering
-                  all images, videos, audio, and links).
+                  all Images, Videos, Audios and Links).
                 </p>
               </div>
               {/* Nudity ends */}
@@ -62,14 +62,14 @@ const Guidelines = () => {
                 </p>
                 <ul className="list-inside list-disc space-y-2">
                   <li>Manipulate other users</li>
-                  <li>Create a large number of accounts.</li>
+                  <li>Create a large amount of Accounts</li>
                   <li>
                     Share excessive amounts of content of any type ("Spam")
                   </li>
                   <li>Airdrop farming</li>
                 </ul>
                 <p className="leading-7">
-                  If your account is suspended, you are not allowed to create
+                  If your account got suspended, you are not allowed to create
                   any new accounts.
                 </p>
               </div>
@@ -85,7 +85,7 @@ const Guidelines = () => {
                   the names of popular persons as a parody. If you do something
                   like this, please use the "About me" section on your Account
                   to inform other users that your Account is a parody account.
-                  You must do this in a way that can be easily seen and
+                  You must do this in a way which can be easily seen and
                   understood by other users.
                 </p>
                 <H4 className="mt-8 mb-5">Suspension</H4>
@@ -115,8 +115,7 @@ const Guidelines = () => {
               <H4 className="mt-8 mb-5">Feedback</H4>
               <p className="linkify leading-7">
                 If you have any feedback on these rules or if you have any
-                questions, please{" "}
-                <Link to="mailto:support@hey.xyz">contact us</Link>.
+                questions, please <Link to="/support">Contact us</Link>.
               </p>
               {/* Feedback ends */}
             </div>
