@@ -56,7 +56,7 @@ export const parseReferralNode = (nodeData: any): ReferralNode | null => {
 
 export const buildTreeStructure = (
   currentNode: ReferralNode,
-  expandedNodes: Set<string>,
+  _expandedNodes: Set<string>,
   parentNode?: ReferralNode | null
 ): TreeNode => {
   console.log("Building tree structure:", { currentNode, parentNode });
@@ -197,7 +197,7 @@ export const exportReferralData = (
 export const fetchParentNodeData = async (
   parentAddress: string,
   contract: any,
-  abi: any
+  _abi: any
 ): Promise<ReferralNode | null> => {
   if (parentAddress === "0x0000000000000000000000000000000000000000") {
     return null;

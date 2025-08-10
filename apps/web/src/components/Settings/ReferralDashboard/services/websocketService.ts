@@ -72,8 +72,11 @@ class WebSocketService {
           this.isConnecting = false;
           this.stopHeartbeat();
           this.store?.setConnected(false);
-          
-          if (!event.wasClean && this.reconnectAttempts < this.config.maxReconnectAttempts) {
+
+          if (
+            !event.wasClean &&
+            this.reconnectAttempts < this.config.maxReconnectAttempts
+          ) {
             this.scheduleReconnect();
           }
         };
@@ -83,7 +86,6 @@ class WebSocketService {
           this.isConnecting = false;
           reject(error);
         };
-
       } catch (error) {
         this.isConnecting = false;
         reject(error);
@@ -123,22 +125,32 @@ class WebSocketService {
   // Subscribe to referral updates
   subscribeToReferralUpdates(address: string): void {
     this.send({
-      type: "subscribe",
       data: {
         address,
-        events: ["balance_update", "status_change", "new_referral", "depth_change"]
-      }
+        events: [
+          "balance_update",
+          "status_change",
+          "new_referral",
+          "depth_change"
+        ]
+      },
+      type: "subscribe"
     });
   }
 
   // Unsubscribe from referral updates
   unsubscribeFromReferralUpdates(address: string): void {
     this.send({
-      type: "unsubscribe",
       data: {
         address,
-        events: ["balance_update", "status_change", "new_referral", "depth_change"]
-      }
+        events: [
+          "balance_update",
+          "status_change",
+          "new_referral",
+          "depth_change"
+        ]
+      },
+      type: "unsubscribe"
     });
   }
 
@@ -146,7 +158,7 @@ class WebSocketService {
   private handleMessage(event: MessageEvent): void {
     try {
       const data = JSON.parse(event.data);
-      
+
       switch (data.type) {
         case "referral_update":
           this.handleReferralUpdate(data.payload as ReferralUpdateEvent);
@@ -175,7 +187,9 @@ class WebSocketService {
     this.store.optimisticUpdate(event.address, {
       ...(event.data.balance && { balance: event.data.balance }),
       ...(event.data.depth && { depth: event.data.depth }),
-      ...(event.data.status !== undefined && { unbalancedAllowance: event.data.status })
+      ...(event.data.status !== undefined && {
+        unbalancedAllowance: event.data.status
+      })
     });
 
     // Update activity timestamp
@@ -217,9 +231,12 @@ class WebSocketService {
     if (this.reconnectTimer) return;
 
     this.reconnectAttempts++;
-    const delay = this.config.reconnectInterval * Math.pow(2, this.reconnectAttempts - 1);
+    const delay =
+      this.config.reconnectInterval * 2 ** (this.reconnectAttempts - 1);
 
-    console.log(`Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`);
+    console.log(
+      `Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`
+    );
 
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
@@ -242,12 +259,13 @@ class WebSocketService {
 
 // Create singleton instance
 const websocketService = new WebSocketService({
-  url: process.env.NODE_ENV === "production" 
-    ? "wss://your-api-domain.com/ws/referral" 
-    : "ws://localhost:3001/ws/referral",
-  reconnectInterval: 1000,
+  heartbeatInterval: 30000,
   maxReconnectAttempts: 5,
-  heartbeatInterval: 30000
+  reconnectInterval: 1000,
+  url:
+    process.env.NODE_ENV === "production"
+      ? "wss://your-api-domain.com/ws/referral"
+      : "ws://localhost:3001/ws/referral"
 });
 
 export default websocketService;
@@ -274,4 +292,4 @@ export const useWebSocketService = () => {
     isConnected,
     readyState: websocketService.readyState
   };
-}; 
+};

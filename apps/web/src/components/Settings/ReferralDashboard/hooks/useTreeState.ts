@@ -57,7 +57,7 @@ export const useTreeState = () => {
       setIsSearching(false);
       // This would be calculated based on actual search results
       setSearchResults(filter ? 1 : 0);
-      setHasResults(filter ? true : false);
+      setHasResults(!!filter);
     }, 500);
   }, []);
 

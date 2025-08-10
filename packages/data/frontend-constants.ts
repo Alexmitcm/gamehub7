@@ -6,7 +6,8 @@ import getEnvConfig from "./utils/getEnvConfig";
 export const IS_PRODUCTION = import.meta.env.VITE_IS_PRODUCTION === "true";
 
 // Lens and Hey Env Config
-export const LENS_NETWORK = import.meta.env.NEXT_PUBLIC_LENS_NETWORK || "mainnet";
+export const LENS_NETWORK =
+  import.meta.env.NEXT_PUBLIC_LENS_NETWORK || "mainnet";
 
 export const LENS_API_URL = getEnvConfig().lensApiEndpoint;
 export const DEFAULT_COLLECT_TOKEN = getEnvConfig().defaultCollectToken;
@@ -72,4 +73,4 @@ export const BANNER_IDS = {
 export const PERMISSIONS = {
   STAFF: "0xA7f2835e54998c6d7d4A0126eC0ebE91b5E43c69",
   SUBSCRIPTION: "0x4BE5b4519814A57E6f9AaFC6afBB37eAEeE35aA3"
-} as const; 
+} as const;

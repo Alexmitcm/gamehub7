@@ -80,251 +80,159 @@ const fetchApi = async <T>(
   }
 };
 
-export const hono = ({
-<<<<<<< Updated upstream
-====== = auth);
-:
-{
-  debugToken: (
-    lensAccessToken: string
-  ): Promise<{
-    success: boolean;
-    tokenInfo?: {
-      hasValidFormat: boolean;
-      payload: any;
-      walletAddress: string;
-      profileId?: string;
-      issuedAt?: string;
-      expiresAt?: string;
-      isExpired?: boolean;
-    };
-    error?: string;
-  }> => {
-    return fetchApi("/auth/debug-token", {
-      body: JSON.stringify({ lensAccessToken }),
-      method: "POST"
-    });
-  },
-    syncLens;
-  : (
+export const hono = {
+  auth: {
+    debugToken: (
       lensAccessToken: string
-    ): Promise<
-  success: boolean;
-  walletAddress: string;
-  status: "Standard" | "Premium";
-  linkedProfileId?: string;
-  email?: string;
-  username?: string;
-  displayName?: string;
-  avatarUrl?: string;
-  registrationDate: string;
-  lastActiveAt: string;
-  totalLogins: number;
-  token: string;
-  isNewUser: boolean;
-  message: string;
-  > =>
-  return fetchApi("/auth/sync-lens", {
+    ): Promise<{
+      success: boolean;
+      tokenInfo?: {
+        hasValidFormat: boolean;
+        payload: any;
+        walletAddress: string;
+        profileId?: string;
+        issuedAt?: string;
+        expiresAt?: string;
+        isExpired?: boolean;
+      };
+      error?: string;
+    }> => {
+      return fetchApi("/auth/debug-token", {
         body: JSON.stringify({ lensAccessToken }),
         method: "POST"
       });
-}
-,
-  live:
-{
-  create: ({ record }: { record: boolean }): Promise<Live> => {
-    return fetchApi<Live>("/live/create", {
-      body: JSON.stringify({ record }),
-      method: "POST"
-    });
-  };
-}
-,
->>>>>>> Stashed changes
-  metadata:
-{
-  sts: (): Promise<STS> => {
-    return fetchApi<STS>("/metadata/sts", { method: "GET" });
-  };
-}
-,
-  oembed:
-{
-  get: (url: string): Promise<Oembed> => {
-    return fetchApi<Oembed>(`/oembed/get?url=${url}`, { method: "GET" });
-  };
-}
-,
-  preferences:
-{
-  get: (): Promise<Preferences> => {
-    return fetchApi<Preferences>("/preferences/get", { method: "GET" });
+    },
+    syncLens: (
+      lensAccessToken: string
+    ): Promise<{
+      success: boolean;
+      walletAddress: string;
+      status: "Standard" | "Premium";
+      linkedProfileId?: string;
+      email?: string;
+      username?: string;
+      displayName?: string;
+      avatarUrl?: string;
+      registrationDate: string;
+      lastActiveAt: string;
+      totalLogins: number;
+      token: string;
+      isNewUser: boolean;
+      message: string;
+    }> => {
+      return fetchApi("/auth/sync-lens", {
+        body: JSON.stringify({ lensAccessToken }),
+        method: "POST"
+      });
+    }
   },
-    update;
-  : (preferences: Partial<Preferences>): Promise<Preferences> =>
-  return fetchApi<Preferences>("/preferences/update", {
+  live: {
+    create: ({ record }: { record: boolean }): Promise<any> => {
+      return fetchApi("/live/create", {
+        body: JSON.stringify({ record }),
+        method: "POST"
+      });
+    }
+  },
+  metadata: {
+    sts: (): Promise<STS> => {
+      return fetchApi<STS>("/metadata/sts", { method: "GET" });
+    }
+  },
+  oembed: {
+    get: (url: string): Promise<Oembed> => {
+      return fetchApi<Oembed>(`/oembed/get?url=${url}`, { method: "GET" });
+    }
+  },
+  preferences: {
+    get: (): Promise<Preferences> => {
+      return fetchApi<Preferences>("/preferences/get", { method: "GET" });
+    },
+    update: (preferences: Partial<Preferences>): Promise<Preferences> => {
+      return fetchApi<Preferences>("/preferences/update", {
         body: JSON.stringify(preferences),
         method: "POST"
       });
-}
-,
-  premium:
-{
-  autoLinkProfile: (
-    walletAddress: string
-  ): Promise<{
-    profileId: string;
-    handle: string;
-    linkedAt: string;
-  }> => {
-    return fetchApi("/premium/auto-link", {
-      body: JSON.stringify({ walletAddress }),
-      method: "POST"
-    });
+    }
   },
-    debug;
-  : (walletAddress: string): Promise<any> =>
-  return fetchApi("/premium/debug", {
-        body: JSON.stringify({ walletAddress }),
-        method: "POST"
-      });
-  ,
-    getAvailableProfiles: (
+  premium: {
+    autoLinkProfile: (
       walletAddress: string
-    ): Promise<
-  profiles: Array<{
-    id: string;
-    handle: string;
-    ownedBy: string;
-    isDefault: boolean;
-  }>;
-  canLink: boolean;
-  linkedProfile?: {
-        profileId: string;
-  handle: string;
-  linkedAt: string;
-  | null
-}
-> =>
-{
-  return fetchApi("/premium/available-profiles", {
+    ): Promise<{
+      profileId: string;
+      handle: string;
+      linkedAt: string;
+    }> => {
+      return fetchApi("/premium/auto-link", {
         body: JSON.stringify({ walletAddress }),
         method: "POST"
       });
-}
-,
-    getSimpleStatus: (
-      walletAddress: string,
-      profileId?: string
-    ): Promise<
-{
-  userStatus: "Standard" | "ProLinked";
-  linkedProfile?: {
-        profileId: string;
-  linkedAt: string;
-}
-}> =>
-{
-  return fetchApi("/premium/simple-status", {
-        body: JSON.stringify({ profileId, walletAddress }),
-        method: "POST"
-      });
-}
-,
+    },
     getUserStatus: (
       walletAddress: string
-    ): Promise<
-{
-  userStatus: "Standard" | "OnChainUnlinked" | "ProLinked";
-  linkedProfile?: {
+    ): Promise<{
+      userStatus: "Standard" | "OnChainUnlinked" | "ProLinked";
+      linkedProfile?: {
         profileId: string;
-  handle: string;
-  linkedAt: string;
-}
-| null
-}> =>
-{
-  return fetchApi("/premium/user-status", {
+        handle: string;
+        linkedAt: string;
+      } | null;
+    }> => {
+      return fetchApi("/premium/user-status", {
         body: JSON.stringify({ walletAddress }),
         method: "POST"
       });
-}
-,
-    linkedProfile: (): Promise<any> =>
-{
-  return fetchApi("/premium/linked-profile", { method: "GET" });
-}
-,
+    },
+    linkedProfile: (): Promise<any> => {
+      return fetchApi("/premium/linked-profile", { method: "GET" });
+    },
     linkProfile: (
       walletAddress: string,
       profileId: string
-    ): Promise<
-{
-  profileId: string;
-  handle: string;
-  linkedAt: string;
-}
-> =>
-{
-  return fetchApi("/premium/link", {
+    ): Promise<{
+      profileId: string;
+      handle: string;
+      linkedAt: string;
+    }> => {
+      return fetchApi("/premium/link", {
         body: JSON.stringify({ profileId, walletAddress }),
         method: "POST"
       });
-}
-,
-    profiles: (
-{
-  query;
-}
-:
-{
-  walletAddress: string;
-}
-): Promise<
-{
-  profiles: any[]
-}
-> =>
-{
-  return fetchApi(
+    },
+    profiles: ({
+      query
+    }: {
+      walletAddress: string;
+    }): Promise<{
+      profiles: any[];
+    }> => {
+      return fetchApi(
         `/premium/profiles?walletAddress=${query.walletAddress}`,
         { method: "GET" }
       );
-}
-,
-    stats: (): Promise<any> =>
-{
-  return fetchApi("/premium/stats", { method: "GET" });
-}
-,
-    status: (): Promise<
-{
-  userStatus: string;
-  isPremium: boolean;
-  linkedProfile?: any;
-}
-> =>
-{
-  return fetchApi("/premium/status", { method: "GET" });
-}
-,
-    verifyRegistration: (
-{
-  json;
-}
-:
-{
-  userAddress: string;
-  referrerAddress: string;
-  transactionHash: string;
-  blockNumber: number;
-}
-): Promise<any> =>
-{
-  return fetchApi("/premium/verify-registration", {
+    },
+    stats: (): Promise<any> => {
+      return fetchApi("/premium/stats", { method: "GET" });
+    },
+    status: (): Promise<{
+      userStatus: string;
+      isPremium: boolean;
+      linkedProfile?: any;
+    }> => {
+      return fetchApi("/premium/status", { method: "GET" });
+    },
+    verifyRegistration: ({
+      json
+    }: {
+      userAddress: string;
+      referrerAddress: string;
+      transactionHash: string;
+      blockNumber: number;
+    }): Promise<any> => {
+      return fetchApi("/premium/verify-registration", {
         body: JSON.stringify(json),
         method: "POST"
       });
-}
-}
-}
+    }
+  }
+};

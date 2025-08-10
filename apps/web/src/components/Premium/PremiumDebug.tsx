@@ -17,7 +17,7 @@ const PremiumDebug = () => {
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const data = await hono.premium.debug(currentAccount.address);
       setDebugData(data);
@@ -33,26 +33,26 @@ const PremiumDebug = () => {
       <H5>Premium Debug</H5>
       <div className="mt-4 space-y-4">
         <div>
-          <p className="text-sm text-gray-600">
+          <p className="text-gray-600 text-sm">
             Wallet: {currentAccount?.address || "Not connected"}
           </p>
         </div>
-        
+
         <Button
-          onClick={handleDebug}
           disabled={isLoading || !currentAccount?.address}
+          onClick={handleDebug}
         >
           {isLoading ? "Debugging..." : "Debug Premium Status"}
         </Button>
 
         {error && (
-          <div className="border border-red-200 bg-red-50 p-4 rounded-lg">
-            <p className="text-sm text-red-800">Error: {error}</p>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="text-red-800 text-sm">Error: {error}</p>
           </div>
         )}
 
         {debugData && (
-          <div className="border border-gray-200 bg-gray-50 p-4 rounded-lg">
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
             <h6 className="mb-2 font-semibold">Debug Results:</h6>
             <pre className="overflow-auto text-xs">
               {JSON.stringify(debugData, null, 2)}
@@ -64,4 +64,4 @@ const PremiumDebug = () => {
   );
 };
 
-export default PremiumDebug; 
+export default PremiumDebug;

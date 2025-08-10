@@ -15,7 +15,7 @@ const port = 8080;
 
 console.log(`Starting test server on port ${port}...`);
 
-serve({ fetch: app.fetch, port, hostname: "0.0.0.0" }, (info) => {
+serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {
   console.log(`Test server running on port ${info.port}`);
   console.log(`Test with: curl http://localhost:${info.port}/ping`);
-}); 
+});

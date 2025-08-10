@@ -49,18 +49,18 @@ export const useUserReferralTree = () => {
         // Transform the data to match our expected format
         const transformedData: ReferralTreeResponse = {
           data: data.data.map((node: any) => ({
-            wallet: node.address,
-            parent: node.parent,
-            leftChild: node.leftChild,
-            rightChild: node.rightChild,
-            depth: node.depth,
             balance: node.balance,
+            depth: node.depth,
+            isUnbalanced: false // We'll add this later, 
+            leftChild: node.leftChild,
+            parent: node.parent,
+            rightChild: node.rightChild,
             startTime: Date.now(),
-            isUnbalanced: false // We'll add this later
+            wallet: node.address
           })),
           meta: {
-            rootWallet: testWallet,
             maxDepth: 3,
+            rootWallet: testWallet,
             totalNodes: data.data.length
           }
         };

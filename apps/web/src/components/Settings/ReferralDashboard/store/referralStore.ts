@@ -230,13 +230,13 @@ export const useReferralStore = create<ReferralState>()(
           }
         },
         partialize: (state) => ({
-          expandedNodes: [...state.expandedNodes],
-          zoomLevel: state.zoomLevel,
-          panOffset: state.panOffset,
-          walletFilter: state.walletFilter,
           balanceFilter: state.balanceFilter,
           depthFilter: state.depthFilter,
-          statusFilter: state.statusFilter
+          expandedNodes: [...state.expandedNodes],
+          panOffset: state.panOffset,
+          statusFilter: state.statusFilter,
+          walletFilter: state.walletFilter,
+          zoomLevel: state.zoomLevel
         })
       }
     ),

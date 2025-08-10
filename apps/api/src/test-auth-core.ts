@@ -1,8 +1,8 @@
-import { config } from "dotenv";
 import logger from "@hey/helpers/logger";
+import { config } from "dotenv";
 import prisma from "./prisma/client";
-import JwtService from "./services/JwtService";
 import EventService from "./services/EventService";
+import JwtService from "./services/JwtService";
 
 // Load environment variables
 config();
@@ -20,15 +20,17 @@ async function testAuthCore() {
     console.log("-".repeat(40));
 
     const existingUser = await prisma.user.findUnique({
-      where: { walletAddress: TEST_WALLET.toLowerCase() },
-      include: { premiumProfile: true }
+      include: { premiumProfile: true },
+      where: { walletAddress: TEST_WALLET.toLowerCase() }
     });
-    
+
     console.log(`✅ User exists: ${existingUser ? "YES" : "NO"}`);
-    
+
     if (existingUser) {
       console.log(`   👤 Status: ${existingUser.status}`);
-      console.log(`   🔗 Linked Profile: ${existingUser.premiumProfile?.profileId || "None"}`);
+      console.log(
+        `   🔗 Linked Profile: ${existingUser.premiumProfile?.profileId || "None"}`
+      );
       console.log(`   📅 Registration Date: ${existingUser.registrationDate}`);
       console.log(`   🕒 Last Active: ${existingUser.lastActiveAt}`);
       console.log(`   🔢 Total Logins: ${existingUser.totalLogins}`);
@@ -41,27 +43,40 @@ async function testAuthCore() {
     try {
       // Simulate the core logic without ProfileService validation
       const normalizedAddress = TEST_WALLET.toLowerCase();
-      
+
       // Check if user exists
       const user = await prisma.user.findUnique({
-        where: { walletAddress: normalizedAddress },
-        include: { premiumProfile: true }
+        include: { premiumProfile: true },
+        where: { walletAddress: normalizedAddress }
       });
 
-      if (!user) {
+      if (user) {
+        console.log("   👤 User already exists, updating activity...");
+
+        // Update existing user activity
+        await prisma.user.update({
+          data: {
+            lastActiveAt: new Date(),
+            totalLogins: { increment: 1 }
+          },
+          where: { walletAddress: normalizedAddress }
+        });
+
+        console.log("✅ User activity updated");
+      } else {
         console.log("   👤 Creating new user...");
-        
+
         // Create user with transaction
         const result = await prisma.$transaction(async (tx) => {
           // Create user record
           const newUser = await tx.user.create({
             data: {
-              walletAddress: normalizedAddress,
-              status: "Premium", // Assume premium for test
+              lastActiveAt: new Date(),
               premiumUpgradedAt: new Date(),
               registrationDate: new Date(),
-              lastActiveAt: new Date(),
-              totalLogins: 1
+              status: "Premium", // Assume premium for test
+              totalLogins: 1,
+              walletAddress: normalizedAddress
             }
           });
 
@@ -78,10 +93,10 @@ async function testAuthCore() {
           // Create premium profile link
           const premiumProfile = await tx.premiumProfile.create({
             data: {
-              walletAddress: normalizedAddress,
-              profileId: TEST_PROFILE_ID,
               isActive: true,
-              linkedAt: new Date()
+              linkedAt: new Date(),
+              profileId: TEST_PROFILE_ID,
+              walletAddress: normalizedAddress
             }
           });
 
@@ -92,16 +107,18 @@ async function testAuthCore() {
         console.log(`   👤 User ID: ${result.newUser.walletAddress}`);
         console.log(`   ⭐ Status: ${result.newUser.status}`);
         console.log(`   🔗 Linked Profile: ${result.premiumProfile.profileId}`);
-        console.log(`   📅 Registration Date: ${result.newUser.registrationDate}`);
+        console.log(
+          `   📅 Registration Date: ${result.newUser.registrationDate}`
+        );
 
         // Test 3: JWT Token Generation
         console.log("\n🔐 3. Testing JWT token generation...");
         console.log("-".repeat(40));
 
         const tokenPayload = {
-          walletAddress: result.newUser.walletAddress,
+          linkedProfileId: result.premiumProfile.profileId,
           status: result.newUser.status,
-          linkedProfileId: result.premiumProfile.profileId
+          walletAddress: result.newUser.walletAddress
         };
 
         const token = JwtService.generateToken(tokenPayload);
@@ -127,14 +144,14 @@ async function testAuthCore() {
         console.log("-".repeat(40));
 
         await EventService.emitEvent({
-          type: "user.registered",
-          walletAddress: normalizedAddress,
-          timestamp: new Date(),
           metadata: {
             isPremium: true,
-            profileId: TEST_PROFILE_ID,
-            profileHandle: "soli"
-          }
+            profileHandle: "soli",
+            profileId: TEST_PROFILE_ID
+          },
+          timestamp: new Date(),
+          type: "user.registered",
+          walletAddress: normalizedAddress
         });
 
         console.log("✅ Event emission: SUCCESS");
@@ -144,18 +161,18 @@ async function testAuthCore() {
         console.log("-".repeat(40));
 
         const updateData = {
-          displayName: "Test User Updated",
           bio: "This is a test bio for the core auth system",
+          displayName: "Test User Updated",
           location: "Test City"
         };
 
         const updatedUser = await prisma.user.update({
-          where: { walletAddress: normalizedAddress },
           data: {
             ...updateData,
             updatedAt: new Date()
           },
-          include: { premiumProfile: true }
+          include: { premiumProfile: true },
+          where: { walletAddress: normalizedAddress }
         });
 
         console.log("✅ Profile update: SUCCESS");
@@ -168,43 +185,36 @@ async function testAuthCore() {
         console.log("-".repeat(40));
 
         const retrievedUser = await prisma.user.findUnique({
-          where: { walletAddress: normalizedAddress },
-          include: { 
-            premiumProfile: true,
+          include: {
             preferences: true,
+            premiumProfile: true,
             userStats: true
-          }
+          },
+          where: { walletAddress: normalizedAddress }
         });
 
         if (retrievedUser) {
           console.log("✅ User retrieval: SUCCESS");
           console.log(`   👤 Status: ${retrievedUser.status}`);
-          console.log(`   🔗 Linked Profile: ${retrievedUser.premiumProfile?.profileId}`);
+          console.log(
+            `   🔗 Linked Profile: ${retrievedUser.premiumProfile?.profileId}`
+          );
           console.log(`   🔢 Total Logins: ${retrievedUser.totalLogins}`);
-          console.log(`   ⚙️ Preferences: ${retrievedUser.preferences ? "Created" : "Missing"}`);
-          console.log(`   📊 Stats: ${retrievedUser.userStats ? "Created" : "Missing"}`);
+          console.log(
+            `   ⚙️ Preferences: ${retrievedUser.preferences ? "Created" : "Missing"}`
+          );
+          console.log(
+            `   📊 Stats: ${retrievedUser.userStats ? "Created" : "Missing"}`
+          );
         } else {
           console.log("❌ User retrieval: FAILED");
         }
-
-      } else {
-        console.log("   👤 User already exists, updating activity...");
-        
-        // Update existing user activity
-        await prisma.user.update({
-          where: { walletAddress: normalizedAddress },
-          data: {
-            lastActiveAt: new Date(),
-            totalLogins: { increment: 1 }
-          }
-        });
-
-        console.log("✅ User activity updated");
       }
-
     } catch (error) {
       console.log("❌ User creation test failed");
-      console.log(`   Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      console.log(
+        `   Error: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
 
     // Test 8: Summary Report
@@ -212,23 +222,25 @@ async function testAuthCore() {
     console.log("-".repeat(40));
 
     const finalUser = await prisma.user.findUnique({
-      where: { walletAddress: TEST_WALLET.toLowerCase() },
-      include: { premiumProfile: true }
+      include: { premiumProfile: true },
+      where: { walletAddress: TEST_WALLET.toLowerCase() }
     });
 
     const summary = {
-      wallet: TEST_WALLET,
-      userExists: !!finalUser,
-      status: finalUser?.status || "Unknown",
       hasLinkedProfile: !!finalUser?.premiumProfile,
+      registrationDate: finalUser?.registrationDate || "Unknown",
+      status: finalUser?.status || "Unknown",
       totalLogins: finalUser?.totalLogins || 0,
-      registrationDate: finalUser?.registrationDate || "Unknown"
+      userExists: !!finalUser,
+      wallet: TEST_WALLET
     };
 
     console.log(`📋 Summary for ${summary.wallet}:`);
     console.log(`   👤 User Exists: ${summary.userExists ? "YES" : "NO"}`);
     console.log(`   ⭐ Status: ${summary.status}`);
-    console.log(`   🔗 Has Linked Profile: ${summary.hasLinkedProfile ? "YES" : "NO"}`);
+    console.log(
+      `   🔗 Has Linked Profile: ${summary.hasLinkedProfile ? "YES" : "NO"}`
+    );
     console.log(`   🔢 Total Logins: ${summary.totalLogins}`);
     console.log(`   📅 Registration Date: ${summary.registrationDate}`);
 
@@ -238,11 +250,11 @@ async function testAuthCore() {
 
     const healthChecks = {
       database: "✅ Working",
-      jwtService: "✅ Available",
       eventService: "✅ Available",
-      userCreation: "✅ Working",
+      jwtService: "✅ Available",
       profileLinking: "✅ Working",
-      tokenGeneration: "✅ Working"
+      tokenGeneration: "✅ Working",
+      userCreation: "✅ Working"
     };
 
     console.log("📋 Service Status:");
@@ -259,7 +271,6 @@ async function testAuthCore() {
     console.log("   ✅ Profile updates");
     console.log("   ✅ Database transactions");
     console.log("   ✅ User preferences and stats");
-
   } catch (error) {
     console.error("❌ Error in core auth test:", error);
     logger.error("Error in core auth test:", error);
@@ -269,10 +280,12 @@ async function testAuthCore() {
 }
 
 // Run the test
-testAuthCore().then(() => {
-  console.log("\n🏁 Core auth test completed!");
-  process.exit(0);
-}).catch((error) => {
-  console.error("💥 Core auth test failed:", error);
-  process.exit(1);
-}); 
+testAuthCore()
+  .then(() => {
+    console.log("\n🏁 Core auth test completed!");
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error("💥 Core auth test failed:", error);
+    process.exit(1);
+  });

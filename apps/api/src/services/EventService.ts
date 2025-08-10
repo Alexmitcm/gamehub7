@@ -48,19 +48,25 @@ export class EventService {
   /**
    * Add an event listener for a specific event type
    */
-  addEventListener(eventType: string, handler: (event: PremiumEvent) => Promise<void>, listenerId?: string): string {
+  addEventListener(
+    eventType: string,
+    handler: (event: PremiumEvent) => Promise<void>,
+    listenerId?: string
+  ): string {
     this.registerEventType(eventType);
-    
-    const id = listenerId || `listener_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const id =
+      listenerId ||
+      `listener_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const listener: EventListener = {
-      id,
       eventType,
-      handler
+      handler,
+      id
     };
 
-    this.listeners.get(eventType)!.push(listener);
+    this.listeners.get(eventType)?.push(listener);
     logger.info(`Added event listener ${id} for event type: ${eventType}`);
-    
+
     return id;
   }
 
@@ -74,12 +80,16 @@ export class EventService {
     }
 
     const initialLength = listeners.length;
-    const filteredListeners = listeners.filter(listener => listener.id !== listenerId);
+    const filteredListeners = listeners.filter(
+      (listener) => listener.id !== listenerId
+    );
     this.listeners.set(eventType, filteredListeners);
 
     const removed = initialLength !== filteredListeners.length;
     if (removed) {
-      logger.info(`Removed event listener ${listenerId} for event type: ${eventType}`);
+      logger.info(
+        `Removed event listener ${listenerId} for event type: ${eventType}`
+      );
     }
 
     return removed;
@@ -90,11 +100,13 @@ export class EventService {
    */
   async emitEvent(event: PremiumEvent): Promise<void> {
     try {
-      logger.info(`Emitting event: ${event.type} for wallet: ${event.walletAddress}`);
-      
+      logger.info(
+        `Emitting event: ${event.type} for wallet: ${event.walletAddress}`
+      );
+
       // Add event to queue for processing
       this.eventQueue.push(event);
-      
+
       // Process queue if not already processing
       if (!this.isProcessing) {
         await this.processEventQueue();
@@ -131,21 +143,28 @@ export class EventService {
    */
   private async processEvent(event: PremiumEvent): Promise<void> {
     const listeners = this.listeners.get(event.type) || [];
-    
+
     if (listeners.length === 0) {
       logger.debug(`No listeners for event type: ${event.type}`);
       return;
     }
 
-    logger.info(`Processing event ${event.type} with ${listeners.length} listeners`);
+    logger.info(
+      `Processing event ${event.type} with ${listeners.length} listeners`
+    );
 
     // Process all listeners concurrently
     const promises = listeners.map(async (listener) => {
       try {
         await listener.handler(event);
-        logger.debug(`Event ${event.type} processed successfully by listener ${listener.id}`);
+        logger.debug(
+          `Event ${event.type} processed successfully by listener ${listener.id}`
+        );
       } catch (error) {
-        logger.error(`Error processing event ${event.type} by listener ${listener.id}:`, error);
+        logger.error(
+          `Error processing event ${event.type} by listener ${listener.id}:`,
+          error
+        );
         // Don't throw here to allow other listeners to process
       }
     });
@@ -156,26 +175,34 @@ export class EventService {
   /**
    * Convenience method to emit profile linked event
    */
-  async emitProfileLinked(walletAddress: string, profileId: string, metadata?: Record<string, any>): Promise<void> {
+  async emitProfileLinked(
+    walletAddress: string,
+    profileId: string,
+    metadata?: Record<string, any>
+  ): Promise<void> {
     await this.emitEvent({
-      type: "profile.linked",
-      walletAddress,
+      metadata,
       profileId,
       timestamp: new Date(),
-      metadata
+      type: "profile.linked",
+      walletAddress
     });
   }
 
   /**
    * Convenience method to emit profile auto-linked event
    */
-  async emitProfileAutoLinked(walletAddress: string, profileId: string, metadata?: Record<string, any>): Promise<void> {
+  async emitProfileAutoLinked(
+    walletAddress: string,
+    profileId: string,
+    metadata?: Record<string, any>
+  ): Promise<void> {
     await this.emitEvent({
-      type: "profile.auto-linked",
-      walletAddress,
+      metadata,
       profileId,
       timestamp: new Date(),
-      metadata
+      type: "profile.auto-linked",
+      walletAddress
     });
   }
 
@@ -183,18 +210,18 @@ export class EventService {
    * Convenience method to emit registration verified event
    */
   async emitRegistrationVerified(
-    walletAddress: string, 
-    referrerAddress: string, 
+    walletAddress: string,
+    referrerAddress: string,
     transactionHash: string,
     metadata?: Record<string, any>
   ): Promise<void> {
     await this.emitEvent({
-      type: "registration.verified",
-      walletAddress,
+      metadata,
       referrerAddress,
-      transactionHash,
       timestamp: new Date(),
-      metadata
+      transactionHash,
+      type: "registration.verified",
+      walletAddress
     });
   }
 
@@ -202,33 +229,37 @@ export class EventService {
    * Convenience method to emit premium status changed event
    */
   async emitPremiumStatusChanged(
-    walletAddress: string, 
-    oldStatus: string, 
+    walletAddress: string,
+    oldStatus: string,
     newStatus: string,
     metadata?: Record<string, any>
   ): Promise<void> {
     await this.emitEvent({
-      type: "premium.status.changed",
-      walletAddress,
-      timestamp: new Date(),
       metadata: {
         ...metadata,
-        oldStatus,
-        newStatus
-      }
+        newStatus,
+        oldStatus
+      },
+      timestamp: new Date(),
+      type: "premium.status.changed",
+      walletAddress
     });
   }
 
   /**
    * Convenience method to emit profile deactivated event
    */
-  async emitProfileDeactivated(walletAddress: string, profileId: string, metadata?: Record<string, any>): Promise<void> {
+  async emitProfileDeactivated(
+    walletAddress: string,
+    profileId: string,
+    metadata?: Record<string, any>
+  ): Promise<void> {
     await this.emitEvent({
-      type: "profile.deactivated",
-      walletAddress,
+      metadata,
       profileId,
       timestamp: new Date(),
-      metadata
+      type: "profile.deactivated",
+      walletAddress
     });
   }
 
@@ -251,8 +282,8 @@ export class EventService {
    */
   getQueueStatus(): { queueLength: number; isProcessing: boolean } {
     return {
-      queueLength: this.eventQueue.length,
-      isProcessing: this.isProcessing
+      isProcessing: this.isProcessing,
+      queueLength: this.eventQueue.length
     };
   }
 
@@ -276,9 +307,9 @@ export class EventService {
     const count = listeners.length;
     this.listeners.set(eventType, []);
     logger.info(`Removed all ${count} listeners for event type: ${eventType}`);
-    
+
     return count;
   }
 }
 
-export default new EventService(); 
+export default new EventService();

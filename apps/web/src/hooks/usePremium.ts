@@ -75,7 +75,7 @@ export const useLinkProfile = () => {
       toast.error(error.message || "Failed to link profile");
       setError(error.message);
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast.success("Profile linked successfully!");
       setUserStatus("ProLinked");
       setError(null);

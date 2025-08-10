@@ -1,5 +1,5 @@
-import { config } from "dotenv";
 import logger from "@hey/helpers/logger";
+import { config } from "dotenv";
 import AuthService from "./services/AuthService";
 
 // Load environment variables
@@ -19,10 +19,9 @@ async function testAuthService() {
 
     logger.info("✅ AuthService.syncLens test successful");
     logger.info(`Result: ${JSON.stringify(result, null, 2)}`);
-
   } catch (error) {
     logger.error("❌ AuthService.syncLens test failed:", error);
-    
+
     // Log the full error details
     if (error instanceof Error) {
       logger.error("Error name:", error.name);
@@ -41,4 +40,4 @@ testAuthService()
   .catch((error) => {
     logger.error("💥 AuthService test failed:", error);
     process.exit(1);
-  }); 
+  });

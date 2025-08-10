@@ -1,5 +1,5 @@
-import { usePremiumStore } from "@/store/premiumStore";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
+import { usePremiumStore } from "@/store/premiumStore";
 
 /**
  * Check if a user has premium access through either:
@@ -17,7 +17,9 @@ export const useHasPremiumAccess = () => {
 /**
  * Check if a specific account has premium access
  */
-export const hasPremiumAccess = (account: { hasSubscribed?: boolean } | null) => {
+export const hasPremiumAccess = (
+  account: { hasSubscribed?: boolean } | null
+) => {
   if (!account) return false;
   return account.hasSubscribed || false;
 };
@@ -25,7 +27,9 @@ export const hasPremiumAccess = (account: { hasSubscribed?: boolean } | null) =>
 /**
  * Get premium status for display purposes
  */
-export const getPremiumStatus = (account: { hasSubscribed?: boolean } | null) => {
+export const getPremiumStatus = (
+  account: { hasSubscribed?: boolean } | null
+) => {
   if (!account) return null;
   return account.hasSubscribed ? "Lens Pro" : null;
-}; 
+};

@@ -15,7 +15,7 @@ import {
 export const useLensAuthSync = () => {
   const lastSyncAttempt = useRef<number>(0);
   const [isInitialized, setIsInitialized] = useState(false);
-  
+
   const {
     mutate: syncLens,
     isPending,
@@ -130,7 +130,7 @@ export const useLensAuthSync = () => {
     // Additional validation: check if token contains test data
     try {
       const payload = JSON.parse(atob(tokenParts[1]));
-      if (payload.sub && payload.sub.includes("1234567890abcdef")) {
+      if (payload.sub?.includes("1234567890abcdef")) {
         console.error(
           "🔍 Token contains test data, clearing and skipping auto-sync"
         );

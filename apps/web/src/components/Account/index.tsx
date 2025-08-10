@@ -129,7 +129,6 @@ const ViewAccount = () => {
               username={accountInfo.usernameWithPrefix}
             />
           )}
-
         </>
       )}
     </PageLayout>

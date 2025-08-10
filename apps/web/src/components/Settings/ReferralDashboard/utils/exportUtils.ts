@@ -131,13 +131,13 @@ export const exportToPDF = async (
       doc.text("Child Nodes", 20, 220);
 
       let yPosition = 230;
-      let pageNumber = 1;
+      let _pageNumber = 1;
 
       referralData.childNodes.forEach((childNode, address) => {
         // Check if we need a new page
         if (yPosition > 270) {
           doc.addPage();
-          pageNumber++;
+          _pageNumber++;
           yPosition = 20;
         }
 

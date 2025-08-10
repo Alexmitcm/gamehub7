@@ -82,4 +82,4 @@ export default defineConfig({
     port: 4784, // Admin panel runs on port 4784
     strictPort: false
   }
-}); 
+});

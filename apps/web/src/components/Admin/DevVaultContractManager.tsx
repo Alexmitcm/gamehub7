@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useWriteContract } from "wagmi";
 import { toast } from "sonner";
-import { CONTRACT_ADDRESSES, ROLES } from "@/lib/contracts";
+import { useWriteContract } from "wagmi";
 import devAbi from "@/abi/dev.json";
+import { CONTRACT_ADDRESSES, ROLES } from "@/lib/contracts";
 
 const DevVaultContractManager = () => {
   const { writeContract } = useWriteContract();
@@ -10,7 +10,8 @@ const DevVaultContractManager = () => {
   // State for withdraw funds
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [isWithdrawLoading, setIsWithdrawLoading] = useState(false);
-  const [showWithdrawConfirmation, setShowWithdrawConfirmation] = useState(false);
+  const [showWithdrawConfirmation, setShowWithdrawConfirmation] =
+    useState(false);
 
   // State for access control
   const [selectedRole, setSelectedRole] = useState(ROLES.DEFAULT_ADMIN_ROLE);
@@ -31,10 +32,10 @@ const DevVaultContractManager = () => {
 
     setIsWithdrawLoading(true);
     writeContract({
-      address: CONTRACT_ADDRESSES.DEV_VAULT,
       abi: devAbi,
-      functionName: "withdraw",
-      args: [withdrawAddress]
+      address: CONTRACT_ADDRESSES.DEV_VAULT,
+      args: [withdrawAddress],
+      functionName: "withdraw"
     });
     toast.success("Withdraw transaction submitted");
     setWithdrawAddress("");
@@ -56,10 +57,10 @@ const DevVaultContractManager = () => {
 
     setIsRoleActionLoading(true);
     writeContract({
-      address: CONTRACT_ADDRESSES.DEV_VAULT,
       abi: devAbi,
-      functionName: "grantRole",
-      args: [selectedRole, targetAddress]
+      address: CONTRACT_ADDRESSES.DEV_VAULT,
+      args: [selectedRole, targetAddress],
+      functionName: "grantRole"
     });
     toast.success("Role granted successfully");
     setTargetAddress("");
@@ -79,10 +80,10 @@ const DevVaultContractManager = () => {
 
     setIsRoleActionLoading(true);
     writeContract({
-      address: CONTRACT_ADDRESSES.DEV_VAULT,
       abi: devAbi,
-      functionName: "revokeRole",
-      args: [selectedRole, targetAddress]
+      address: CONTRACT_ADDRESSES.DEV_VAULT,
+      args: [selectedRole, targetAddress],
+      functionName: "revokeRole"
     });
     toast.success("Role revoked successfully");
     setTargetAddress("");
@@ -92,28 +93,31 @@ const DevVaultContractManager = () => {
   return (
     <div className="space-y-8">
       {/* Withdraw Funds Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="rounded-lg bg-white p-6 shadow">
+        <h3 className="mb-4 font-semibold text-gray-900 text-lg">
           Withdraw Funds (Critical Action)
         </h3>
         <div className="space-y-4">
           <div>
-            <label htmlFor="withdraw-address" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="withdraw-address"
+            >
               Destination Address
             </label>
             <div className="flex gap-2">
               <input
+                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
                 id="withdraw-address"
-                type="text"
-                value={withdrawAddress}
                 onChange={(e) => setWithdrawAddress(e.target.value)}
                 placeholder="0x..."
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                type="text"
+                value={withdrawAddress}
               />
               <button
-                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
-                onClick={() => setShowWithdrawConfirmation(true)}
+                className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
                 disabled={isWithdrawLoading}
+                onClick={() => setShowWithdrawConfirmation(true)}
               >
                 {isWithdrawLoading ? "Processing..." : "Withdraw All Funds"}
               </button>
@@ -123,50 +127,58 @@ const DevVaultContractManager = () => {
       </div>
 
       {/* Access Control Section */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="rounded-lg bg-white p-6 shadow">
+        <h3 className="mb-4 font-semibold text-gray-900 text-lg">
           Access Control
         </h3>
         <div className="space-y-4">
           <div>
-            <label htmlFor="role-select" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="role-select"
+            >
               Role
             </label>
             <select
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="role-select"
-              value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedRole}
             >
-              <option value={ROLES.DEFAULT_ADMIN_ROLE}>Default Admin Role</option>
+              <option value={ROLES.DEFAULT_ADMIN_ROLE}>
+                Default Admin Role
+              </option>
               <option value={ROLES.KEEPER_ROLE}>Keeper Role</option>
             </select>
           </div>
           <div>
-            <label htmlFor="target-address" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="target-address"
+            >
               Target Address
             </label>
             <input
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               id="target-address"
-              type="text"
-              value={targetAddress}
               onChange={(e) => setTargetAddress(e.target.value)}
               placeholder="0x..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="text"
+              value={targetAddress}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <button
-              className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
-              onClick={handleGrantRole}
+              className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
               disabled={isRoleActionLoading}
+              onClick={handleGrantRole}
             >
               {isRoleActionLoading ? "Processing..." : "Grant Role"}
             </button>
             <button
-              className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
-              onClick={handleRevokeRole}
+              className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
               disabled={isRoleActionLoading}
+              onClick={handleRevokeRole}
             >
               {isRoleActionLoading ? "Processing..." : "Revoke Role"}
             </button>
@@ -176,30 +188,30 @@ const DevVaultContractManager = () => {
 
       {/* Withdraw Confirmation Modal */}
       {showWithdrawConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6">
+            <h3 className="mb-4 font-semibold text-gray-900 text-lg">
               Confirm Withdraw
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4 text-gray-600">
               Are you sure you want to withdraw all funds to{" "}
-              <code className="bg-gray-100 px-2 py-1 rounded">
+              <code className="rounded bg-gray-100 px-2 py-1">
                 {withdrawAddress.slice(0, 6)}...{withdrawAddress.slice(-4)}
               </code>
               ? This action cannot be undone.
             </p>
             <div className="flex gap-2">
               <button
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                onClick={handleWithdraw}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700"
                 disabled={isWithdrawLoading}
+                onClick={handleWithdraw}
               >
                 {isWithdrawLoading ? "Processing..." : "Confirm Withdraw"}
               </button>
               <button
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors"
-                onClick={() => setShowWithdrawConfirmation(false)}
+                className="flex-1 rounded-lg bg-gray-300 px-4 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-400"
                 disabled={isWithdrawLoading}
+                onClick={() => setShowWithdrawConfirmation(false)}
               >
                 Cancel
               </button>
@@ -211,4 +223,4 @@ const DevVaultContractManager = () => {
   );
 };
 
-export default DevVaultContractManager; 
+export default DevVaultContractManager;

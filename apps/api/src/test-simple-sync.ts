@@ -15,17 +15,17 @@ async function testSimpleSync() {
 
     // Test the endpoint
     const response = await fetch(`${API_BASE_URL}/auth/sync-lens`, {
-      method: "POST",
+      body: JSON.stringify({
+        lensAccessToken: "test_token"
+      }),
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        lensAccessToken: "test_token"
-      })
+      method: "POST"
     });
 
     console.log(`Status: ${response.status}`);
-    
+
     if (response.ok) {
       const result = await response.json();
       console.log(`Response: ${JSON.stringify(result, null, 2)}`);
@@ -33,11 +33,10 @@ async function testSimpleSync() {
       const errorText = await response.text();
       console.log(`Error Response: ${errorText}`);
     }
-
   } catch (error) {
     console.error("❌ Test failed:", error);
   }
 }
 
 // Run the test
-testSimpleSync(); 
+testSimpleSync();

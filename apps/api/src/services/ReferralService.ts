@@ -53,21 +53,16 @@ export class ReferralService {
 
   constructor() {
     // Use default values for development/testing
-    this.infuraUrl = process.env.INFURA_URL || "https://arbitrum-mainnet.infura.io/v3/test";
-    this.referralContractAddress = process.env.REFERRAL_CONTRACT_ADDRESS || "0x1234567890123456789012345678901234567890";
+    this.infuraUrl =
+      process.env.INFURA_URL || "https://arbitrum-mainnet.infura.io/v3/test";
+    this.referralContractAddress =
+      process.env.REFERRAL_CONTRACT_ADDRESS ||
+      "0x1234567890123456789012345678901234567890";
 
     this.publicClient = createPublicClient({
       chain: arbitrum,
       transport: http(this.infuraUrl)
     });
-  }
-
-  private getRequiredEnvVar(name: string): string {
-    const value = process.env[name];
-    if (!value) {
-      throw new Error(`Missing required environment variable: ${name}`);
-    }
-    return value;
   }
 
   private normalizeWalletAddress(address: string): string {
@@ -103,41 +98,44 @@ export class ReferralService {
     }
   }
 
-  private getMockReferralTree(userWallet: string, maxDepth: number): ReferralNode[] {
+  private getMockReferralTree(
+    userWallet: string,
+    maxDepth: number
+  ): ReferralNode[] {
     const mockNodes: ReferralNode[] = [
       {
-        wallet: userWallet,
-        parent: null,
-        leftChild: "0x1111111111111111111111111111111111111111",
-        rightChild: "0x2222222222222222222222222222222222222222",
-        depth: 0,
         balance: "1000000", // 1 USDT in wei
+        depth: 0,
+        isUnbalanced: false,
+        leftChild: "0x1111111111111111111111111111111111111111",
+        parent: null,
+        rightChild: "0x2222222222222222222222222222222222222222",
         startTime: Date.now(),
-        isUnbalanced: false
+        wallet: userWallet
       }
     ];
 
     if (maxDepth > 0) {
       mockNodes.push(
         {
-          wallet: "0x1111111111111111111111111111111111111111",
-          parent: userWallet,
-          leftChild: null,
-          rightChild: null,
-          depth: 1,
           balance: "500000", // 0.5 USDT
+          depth: 1,
+          isUnbalanced: true,
+          leftChild: null,
+          parent: userWallet,
+          rightChild: null,
           startTime: Date.now() - 86400000, // 1 day ago
-          isUnbalanced: true
+          wallet: "0x1111111111111111111111111111111111111111"
         },
         {
-          wallet: "0x2222222222222222222222222222222222222222",
-          parent: userWallet,
-          leftChild: null,
-          rightChild: null,
-          depth: 1,
           balance: "750000", // 0.75 USDT
+          depth: 1,
+          isUnbalanced: false,
+          leftChild: null,
+          parent: userWallet,
+          rightChild: null,
           startTime: Date.now() - 172800000, // 2 days ago
-          isUnbalanced: false
+          wallet: "0x2222222222222222222222222222222222222222"
         }
       );
     }

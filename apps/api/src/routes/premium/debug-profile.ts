@@ -1,7 +1,7 @@
 import { Hono } from "hono";
+import prisma from "../../prisma/client";
 import { PremiumService } from "../../services/PremiumService";
 import { ProfileService } from "../../services/ProfileService";
-import prisma from "../../prisma/client";
 
 const debugRouter = new Hono();
 const premiumService = new PremiumService();

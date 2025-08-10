@@ -183,7 +183,13 @@ const AccessControlManager = () => {
               }`}
               key={contract.id}
               onClick={() =>
-                setSelectedContract(contract.id as "referral" | "gameVault" | "mainNode" | "devVault")
+                setSelectedContract(
+                  contract.id as
+                    | "referral"
+                    | "gameVault"
+                    | "mainNode"
+                    | "devVault"
+                )
               }
             >
               <CardHeader

@@ -18,19 +18,20 @@ app.post("/", async (c) => {
 
     // Check if wallet is premium
     const isPremium = await SimplePremiumService.isPremiumWallet(walletAddress);
-    
+
     // Get premium status
-    const premiumStatus = await SimplePremiumService.getPremiumStatus(walletAddress);
+    const premiumStatus =
+      await SimplePremiumService.getPremiumStatus(walletAddress);
 
     const result = {
-      walletAddress,
+      contractAddress: process.env.REFERRAL_CONTRACT_ADDRESS,
+      infuraUrl: process.env.INFURA_URL ? "Set" : "Not Set",
       isPremium,
       premiumStatus,
-      contractAddress: process.env.REFERRAL_CONTRACT_ADDRESS,
-      infuraUrl: process.env.INFURA_URL ? "Set" : "Not Set"
+      walletAddress
     };
 
-    console.log(`✅ Debug result:`, result);
+    console.log("✅ Debug result:", result);
 
     return c.json({
       data: result,
@@ -48,4 +49,4 @@ app.post("/", async (c) => {
   }
 });
 
-export default app; 
+export default app;

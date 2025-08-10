@@ -1,17 +1,20 @@
-import { Context } from 'hono';
-import { Status } from '@hey/data/enums';
-import JwtService from '../services/JwtService';
+import { Status } from "@hey/data/enums";
+import type { Context } from "hono";
+import JwtService from "../services/JwtService";
 
 const generateTestJwt = async (c: Context) => {
   try {
     const { walletAddress, profileId } = await c.req.json();
-    
+
     if (!walletAddress || !profileId) {
-      return c.json({
-        success: false,
-        error: 'walletAddress and profileId are required',
-        status: Status.Error
-      }, 400);
+      return c.json(
+        {
+          error: "walletAddress and profileId are required",
+          status: Status.Error,
+          success: false
+        },
+        400
+      );
     }
 
     // Generate a test JWT with the provided data
@@ -21,26 +24,34 @@ const generateTestJwt = async (c: Context) => {
       walletAddress
     });
 
-    return c.json({
-      success: true,
-      data: {
-        token,
-        walletAddress,
-        profileId,
-        isPremium: false
+    return c.json(
+      {
+        data: {
+          isPremium: false,
+          profileId,
+          token,
+          walletAddress
+        },
+        status: Status.Success,
+        success: true
       },
-      status: Status.Success
-    }, 200);
-
+      200
+    );
   } catch (error) {
-    console.error('Error generating test JWT:', error);
-    
-    return c.json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to generate test JWT',
-      status: Status.Error
-    }, 500);
+    console.error("Error generating test JWT:", error);
+
+    return c.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to generate test JWT",
+        status: Status.Error,
+        success: false
+      },
+      500
+    );
   }
 };
 
-export default generateTestJwt; 
+export default generateTestJwt;

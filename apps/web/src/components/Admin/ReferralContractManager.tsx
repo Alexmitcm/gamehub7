@@ -220,7 +220,7 @@ const ReferralContractManager = () => {
     setSelectedRole(ROLES.DEFAULT_ADMIN_ROLE);
   };
 
-  const openAccessControlModal = (type: "grant" | "revoke" | "renounce") => {
+  const _openAccessControlModal = (type: "grant" | "revoke" | "renounce") => {
     setActionType(type);
     setShowAccessControlModal(true);
   };

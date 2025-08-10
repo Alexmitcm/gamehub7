@@ -233,14 +233,12 @@ export default function PremiumProfileManager() {
 
   // Profile Selection Modal
   return (
-    <>
-      <ProfileSelectionModal
-        isLoading={isLoading}
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        onProfileSelect={handleProfileSelect}
-        profiles={availableProfiles?.profiles || []}
-      />
-    </>
+    <ProfileSelectionModal
+      isLoading={isLoading}
+      isOpen={showProfileModal}
+      onClose={() => setShowProfileModal(false)}
+      onProfileSelect={handleProfileSelect}
+      profiles={availableProfiles?.profiles || []}
+    />
   );
 }

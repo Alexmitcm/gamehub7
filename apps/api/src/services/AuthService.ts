@@ -640,10 +640,14 @@ export class AuthService {
           method: "POST"
         });
 
-        logger.info(`Lens API verification response status: ${response.status}`);
+        logger.info(
+          `Lens API verification response status: ${response.status}`
+        );
 
         if (!response.ok) {
-          logger.error(`Lens API verification failed: ${response.status} ${response.statusText}`);
+          logger.error(
+            `Lens API verification failed: ${response.status} ${response.statusText}`
+          );
           return null;
         }
 
@@ -663,7 +667,9 @@ export class AuthService {
           return null;
         }
 
-        logger.info(`Lens API verification successful for wallet: ${walletAddress}, profile: ${profileId}`);
+        logger.info(
+          `Lens API verification successful for wallet: ${walletAddress}, profile: ${profileId}`
+        );
         return { profileId, walletAddress };
       } catch (apiError) {
         logger.error("Error validating Lens token with API:", apiError);

@@ -31,14 +31,14 @@ export const memoize = <T extends (...args: any[]) => any>(
   getKey?: (...args: Parameters<T>) => string
 ): T => {
   const cache = new Map<string, ReturnType<T>>();
-  
+
   return ((...args: Parameters<T>): ReturnType<T> => {
     const key = getKey ? getKey(...args) : JSON.stringify(args);
-    
+
     if (cache.has(key)) {
       return cache.get(key)!;
     }
-    
+
     const result = func(...args);
     cache.set(key, result);
     return result;
@@ -61,19 +61,21 @@ export interface VirtualScrollResult {
   offsetY: number;
 }
 
-export const calculateVirtualScroll = (config: VirtualScrollConfig): VirtualScrollResult => {
+export const calculateVirtualScroll = (
+  config: VirtualScrollConfig
+): VirtualScrollResult => {
   const { itemHeight, containerHeight, totalItems, scrollTop } = config;
-  
+
   const startIndex = Math.floor(scrollTop / itemHeight);
   const visibleItems = Math.ceil(containerHeight / itemHeight) + 1;
   const endIndex = Math.min(startIndex + visibleItems, totalItems);
-  
+
   return {
-    startIndex,
     endIndex,
-    visibleItems,
+    offsetY: startIndex * itemHeight,
+    startIndex,
     totalHeight: totalItems * itemHeight,
-    offsetY: startIndex * itemHeight
+    visibleItems
   };
 };
 
@@ -89,13 +91,13 @@ export class PerformanceMonitor {
   measure(name: string, startMark: string, endMark: string): number {
     const start = this.marks.get(startMark);
     const end = this.marks.get(endMark);
-    
+
     if (start && end) {
       const duration = end - start;
       this.measures.set(name, duration);
       return duration;
     }
-    
+
     return 0;
   }
 
@@ -117,16 +119,16 @@ export const batchProcess = <T>(
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     let currentIndex = 0;
-    
+
     const processNextBatch = async () => {
       if (currentIndex >= items.length) {
         resolve();
         return;
       }
-      
+
       const batch = items.slice(currentIndex, currentIndex + batchSize);
       currentIndex += batchSize;
-      
+
       try {
         await processor(batch);
         // Use setTimeout to prevent blocking the UI
@@ -135,7 +137,7 @@ export const batchProcess = <T>(
         reject(error);
       }
     };
-    
+
     processNextBatch();
   });
 };
@@ -158,7 +160,7 @@ export const rafThrottle = <T extends (...args: any[]) => any>(
   func: T
 ): ((...args: Parameters<T>) => void) => {
   let ticking = false;
-  
+
   return (...args: Parameters<T>) => {
     if (!ticking) {
       requestAnimationFrame(() => {
@@ -175,10 +177,13 @@ export const createWeakCache = <K extends object, V>() => {
   return new WeakMap<K, V>();
 };
 
-export const createLRUCache = <K, V>(maxSize: number = 100) => {
+export const createLRUCache = <K, V>(maxSize = 100) => {
   const cache = new Map<K, V>();
-  
+
   return {
+    clear(): void {
+      cache.clear();
+    },
     get(key: K): V | undefined {
       if (cache.has(key)) {
         const value = cache.get(key)!;
@@ -188,7 +193,7 @@ export const createLRUCache = <K, V>(maxSize: number = 100) => {
       }
       return undefined;
     },
-    
+
     set(key: K, value: V): void {
       if (cache.has(key)) {
         cache.delete(key);
@@ -198,13 +203,9 @@ export const createLRUCache = <K, V>(maxSize: number = 100) => {
       }
       cache.set(key, value);
     },
-    
-    clear(): void {
-      cache.clear();
-    },
-    
+
     size(): number {
       return cache.size;
     }
   };
-}; 
+};

@@ -15,7 +15,7 @@ const authMiddleware = async (c: Context, next: Next) => {
   if (!token) {
     // Try Authorization header
     const authHeader = c.req.header("Authorization");
-    if (authHeader && authHeader.startsWith("Bearer ")) {
+    if (authHeader?.startsWith("Bearer ")) {
       token = authHeader.substring(7); // Remove "Bearer " prefix
     }
   }

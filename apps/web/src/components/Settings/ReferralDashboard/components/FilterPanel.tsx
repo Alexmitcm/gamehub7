@@ -67,7 +67,7 @@ const FilterPanel = ({
         </div>
         <div className="flex items-end gap-2">
           <button
-            className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-sm text-white hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:text-gray-500"
+            className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-sm text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
             disabled={!walletFilter || isSearching}
             onClick={() => onFilterChange(walletFilter)}
             type="button"

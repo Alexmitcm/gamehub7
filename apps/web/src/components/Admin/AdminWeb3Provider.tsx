@@ -1,10 +1,10 @@
+import { WALLETCONNECT_PROJECT_ID } from "@hey/data/constants";
 import { familyAccountsConnector } from "family";
 import type { ReactNode } from "react";
 import { http } from "viem";
 import { createConfig, WagmiProvider } from "wagmi";
 import { arbitrum } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
-import { WALLETCONNECT_PROJECT_ID } from "@hey/data/constants";
 
 // Admin panel specific configuration for Arbitrum One
 const connectors = [
@@ -29,4 +29,4 @@ const AdminWeb3Provider = ({ children }: AdminWeb3ProviderProps) => {
   return <WagmiProvider config={config}>{children}</WagmiProvider>;
 };
 
-export default AdminWeb3Provider; 
+export default AdminWeb3Provider;

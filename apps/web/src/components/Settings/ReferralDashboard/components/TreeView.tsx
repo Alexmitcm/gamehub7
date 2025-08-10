@@ -419,7 +419,7 @@ const renderNode = (
           <g key={child.address}>
             {renderNode(
               child,
-              x + (index - (node.children!.length - 1) / 2) * childSpacing,
+              x + (index - (node.children?.length - 1) / 2) * childSpacing,
               y + levelHeight,
               selectedNode,
               onInspect,

@@ -10,19 +10,25 @@ app.get("/:wallet", async (c) => {
   }
 
   try {
-    const maxDepth = c.req.query("maxDepth") ? Number.parseInt(c.req.query("maxDepth"), 10) : 5;
-    
+    const maxDepth = c.req.query("maxDepth")
+      ? Number.parseInt(c.req.query("maxDepth"), 10)
+      : 5;
+
     if (maxDepth < 0 || maxDepth > 10) {
       return c.json({ error: "Max depth must be between 0 and 10" }, 400);
     }
 
-    const nodes = await SimplePremiumService.buildReferralTree(wallet, 0, maxDepth);
-    
-    return c.json({ 
+    const nodes = await SimplePremiumService.buildReferralTree(
+      wallet,
+      0,
+      maxDepth
+    );
+
+    return c.json({
       data: nodes,
       meta: {
-        rootWallet: wallet,
         maxDepth,
+        rootWallet: wallet,
         totalNodes: nodes.length
       }
     });
@@ -32,4 +38,4 @@ app.get("/:wallet", async (c) => {
   }
 });
 
-export default app; 
+export default app;

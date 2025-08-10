@@ -26,13 +26,19 @@ export interface ProfileInfo {
 // Service Interfaces
 export interface IPremiumService {
   checkWalletStatus(walletAddress: string): Promise<WalletStatus>;
-  linkProfile(walletAddress: string, profileId: string): Promise<PremiumProfile>;
+  linkProfile(
+    walletAddress: string,
+    profileId: string
+  ): Promise<PremiumProfile>;
   getPremiumStatus(walletAddress: string, profileId: string): Promise<boolean>;
 }
 
 export interface IProfileService {
   getUserProfiles(walletAddress: string): Promise<ProfileInfo[]>;
-  validateProfileOwnership(walletAddress: string, profileId: string): Promise<boolean>;
+  validateProfileOwnership(
+    walletAddress: string,
+    profileId: string
+  ): Promise<boolean>;
 }
 
 export interface IJwtService {
@@ -58,4 +64,4 @@ export interface AuthPayload {
 export interface ServiceError extends Error {
   code: string;
   statusCode: number;
-} 
+}

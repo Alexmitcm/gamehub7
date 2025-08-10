@@ -43,7 +43,7 @@ export const useInitPremium = () => {
   const { data: premiumStatus, isLoading: statusLoading } =
     useQuery<PremiumStatus>({
       enabled: Boolean(currentAccount?.address),
-      queryFn: () => hono.premium.getUserStatus(currentAccount!.address),
+      queryFn: () => hono.premium.getUserStatus(currentAccount?.address),
       queryKey: ["premium-status", currentAccount?.address],
       retry: 2
     });
@@ -55,14 +55,14 @@ export const useInitPremium = () => {
         currentAccount?.address &&
           premiumStatus?.userStatus === "OnChainUnlinked"
       ),
-      queryFn: () => hono.premium.getAvailableProfiles(currentAccount!.address),
+      queryFn: () => hono.premium.getAvailableProfiles(currentAccount?.address),
       queryKey: ["available-profiles", currentAccount?.address],
       retry: 2
     });
 
   // Mutation to auto-link first profile
   const autoLinkMutation = useMutation({
-    mutationFn: () => hono.premium.autoLinkProfile(currentAccount!.address),
+    mutationFn: () => hono.premium.autoLinkProfile(currentAccount?.address),
     onError: (error: Error) => {
       toast.error(error.message || "Failed to auto-link profile");
       setError(error.message);
@@ -83,7 +83,7 @@ export const useInitPremium = () => {
   // Mutation to manually link a profile
   const linkProfileMutation = useMutation({
     mutationFn: (profileId: string) =>
-      hono.premium.linkProfile(currentAccount!.address, profileId),
+      hono.premium.linkProfile(currentAccount?.address, profileId),
     onError: (error: Error) => {
       toast.error(error.message || "Failed to link profile");
       setError(error.message);

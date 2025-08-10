@@ -70,20 +70,6 @@ export default defineConfig({
   plugins: [
     tsconfigPaths(),
     react(),
-    tailwindcss(),
-<<<<<<< Updated upstream
-    EnvironmentPlugin(["LENS_NETWORK"])
+    tailwindcss()
   ]
-=======
-    EnvironmentPlugin({
-      NEXT_PUBLIC_LENS_NETWORK: "mainnet",
-      VITE_API_URL: "http://localhost:3009",
-      VITE_IS_PRODUCTION: false
-    })
-  ],
-  server: {
-    port: 4783,
-    strictPort: false
-  }
->>>>>>> Stashed changes
 });

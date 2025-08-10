@@ -277,7 +277,7 @@ async function focusedWalletTest() {
           functionName: "balanceOf"
         })) as bigint;
       }
-    } catch (error) {
+    } catch (_error) {
       console.log("⚠️ Some data collection failed, showing partial summary");
     }
 
