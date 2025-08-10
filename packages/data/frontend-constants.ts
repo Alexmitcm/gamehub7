@@ -3,19 +3,16 @@ import { LENS_ENDPOINT } from "./lens-endpoints";
 import getEnvConfig from "./utils/getEnvConfig";
 
 // Environments
-export const IS_PRODUCTION = import.meta.env.VITE_IS_PRODUCTION === "true";
+export const IS_PRODUCTION = false; // Will be overridden by build process
 
 // Lens and Hey Env Config
-export const LENS_NETWORK =
-  import.meta.env.NEXT_PUBLIC_LENS_NETWORK || "mainnet";
+export const LENS_NETWORK = "mainnet"; // Will be overridden by build process
 
 export const LENS_API_URL = getEnvConfig().lensApiEndpoint;
 export const DEFAULT_COLLECT_TOKEN = getEnvConfig().defaultCollectToken;
 export const HEY_APP = getEnvConfig().appAddress;
 export const HEY_TREASURY = "0x03Ba34f6Ea1496fa316873CF8350A3f7eaD317EF";
-export const HEY_API_URL = IS_PRODUCTION
-  ? "https://api.hey.xyz"
-  : import.meta.env.VITE_API_URL || "http://localhost:3010";
+export const HEY_API_URL = "https://api.hey.xyz"; // Will be overridden by build process
 
 export const IS_MAINNET = LENS_API_URL === LENS_ENDPOINT.Mainnet;
 export const CHAIN = IS_MAINNET ? chains.mainnet : chains.testnet;
@@ -48,7 +45,7 @@ export const EVER_BUCKET = "heyverse";
 // Tokens / Keys
 export const WALLETCONNECT_PROJECT_ID = "cd542acc70c2b548030f9901a52e70c8";
 export const GIPHY_KEY = "yNwCXMKkiBrxyyFduF56xCbSuJJM8cMd"; // Read only safe key
-export const LIVEPEER_KEY = import.meta.env.LIVEPEER_KEY;
+export const LIVEPEER_KEY = ""; // Will be overridden by build process
 
 export const LENS_NAMESPACE = "lens/";
 export const NATIVE_TOKEN_SYMBOL = IS_MAINNET ? "GHO" : "GRASS";
