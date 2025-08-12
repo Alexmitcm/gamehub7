@@ -17,6 +17,6 @@
     "restartPolicyType": "ALWAYS",
     "runtime": "V2",
     "sleepApplication": false,
-    "startCommand": "pnpm --filter @hey/api start"
+    "startCommand": "cd apps/api && pnpm start"
   }
 }
