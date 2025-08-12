@@ -34,17 +34,17 @@ app.use(infoLogger);
 // Root endpoint
 app.get("/", (c) => {
   return c.json({
-    name: "Hey API",
-    version: "1.0.0",
-    status: "operational",
     endpoints: {
-      health: "/ping",
-      preferences: "/preferences/get",
       auth: "/auth/*",
+      diagnostic: "/diagnostic",
+      health: "/ping",
       lens: "/lens/*",
-      diagnostic: "/diagnostic"
+      preferences: "/preferences/get"
     },
-    timestamp: new Date().toISOString()
+    name: "Hey API",
+    status: "operational",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0"
   });
 });
 
