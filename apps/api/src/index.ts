@@ -8,6 +8,7 @@ import cors from "./middlewares/cors";
 import infoLogger from "./middlewares/infoLogger";
 import authRouter from "./routes/auth";
 import cronRouter from "./routes/cron";
+import diagnostic from "./routes/diagnostic";
 import lensRouter from "./routes/lens";
 import liveRouter from "./routes/live";
 import metadataRouter from "./routes/metadata";
@@ -32,6 +33,7 @@ app.use(infoLogger);
 
 // Routes
 app.get("/ping", ping);
+app.get("/diagnostic", diagnostic);
 app.route("/auth", authRouter);
 app.route("/lens", lensRouter);
 app.route("/cron", cronRouter);

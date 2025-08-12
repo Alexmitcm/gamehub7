@@ -1,6 +1,5 @@
 import { Status } from "@hey/data/enums";
 import type { Context } from "hono";
-import handleApiError from "@/utils/handleApiError";
 import { getRedis, setRedis } from "@/utils/redis";
 import prisma from "../../prisma/client";
 
@@ -35,13 +34,18 @@ const getPreferences = async (ctx: Context) => {
     const dbConnected = await checkDatabaseConnection();
     if (!dbConnected) {
       console.error("Database connection failed in getPreferences");
-      return ctx.json(
-        { 
-          error: "Database connection failed", 
-          status: Status.Error 
-        },
-        500
-      );
+      
+      // Return default preferences instead of 500 error
+      const defaultData = {
+        appIcon: 0,
+        includeLowScore: false
+      };
+      
+      return ctx.json({ 
+        data: defaultData, 
+        status: Status.Success,
+        message: "Using default preferences (database unavailable)"
+      });
     }
 
     const cacheKey = `preferences:${account}`;
@@ -87,7 +91,18 @@ const getPreferences = async (ctx: Context) => {
     return ctx.json({ data, status: Status.Success });
   } catch (error) {
     console.error("Error in getPreferences:", error);
-    return handleApiError(ctx, error);
+    
+    // Return default preferences instead of error
+    const defaultData = {
+      appIcon: 0,
+      includeLowScore: false
+    };
+    
+    return ctx.json({ 
+      data: defaultData, 
+      status: Status.Success,
+      message: "Using default preferences due to error"
+    });
   }
 };
 

@@ -72,6 +72,16 @@ export const classifyError = (error: unknown): ErrorInfo => {
     };
   }
 
+  if (message.includes("503") || message.includes("Service Unavailable")) {
+    return {
+      message,
+      retryable: true,
+      type: "api",
+      userFriendly:
+        "Service is temporarily unavailable. Please try again in a moment."
+    };
+  }
+
   if (message.includes("403") || message.includes("Forbidden")) {
     return {
       message,

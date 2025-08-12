@@ -27,8 +27,11 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
       if (error instanceof Error && error.message.includes("401")) {
         return false; // Don't retry 401 errors
       }
-      if (error instanceof Error && error.message.includes("500")) {
-        return failureCount < 2; // Retry 500 errors only twice
+      if (
+        error instanceof Error &&
+        (error.message.includes("500") || error.message.includes("503"))
+      ) {
+        return failureCount < 2; // Retry 500/503 errors only twice
       }
       return failureCount < 3; // Retry other errors up to 3 times
     },
