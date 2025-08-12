@@ -6,13 +6,13 @@
   "scripts": {
     "biome:check": "biome check .",
     "biome:fix": "biome check --write .",
-    "build": "echo 'This is a monorepo - use apps/api for Railway deployment'",
+    "build": "cd apps/api && pnpm install && pnpm codegen",
     "codegen": "pnpm --recursive --parallel run codegen",
     "dep:check": "pnpm dlx sherif@latest",
     "dep:fix": "pnpm dlx sherif@latest --fix",
     "dev": "pnpm --recursive --parallel run dev",
     "prepare": "husky install",
-    "start": "echo 'This is a monorepo - use apps/api for Railway deployment'",
+    "start": "cd apps/api && tsx src/index.ts",
     "test": "pnpm --recursive --parallel run test",
     "typecheck": "pnpm --recursive --parallel run typecheck",
 
