@@ -74,7 +74,7 @@ export default defineConfig({
     tailwindcss(),
     EnvironmentPlugin({
       NEXT_PUBLIC_LENS_NETWORK: "mainnet",
-      VITE_API_URL: "https://defigame-production.up.railway.app",
+      VITE_API_URL: "https://0xhub2-production.up.railway.app",
       VITE_IS_PRODUCTION: true
     })
   ],
