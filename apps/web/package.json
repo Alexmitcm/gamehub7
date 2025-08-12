@@ -5,9 +5,9 @@
   "license": "AGPL-3.0",
   "scripts": {
     "build": "vite build",
-    "dev": "vite dev --port 4783",
+    "dev": "vite dev --port 4783 --host 0.0.0.0",
     "dev:admin": "vite dev --config vite.admin.config.mjs --port 4784",
-    "start": "vite preview --port 4783",
+    "start": "vite preview --port 4783 --host 0.0.0.0",
     "start:admin": "vite preview --config vite.admin.config.mjs --port 4784",
     "test": "vitest run",
     "typecheck": "tsc --pretty"
