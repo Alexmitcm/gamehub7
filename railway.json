@@ -1,23 +1,32 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "buildCommand": "pnpm build",
     "builder": "RAILPACK",
-    "watchPatterns": ["apps/**", "packages/**/*"]
+    "buildCommand": "pnpm build",
+    "watchPatterns": [
+      "apps/**",
+      "packages/**/*"
+    ]
   },
   "deploy": {
-    "healthcheckPath": "/ping",
-    "healthcheckTimeout": 60,
+    "runtime": "V2",
+    "numReplicas": 1,
+    "startCommand": "pnpm start",
     "limitOverride": {
       "containers": {
         "cpu": 5,
         "memoryBytes": 5000000000
       }
     },
-    "restartPolicyType": "ALWAYS",
-    "runtime": "V2",
+    "healthcheckPath": "/ping",
     "sleepApplication": false,
-    "startCommand": "pnpm start"
+    "multiRegionConfig": {
+      "europe-west4-drams3a": {
+        "numReplicas": 1
+      }
+    },
+    "restartPolicyType": "ALWAYS",
+    "healthcheckTimeout": 60
   },
   "ports": [8080, 4783]
 }
