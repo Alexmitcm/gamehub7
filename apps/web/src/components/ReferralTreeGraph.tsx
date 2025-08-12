@@ -44,10 +44,16 @@ const formatTreeData = (nodes: ReferralNode[]): TreeNode | null => {
     if (!treeNode) continue;
 
     if (node.leftChild && nodeMap.has(node.leftChild.toLowerCase())) {
-      treeNode.children.push(nodeMap.get(node.leftChild.toLowerCase())!);
+      const leftChild = nodeMap.get(node.leftChild.toLowerCase());
+      if (leftChild) {
+        treeNode.children.push(leftChild);
+      }
     }
     if (node.rightChild && nodeMap.has(node.rightChild.toLowerCase())) {
-      treeNode.children.push(nodeMap.get(node.rightChild.toLowerCase())!);
+      const rightChild = nodeMap.get(node.rightChild.toLowerCase());
+      if (rightChild) {
+        treeNode.children.push(rightChild);
+      }
     }
   }
 
@@ -300,6 +306,7 @@ export default function ReferralTreeGraph({
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           width={svgWidth}
         >
+          <title>Referral Tree Visualization</title>
           <TreeNodeComponent
             node={treeData}
             onNodeClick={handleNodeClick}

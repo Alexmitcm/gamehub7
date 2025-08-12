@@ -9,7 +9,7 @@ import { usePremiumStore } from "@/store/premiumStore";
 export const useWalletStatus = (walletAddress: string | null) => {
   return useQuery({
     enabled: Boolean(walletAddress),
-    queryFn: () => hono.premium.checkWalletStatus(walletAddress!),
+    queryFn: () => hono.premium.checkWalletStatus(walletAddress as string),
     queryKey: ["wallet-status", walletAddress],
     retry: 2
   });
@@ -19,7 +19,7 @@ export const useWalletStatus = (walletAddress: string | null) => {
 export const useUserProfiles = (walletAddress: string | null) => {
   return useQuery({
     enabled: Boolean(walletAddress),
-    queryFn: () => hono.premium.getProfiles(walletAddress!),
+    queryFn: () => hono.premium.getProfiles(walletAddress as string),
     queryKey: ["user-profiles", walletAddress],
     retry: 2
   });
