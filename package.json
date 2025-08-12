@@ -14,8 +14,7 @@
     "prepare": "husky install",
     "start": "cd apps/api && tsx src/index.ts",
     "test": "pnpm --recursive --parallel run test",
-    "typecheck": "pnpm --recursive --parallel run typecheck",
-
+    "typecheck": "pnpm --recursive --parallel run typecheck"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.2",
