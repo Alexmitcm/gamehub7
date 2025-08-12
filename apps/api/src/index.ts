@@ -31,6 +31,23 @@ app.use(cors);
 app.use(authContext);
 app.use(infoLogger);
 
+// Root endpoint
+app.get("/", (c) => {
+  return c.json({
+    name: "Hey API",
+    version: "1.0.0",
+    status: "operational",
+    endpoints: {
+      health: "/ping",
+      preferences: "/preferences/get",
+      auth: "/auth/*",
+      lens: "/lens/*",
+      diagnostic: "/diagnostic"
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Routes
 app.get("/ping", ping);
 app.get("/diagnostic", diagnostic);
