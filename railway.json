@@ -25,5 +25,6 @@
     "sleepApplication": false,
     "startCommand": "pnpm start"
   },
-  "ports": [8080, 4783]
+  "ports": [4783, 8080],
+  "servicePort": 4783
 }
