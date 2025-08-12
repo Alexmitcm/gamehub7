@@ -11,12 +11,12 @@ const getApiUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  
+
   // In production, use the same domain (Railway deployment)
   if (IS_PRODUCTION) {
     return window.location.origin;
   }
-  
+
   // Default to localhost for development
   return "http://localhost:3010";
 };

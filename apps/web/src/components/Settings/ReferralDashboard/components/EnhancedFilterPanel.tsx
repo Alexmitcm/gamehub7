@@ -145,13 +145,17 @@ export const EnhancedFilterPanel = ({
         <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
           {/* Balance Filter */}
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="balance-min"
+            >
               Balance Range (USDT)
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <input
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  id="balance-min"
                   min="0"
                   onChange={(e) =>
                     setBalanceFilter({
@@ -171,6 +175,7 @@ export const EnhancedFilterPanel = ({
               <div>
                 <input
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  id="balance-max"
                   min="0"
                   onChange={(e) =>
                     setBalanceFilter({
@@ -196,13 +201,17 @@ export const EnhancedFilterPanel = ({
 
           {/* Depth Filter */}
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="depth-min"
+            >
               Depth Range
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <input
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  id="depth-min"
                   min="0"
                   onChange={(e) =>
                     setDepthFilter({
@@ -221,6 +230,7 @@ export const EnhancedFilterPanel = ({
               <div>
                 <input
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  id="depth-max"
                   min="0"
                   onChange={(e) =>
                     setDepthFilter({
@@ -245,11 +255,15 @@ export const EnhancedFilterPanel = ({
 
           {/* Status Filter */}
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="status-filter"
+            >
               Status
             </label>
             <select
               className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              id="status-filter"
               onChange={(e) =>
                 setStatusFilter(
                   e.target.value as "all" | "balanced" | "unbalanced"

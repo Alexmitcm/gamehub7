@@ -149,6 +149,7 @@ export const EnhancedControlPanel = ({
             disabled={isExporting || !currentNode}
             onClick={() => setShowExportMenu(!showExportMenu)}
             title="Export Data"
+            type="button"
           >
             <DocumentArrowDownIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="hidden sm:inline">
@@ -163,6 +164,7 @@ export const EnhancedControlPanel = ({
                   className="block w-full px-4 py-2 text-left text-gray-700 text-sm hover:bg-gray-100 disabled:opacity-50"
                   disabled={isExporting}
                   onClick={() => handleExport("csv")}
+                  type="button"
                 >
                   Export as CSV
                 </button>
@@ -170,6 +172,7 @@ export const EnhancedControlPanel = ({
                   className="block w-full px-4 py-2 text-left text-gray-700 text-sm hover:bg-gray-100 disabled:opacity-50"
                   disabled={isExporting}
                   onClick={() => handleExport("pdf")}
+                  type="button"
                 >
                   Export as PDF
                 </button>
@@ -184,6 +187,7 @@ export const EnhancedControlPanel = ({
             className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 text-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
             onClick={() => setShowRawData(!showRawData)}
             title={showRawData ? "Hide Raw Data" : "Show Raw Data"}
+            type="button"
           >
             {showRawData ? (
               <EyeSlashIcon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -231,6 +235,7 @@ export const EnhancedControlPanel = ({
             className="rounded-lg border border-gray-300 bg-white py-3 font-medium text-gray-700 text-sm disabled:opacity-50"
             disabled={zoomLevel <= 0.1}
             onClick={onZoomOut}
+            type="button"
           >
             Zoom Out
           </button>
@@ -238,6 +243,7 @@ export const EnhancedControlPanel = ({
             className="rounded-lg border border-gray-300 bg-white py-3 font-medium text-gray-700 text-sm disabled:opacity-50"
             disabled={zoomLevel >= 3}
             onClick={onZoomIn}
+            type="button"
           >
             Zoom In
           </button>
