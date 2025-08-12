@@ -16,6 +16,17 @@ export const HEY_API_URL = IS_PRODUCTION
   ? "https://api.hey.xyz"
   : process.env.VITE_API_URL || "http://localhost:3010";
 
+// For Netlify deployments, use the production API
+export const getApiUrl = () => {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    if (hostname.includes("netlify.app")) {
+      return "https://api.hey.xyz";
+    }
+  }
+  return HEY_API_URL;
+};
+
 export const IS_MAINNET = LENS_API_URL === LENS_ENDPOINT.Mainnet;
 export const CHAIN = IS_MAINNET ? chains.mainnet : chains.testnet;
 export const ADDRESS_PLACEHOLDER = "0x03Ba3...7EF";

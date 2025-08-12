@@ -1,4 +1,4 @@
-import { HEY_API_URL } from "@hey/data/constants";
+import { getApiUrl } from "@hey/data/constants";
 import { Status } from "@hey/data/enums";
 import type { Live, Oembed, Preferences, STS } from "@hey/types/api";
 import { hydrateAuthTokens } from "@/store/persisted/useAuthStore";
@@ -10,7 +10,7 @@ interface ApiConfig {
 }
 
 const config: ApiConfig = {
-  baseUrl: HEY_API_URL,
+  baseUrl: getApiUrl(),
   headers: {
     "Content-Type": "application/json"
   }
