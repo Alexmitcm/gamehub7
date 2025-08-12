@@ -7,17 +7,16 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy only the API package files
-COPY apps/api/package.json ./apps/api/
-COPY apps/api/pnpm-lock.yaml ./apps/api/
-
-# Copy workspace configuration
+# Copy workspace configuration first
 COPY package.json ./
 COPY pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml ./
 
-# Install dependencies for API only
-RUN cd apps/api && pnpm install --frozen-lockfile
+# Copy API package.json
+COPY apps/api/package.json ./apps/api/
+
+# Install dependencies for the entire workspace
+RUN pnpm install --frozen-lockfile
 
 # Copy API source code
 COPY apps/api/src ./apps/api/src
