@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { handleSilentError, shouldClearAuth } from "@/helpers/errorHandler";
 import { hono } from "@/helpers/fetcher";
 import {
   hydrateAuthTokens,
@@ -27,6 +28,16 @@ export const useLensAuthSync = () => {
         lensAccessToken?.length || 0
       );
 
+      // Validate token format first
+      if (!lensAccessToken || lensAccessToken.length < 50) {
+        throw new Error("Invalid Lens token format");
+      }
+
+      const tokenParts = lensAccessToken.split(".");
+      if (tokenParts.length !== 3) {
+        throw new Error("Invalid JWT token format");
+      }
+
       // First, debug the token to understand what's happening (optional)
       try {
         const debugResponse = await hono.auth.debugToken(lensAccessToken);
@@ -46,7 +57,8 @@ export const useLensAuthSync = () => {
         if (
           debugError instanceof Error &&
           (debugError.message.includes("expired") ||
-            debugError.message.includes("missing wallet address"))
+            debugError.message.includes("missing wallet address") ||
+            debugError.message.includes("Invalid"))
         ) {
           throw debugError;
         }
@@ -59,14 +71,10 @@ export const useLensAuthSync = () => {
       return response;
     },
     onError: (error) => {
-      console.error("Failed to sync Lens authentication:", error);
+      handleSilentError(error, "Lens Auth Sync");
 
       // If the error is due to an invalid token, we should clear the invalid token
-      if (
-        error.message.includes("Invalid Lens access token") ||
-        error.message.includes("Authentication failed") ||
-        error.message.includes("401")
-      ) {
+      if (shouldClearAuth(error)) {
         console.log("🔍 Clearing invalid Lens token due to sync failure");
         signOut();
       }

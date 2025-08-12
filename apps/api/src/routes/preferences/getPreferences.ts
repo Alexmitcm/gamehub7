@@ -19,16 +19,35 @@ const getPreferences = async (ctx: Context) => {
     }
 
     const cacheKey = `preferences:${account}`;
-    const cachedValue = await getRedis(cacheKey);
+    let cachedValue = null;
 
-    if (cachedValue) {
-      return ctx.json({
-        cached: true,
-        data: JSON.parse(cachedValue),
-        status: Status.Success
-      });
+    // Try to get from cache, but don't fail if Redis is unavailable
+    try {
+      cachedValue = await getRedis(cacheKey);
+    } catch (redisError) {
+      console.warn(
+        "Redis cache unavailable, proceeding without cache:",
+        redisError
+      );
     }
 
+    if (cachedValue) {
+      try {
+        const parsedData = JSON.parse(cachedValue);
+        return ctx.json({
+          cached: true,
+          data: parsedData,
+          status: Status.Success
+        });
+      } catch (parseError) {
+        console.warn(
+          "Failed to parse cached preferences, fetching from database:",
+          parseError
+        );
+      }
+    }
+
+    // Fetch from database
     const preference = await prisma.preference.findUnique({
       where: { accountAddress: account as string }
     });
@@ -38,10 +57,16 @@ const getPreferences = async (ctx: Context) => {
       includeLowScore: Boolean(preference?.includeLowScore)
     };
 
-    await setRedis(cacheKey, data);
+    // Try to cache the result, but don't fail if Redis is unavailable
+    try {
+      await setRedis(cacheKey, data);
+    } catch (redisError) {
+      console.warn("Failed to cache preferences:", redisError);
+    }
 
     return ctx.json({ data, status: Status.Success });
   } catch (error) {
+    console.error("Error in getPreferences:", error);
     return handleApiError(ctx, error);
   }
 };

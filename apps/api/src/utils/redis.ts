@@ -8,22 +8,82 @@ dotenv.config({ override: true });
 const logNoRedis = () => logger.info("[Redis] No Redis client, using fallback");
 
 let redisClient: null | RedisClientType = null;
+let isConnecting = false;
+let connectionRetries = 0;
+const MAX_RETRIES = 3;
 
 if (process.env.REDIS_URL) {
   try {
-    redisClient = createClient({ url: process.env.REDIS_URL });
+    redisClient = createClient({
+      url: process.env.REDIS_URL,
+      socket: {
+        reconnectStrategy: (retries) => {
+          if (retries > MAX_RETRIES) {
+            logger.error(
+              "[Redis] Max reconnection attempts reached, giving up"
+            );
+            return false;
+          }
+          const delay = Math.min(retries * 1000, 5000);
+          logger.info(
+            `[Redis] Reconnecting in ${delay}ms (attempt ${retries})`
+          );
+          return delay;
+        }
+      }
+    });
 
-    redisClient.on("connect", () => logger.info("[Redis] Redis connect"));
-    redisClient.on("ready", () => logger.info("[Redis] Redis ready"));
-    redisClient.on("reconnecting", (err) =>
-      logger.error("[Redis] Redis reconnecting", err)
-    );
-    redisClient.on("error", (err) => logger.error("[Redis] Redis error", err));
-    redisClient.on("end", (err) => logger.error("[Redis] Redis end", err));
+    redisClient.on("connect", () => {
+      logger.info("[Redis] Redis connect");
+      isConnecting = false;
+      connectionRetries = 0;
+    });
+
+    redisClient.on("ready", () => {
+      logger.info("[Redis] Redis ready");
+      isConnecting = false;
+      connectionRetries = 0;
+    });
+
+    redisClient.on("reconnecting", (err) => {
+      logger.warn("[Redis] Redis reconnecting", err);
+      isConnecting = true;
+    });
+
+    redisClient.on("error", (err) => {
+      logger.error("[Redis] Redis error", err);
+      isConnecting = false;
+    });
+
+    redisClient.on("end", (err) => {
+      logger.error("[Redis] Redis end", err);
+      isConnecting = false;
+    });
 
     const connectRedis = async () => {
+      if (isConnecting) {
+        logger.info("[Redis] Already attempting to connect");
+        return;
+      }
+
+      isConnecting = true;
       logger.info("[Redis] Connecting to Redis");
-      await redisClient?.connect();
+
+      try {
+        await redisClient?.connect();
+      } catch (error) {
+        connectionRetries++;
+        logger.error("[Redis] Connection error", error);
+
+        if (connectionRetries >= MAX_RETRIES) {
+          logger.info(
+            "[Redis] Max connection attempts reached, falling back to no-cache mode"
+          );
+          redisClient = null;
+        }
+      } finally {
+        isConnecting = false;
+      }
     };
 
     connectRedis().catch((error) => {
@@ -68,11 +128,16 @@ export const setRedis = async (
     return;
   }
 
-  return await redisClient.set(
-    key,
-    typeof value !== "string" ? JSON.stringify(value) : value,
-    { EX: expiry }
-  );
+  try {
+    return await redisClient.set(
+      key,
+      typeof value !== "string" ? JSON.stringify(value) : value,
+      { EX: expiry }
+    );
+  } catch (error) {
+    logger.error("[Redis] Failed to set key:", key, error);
+    return null;
+  }
 };
 
 export const getRedis = async (key: string) => {
@@ -81,7 +146,12 @@ export const getRedis = async (key: string) => {
     return null;
   }
 
-  return await redisClient.get(key);
+  try {
+    return await redisClient.get(key);
+  } catch (error) {
+    logger.error("[Redis] Failed to get key:", key, error);
+    return null;
+  }
 };
 
 export const delRedis = async (key: string) => {
@@ -90,5 +160,10 @@ export const delRedis = async (key: string) => {
     return null;
   }
 
-  return await redisClient.del(key);
+  try {
+    return await redisClient.del(key);
+  } catch (error) {
+    logger.error("[Redis] Failed to delete key:", key, error);
+    return null;
+  }
 };

@@ -178,6 +178,7 @@ const MainNodeContractManager = () => {
             className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
             disabled={isRewardReferralLoading}
             onClick={handleRewardReferral}
+            type="button"
           >
             {isRewardReferralLoading ? "Processing..." : "Reward Referral"}
           </button>
@@ -185,6 +186,7 @@ const MainNodeContractManager = () => {
             className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
             disabled={isClaimRewardLoading}
             onClick={handleClaimReward}
+            type="button"
           >
             {isClaimRewardLoading ? "Processing..." : "Claim Reward"}
           </button>
@@ -213,6 +215,7 @@ const MainNodeContractManager = () => {
                 className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 disabled={isSetPartnerLoading}
                 onClick={handleSetPartner}
+                type="button"
               >
                 {isSetPartnerLoading ? "Setting..." : "Set Partner"}
               </button>
@@ -234,6 +237,7 @@ const MainNodeContractManager = () => {
                 className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 disabled={isSetReferralLoading}
                 onClick={handleSetReferral}
+                type="button"
               >
                 {isSetReferralLoading ? "Setting..." : "Set Referral"}
               </button>

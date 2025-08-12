@@ -15,15 +15,20 @@ interface UserOnChainState {
 const useUserOnChainState = () => {
   const { address } = useAccount();
 
-  const { data: nodeData, isLoading, error, refetch } = useReadContract({
+  const {
+    data: nodeData,
+    isLoading,
+    error,
+    refetch
+  } = useReadContract({
     abi: REFERRAL_ABI,
     address: MAINNET_CONTRACTS.REFERRAL as `0x${string}`,
     args: address ? [address] : undefined,
     functionName: "NodeSet",
     query: {
       enabled: !!address,
-      refetchInterval: 30000 // Refetch every 30 seconds, 
-      staleTime: 30000, // 30 seconds
+      refetchInterval: 30000, // Refetch every 30 seconds
+      staleTime: 30000 // 30 seconds
     }
   });
 
@@ -58,7 +63,7 @@ const useUserOnChainState = () => {
     directReferrals: {
       leftChild: leftChild as string,
       rightChild: rightChild as string
-    }, 
+    },
     leftNodeCount: Number(depthLeftBranch),
     referralRewardBalance: balance,
     rightNodeCount: Number(depthRightBranch)
@@ -72,4 +77,4 @@ const useUserOnChainState = () => {
   };
 };
 
-export default useUserOnChainState; 
+export default useUserOnChainState;

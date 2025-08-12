@@ -50,12 +50,18 @@ export const usePremiumStatus = () => {
       setIsPremium(query.data.userStatus === "ProLinked");
       setLinkedProfile(query.data.linkedProfile || null);
     }
-  }, [query.isSuccess, query.data, setUserStatus, setIsPremium, setLinkedProfile]);
+  }, [
+    query.isSuccess,
+    query.data,
+    setUserStatus,
+    setIsPremium,
+    setLinkedProfile
+  ]);
 
   useEffect(() => {
     if (query.isError && query.error) {
       const error = query.error as Error;
-      
+
       // Completely silent for 401 errors - this is expected when not authenticated
       if (error.message.includes("401")) {
         // Reset to standard status silently
@@ -64,7 +70,7 @@ export const usePremiumStatus = () => {
         setLinkedProfile(null);
         return;
       }
-      
+
       // Only log non-401 errors that might indicate real issues
       console.error("Premium status fetch error:", error);
       // Reset to standard status on other errors
@@ -72,7 +78,13 @@ export const usePremiumStatus = () => {
       setIsPremium(false);
       setLinkedProfile(null);
     }
-  }, [query.isError, query.error, setUserStatus, setIsPremium, setLinkedProfile]);
+  }, [
+    query.isError,
+    query.error,
+    setUserStatus,
+    setIsPremium,
+    setLinkedProfile
+  ]);
 
   return query;
 };
