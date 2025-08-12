@@ -15,7 +15,6 @@ const MAX_RETRIES = 3;
 if (process.env.REDIS_URL) {
   try {
     redisClient = createClient({
-      url: process.env.REDIS_URL,
       socket: {
         reconnectStrategy: (retries) => {
           if (retries > MAX_RETRIES) {
@@ -30,7 +29,8 @@ if (process.env.REDIS_URL) {
           );
           return delay;
         }
-      }
+      },
+      url: process.env.REDIS_URL
     });
 
     redisClient.on("connect", () => {

@@ -10,23 +10,23 @@ import { injected, walletConnect } from "wagmi/connectors";
 const connectors = [
   familyAccountsConnector(),
   walletConnect({
-    projectId: WALLETCONNECT_PROJECT_ID,
     metadata: {
-      name: "Hey Admin Panel",
       description: "Admin panel for Hey social media platform",
+      icons: ["https://hey.xyz/favicon.ico"],
+      name: "Hey Admin Panel",
       url:
         typeof window !== "undefined"
           ? window.location.origin
-          : "https://hey.xyz",
-      icons: ["https://hey.xyz/favicon.ico"]
+          : "https://hey.xyz"
     },
     // Add optional parameters for better error handling
     optionalChains: [arbitrum],
+    projectId: WALLETCONNECT_PROJECT_ID,
     showQrModal: true
   }),
   injected({
-    target: "metaMask",
-    shimDisconnect: true
+    shimDisconnect: true,
+    target: "metaMask"
   })
 ];
 

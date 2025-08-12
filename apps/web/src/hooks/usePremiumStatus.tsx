@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { hono } from "@/helpers/fetcher";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
-import { usePremiumStore, UserStatus } from "@/store/premiumStore";
+import { type UserStatus, usePremiumStore } from "@/store/premiumStore";
 
 interface PremiumStatusResponse {
   userStatus: UserStatus;

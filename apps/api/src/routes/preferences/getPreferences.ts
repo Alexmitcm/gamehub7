@@ -34,17 +34,17 @@ const getPreferences = async (ctx: Context) => {
     const dbConnected = await checkDatabaseConnection();
     if (!dbConnected) {
       console.error("Database connection failed in getPreferences");
-      
+
       // Return default preferences instead of 500 error
       const defaultData = {
         appIcon: 0,
         includeLowScore: false
       };
-      
-      return ctx.json({ 
-        data: defaultData, 
-        status: Status.Success,
-        message: "Using default preferences (database unavailable)"
+
+      return ctx.json({
+        data: defaultData,
+        message: "Using default preferences (database unavailable)",
+        status: Status.Success
       });
     }
 
@@ -55,7 +55,10 @@ const getPreferences = async (ctx: Context) => {
     try {
       cachedValue = await getRedis(cacheKey);
     } catch (redisError) {
-      console.warn("Redis cache unavailable, proceeding without cache:", redisError);
+      console.warn(
+        "Redis cache unavailable, proceeding without cache:",
+        redisError
+      );
     }
 
     if (cachedValue) {
@@ -67,7 +70,10 @@ const getPreferences = async (ctx: Context) => {
           status: Status.Success
         });
       } catch (parseError) {
-        console.warn("Failed to parse cached preferences, fetching from database:", parseError);
+        console.warn(
+          "Failed to parse cached preferences, fetching from database:",
+          parseError
+        );
       }
     }
 
@@ -91,17 +97,17 @@ const getPreferences = async (ctx: Context) => {
     return ctx.json({ data, status: Status.Success });
   } catch (error) {
     console.error("Error in getPreferences:", error);
-    
+
     // Return default preferences instead of error
     const defaultData = {
       appIcon: 0,
       includeLowScore: false
     };
-    
-    return ctx.json({ 
-      data: defaultData, 
-      status: Status.Success,
-      message: "Using default preferences due to error"
+
+    return ctx.json({
+      data: defaultData,
+      message: "Using default preferences due to error",
+      status: Status.Success
     });
   }
 };

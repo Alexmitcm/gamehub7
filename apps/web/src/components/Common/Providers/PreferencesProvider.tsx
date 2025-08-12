@@ -17,7 +17,11 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
   const { setAppIcon, setIncludeLowScore } = usePreferencesStore();
   const { accessToken } = hydrateAuthTokens();
 
-  const { data: preferences, error, isLoading } = useQuery<Preferences>({
+  const {
+    data: preferences,
+    error,
+    isLoading
+  } = useQuery<Preferences>({
     enabled: Boolean(currentAccount?.address && accessToken),
     gcTime: 10 * 60 * 1000, // 10 minutes
     queryFn: () => hono.preferences.get(),
@@ -51,7 +55,9 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
       // Show user-friendly error message
       if (error instanceof Error) {
         if (error.message.includes("500") || error.message.includes("503")) {
-          toast.error("Service temporarily unavailable. Using default settings.");
+          toast.error(
+            "Service temporarily unavailable. Using default settings."
+          );
         } else if (error.message.includes("401")) {
           toast.error("Authentication required. Please log in again.");
         } else {

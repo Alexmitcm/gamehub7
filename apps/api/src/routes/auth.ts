@@ -58,9 +58,9 @@ auth.post("/login", async (c) => {
       logger.error("Database connection failed in login endpoint");
       return c.json(
         {
+          details: "Database connection failed",
           error: "Service temporarily unavailable. Please try again later.",
-          success: false,
-          details: "Database connection failed"
+          success: false
         },
         503
       );
@@ -107,9 +107,9 @@ auth.post("/login", async (c) => {
 
     return c.json(
       {
+        details: errorMessage,
         error: "Service temporarily unavailable. Please try again later.",
-        success: false,
-        details: errorMessage
+        success: false
       },
       503
     );
@@ -129,9 +129,9 @@ auth.post("/sync-lens", async (c) => {
       logger.error("Database connection failed in sync-lens endpoint");
       return c.json(
         {
+          details: "Database connection failed",
           error: "Service temporarily unavailable. Please try again later.",
-          success: false,
-          details: "Database connection failed"
+          success: false
         },
         503
       );
@@ -185,9 +185,9 @@ auth.post("/sync-lens", async (c) => {
     // Server errors get 503 (Service Unavailable) instead of 500
     return c.json(
       {
+        details: errorMessage,
         error: "Service temporarily unavailable. Please try again later.",
-        success: false,
-        details: errorMessage
+        success: false
       },
       503
     );
