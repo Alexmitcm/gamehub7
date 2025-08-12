@@ -1,80 +1,46 @@
 import { serve } from "@hono/node-server";
 import "dotenv/config";
-import { Status } from "@hey/data/enums";
-import logger from "@hey/helpers/logger";
 import { Hono } from "hono";
-import authContext from "./context/authContext";
-import cors from "./middlewares/cors";
-import infoLogger from "./middlewares/infoLogger";
-import authRouter from "./routes/auth";
-import cronRouter from "./routes/cron";
-import diagnostic from "./routes/diagnostic";
-import lensRouter from "./routes/lens";
-import liveRouter from "./routes/live";
-import metadataRouter from "./routes/metadata";
-import oembedRouter from "./routes/oembed";
-import ogRouter from "./routes/og";
-import ping from "./routes/ping";
-import preferencesRouter from "./routes/preferences";
-import premiumRouter from "./routes/premium";
-import debugRouter from "./routes/premium/debug";
-import debugProfileRouter from "./routes/premium/debug-profile";
-import testLensRouter from "./routes/premium/test-lens";
-import referralRouter from "./routes/referral/tree";
-import sitemapRouter from "./routes/sitemap";
-import generateTestJwt from "./routes/test-jwt";
 
 const app = new Hono();
 
-// Context
-app.use(cors);
-app.use(authContext);
-app.use(infoLogger);
+// Simple ping endpoint that always works
+app.get("/ping", (c) => {
+  return c.json({
+    status: "ok",
+    message: "API is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
 
 // Root endpoint
 app.get("/", (c) => {
   return c.json({
-    endpoints: {
-      auth: "/auth/*",
-      diagnostic: "/diagnostic",
-      health: "/ping",
-      lens: "/lens/*",
-      preferences: "/preferences/get"
-    },
     name: "Hey API",
     status: "operational",
+    message: "API is running in minimal mode",
     timestamp: new Date().toISOString(),
     version: "1.0.0"
   });
 });
 
-// Routes
-app.get("/ping", ping);
-app.get("/diagnostic", diagnostic);
-app.route("/auth", authRouter);
-app.route("/lens", lensRouter);
-app.route("/cron", cronRouter);
-app.route("/live", liveRouter);
-app.route("/metadata", metadataRouter);
-app.route("/oembed", oembedRouter);
-app.route("/preferences", preferencesRouter);
-app.route("/premium", premiumRouter);
-app.route("/premium/debug", debugRouter);
-app.route("/premium/debug-profile", debugProfileRouter);
-app.route("/premium/test-lens", testLensRouter);
-app.route("/referral", referralRouter);
-app.route("/sitemap", sitemapRouter);
-app.route("/og", ogRouter);
-
-// Test endpoint for generating JWT tokens
-app.post("/test-jwt", generateTestJwt);
-
-app.notFound((ctx) =>
-  ctx.json({ error: "Not Found", status: Status.Error }, 404)
-);
+// Simple health check
+app.get("/health", (c) => {
+  return c.json({
+    status: "healthy",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
 
 const port = Number.parseInt(process.env.PORT || "3010", 10);
 
+console.log("Starting minimal API server...");
+console.log(`Port: ${port}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
 serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {
-  logger.info(`Server running on port ${info.port}`);
+  console.log(`Server running on port ${info.port}`);
+  console.log(`Health check available at: http://0.0.0.0:${info.port}/ping`);
 });
