@@ -24,20 +24,20 @@ async function testAuthBasic() {
     ];
 
     console.log("📋 Required Environment Variables:");
-    requiredEnvVars.forEach((envVar) => {
+    for (const envVar of requiredEnvVars) {
       const value = process.env[envVar];
       const status = value ? "✅ SET" : "❌ MISSING";
       const displayValue = value ? `${value.substring(0, 20)}...` : "Not set";
       console.log(`   ${envVar}: ${status} (${displayValue})`);
-    });
+    }
 
     console.log("\n📋 Optional Environment Variables:");
-    optionalEnvVars.forEach((envVar) => {
+    for (const envVar of optionalEnvVars) {
       const value = process.env[envVar];
       const status = value ? "✅ SET" : "⚠️ MISSING";
       const displayValue = value ? `${value.substring(0, 20)}...` : "Not set";
       console.log(`   ${envVar}: ${status} (${displayValue})`);
-    });
+    }
 
     // Test 2: Database Connection
     console.log("\n🗄️ 2. Database Connection Test...");
@@ -169,9 +169,9 @@ async function testAuthBasic() {
     };
 
     console.log("📋 Service Status:");
-    Object.entries(summary).forEach(([service, status]) => {
+    for (const [service, status] of Object.entries(summary)) {
       console.log(`   ${service}: ${status}`);
-    });
+    }
 
     console.log(
       "\n✅ Basic authentication system test completed successfully!"

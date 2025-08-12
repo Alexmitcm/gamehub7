@@ -10,26 +10,34 @@ const logNoRedis = () => logger.info("[Redis] No Redis client, using fallback");
 let redisClient: null | RedisClientType = null;
 
 if (process.env.REDIS_URL) {
-  redisClient = createClient({ url: process.env.REDIS_URL });
+  try {
+    redisClient = createClient({ url: process.env.REDIS_URL });
 
-  redisClient.on("connect", () => logger.info("[Redis] Redis connect"));
-  redisClient.on("ready", () => logger.info("[Redis] Redis ready"));
-  redisClient.on("reconnecting", (err) =>
-    logger.error("[Redis] Redis reconnecting", err)
-  );
-  redisClient.on("error", (err) => logger.error("[Redis] Redis error", err));
-  redisClient.on("end", (err) => logger.error("[Redis] Redis end", err));
+    redisClient.on("connect", () => logger.info("[Redis] Redis connect"));
+    redisClient.on("ready", () => logger.info("[Redis] Redis ready"));
+    redisClient.on("reconnecting", (err) =>
+      logger.error("[Redis] Redis reconnecting", err)
+    );
+    redisClient.on("error", (err) => logger.error("[Redis] Redis error", err));
+    redisClient.on("end", (err) => logger.error("[Redis] Redis end", err));
 
-  const connectRedis = async () => {
-    logger.info("[Redis] Connecting to Redis");
-    await redisClient?.connect();
-  };
+    const connectRedis = async () => {
+      logger.info("[Redis] Connecting to Redis");
+      await redisClient?.connect();
+    };
 
-  connectRedis().catch((error) =>
-    logger.error("[Redis] Connection error", error)
-  );
+    connectRedis().catch((error) => {
+      logger.error("[Redis] Connection error", error);
+      logger.info("[Redis] Falling back to no-cache mode");
+      redisClient = null;
+    });
+  } catch (error) {
+    logger.error("[Redis] Failed to create Redis client", error);
+    logger.info("[Redis] Falling back to no-cache mode");
+    redisClient = null;
+  }
 } else {
-  logger.info("[Redis] REDIS_URL not set");
+  logger.info("[Redis] REDIS_URL not set, using no-cache mode");
 }
 
 const randomNumber = (min: number, max: number): number => {

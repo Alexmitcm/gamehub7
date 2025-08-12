@@ -28,7 +28,7 @@ const getPost = async (ctx: Context) => {
       return html`
         <html>
           <head>
-            <meta charSet="utf-8" />
+            <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width" />
             <meta http-equiv="content-language" content="en-US" />
             <title>${escTitle}</title>
@@ -37,13 +37,25 @@ const getPost = async (ctx: Context) => {
             <meta property="og:description" content="${escDescription}" />
             <meta property="og:type" content="article" />
             <meta property="og:site_name" content="Hey" />
-            <meta property="og:url" content="https://hey.xyz/posts/${post.slug}" />
-            <meta property="og:logo" content="${STATIC_IMAGES_URL}/app-icon/0.png" />
-            <meta property="og:image" content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}" />
+            <meta
+              property="og:url"
+              content="https://hey.xyz/posts/${post.slug}"
+            />
+            <meta
+              property="og:logo"
+              content="${STATIC_IMAGES_URL}/app-icon/0.png"
+            />
+            <meta
+              property="og:image"
+              content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}"
+            />
             <meta name="twitter:card" content="summary" />
             <meta name="twitter:title" content="${escTitle}" />
             <meta name="twitter:description" content="${escDescription}" />
-            <meta property="twitter:image" content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}" />
+            <meta
+              property="twitter:image"
+              content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}"
+            />
             <meta name="twitter:site" content="@heydotxyz" />
             <link rel="canonical" href="https://hey.xyz/posts/${post.slug}" />
           </head>
@@ -53,12 +65,18 @@ const getPost = async (ctx: Context) => {
             <div>
               <b>Stats</b>
               <ul>
-                <li><a href="${postUrl}">Collects: ${post.stats.collects}</a></li>
+                <li>
+                  <a href="${postUrl}">Collects: ${post.stats.collects}</a>
+                </li>
                 <li><a href="${postUrl}">Tips: ${post.stats.tips}</a></li>
-                <li><a href="${postUrl}">Comments: ${post.stats.comments}</a></li>
+                <li>
+                  <a href="${postUrl}">Comments: ${post.stats.comments}</a>
+                </li>
                 <li><a href="${postUrl}">Likes: ${post.stats.reactions}</a></li>
                 <li><a href="${postUrl}">Reposts: ${post.stats.reposts}</a></li>
-                <li><a href="${postUrl}/quotes">Quotes: ${post.stats.quotes}</a></li>
+                <li>
+                  <a href="${postUrl}/quotes">Quotes: ${post.stats.quotes}</a>
+                </li>
               </ul>
             </div>
           </body>

@@ -28,7 +28,7 @@ const getGroup = async (ctx: Context) => {
       return html`
         <html>
           <head>
-            <meta charSet="utf-8" />
+            <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width" />
             <meta http-equiv="content-language" content="en-US" />
             <title>${escTitle}</title>
@@ -37,9 +37,15 @@ const getGroup = async (ctx: Context) => {
             <meta property="og:description" content="${escDescription}" />
             <meta property="og:type" content="profile" />
             <meta property="og:site_name" content="Hey" />
-            <meta property="og:url" content="https://hey.xyz/g/${group.address}" />
+            <meta
+              property="og:url"
+              content="https://hey.xyz/g/${group.address}"
+            />
             <meta property="og:image" content="${avatar}" />
-            <meta property="og:logo" content="${STATIC_IMAGES_URL}/app-icon/0.png" />
+            <meta
+              property="og:logo"
+              content="${STATIC_IMAGES_URL}/app-icon/0.png"
+            />
             <meta name="twitter:card" content="summary" />
             <meta name="twitter:title" content="${escTitle}" />
             <meta name="twitter:description" content="${escDescription}" />
@@ -48,7 +54,9 @@ const getGroup = async (ctx: Context) => {
             <link rel="canonical" href="https://hey.xyz/g/${group.address}" />
           </head>
           <body>
-            <script type="application/ld+json">${raw(escapedJsonLd)}</script>
+            <script type="application/ld+json">
+              ${raw(escapedJsonLd)}
+            </script>
             <img src="${avatar}" alt="${escTitle}" height="100" width="100" />
             <h1>${escName}</h1>
             <h2>${escDescription}</h2>

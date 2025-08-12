@@ -71,10 +71,10 @@ export interface UserProfile {
 }
 
 export class AuthService {
-  private readonly blockchainService: typeof BlockchainService;
-  private readonly profileService: typeof ProfileService;
-  private readonly eventService: typeof EventService;
-  private readonly jwtService: typeof JwtService;
+  private readonly blockchainService: BlockchainService;
+  private readonly profileService: ProfileService;
+  private readonly eventService: EventService;
+  private readonly jwtService: JwtService;
 
   constructor() {
     this.blockchainService = BlockchainService;
@@ -192,6 +192,11 @@ export class AuthService {
       // If premium on-chain, create permanent profile link
       let premiumProfile = null;
       if (isPremiumOnChain) {
+        // Data validation: ensure profileId is different from walletAddress
+        if (walletAddress.toLowerCase() === selectedProfileId.toLowerCase()) {
+          throw new Error("Profile ID cannot be the same as wallet address");
+        }
+
         premiumProfile = await tx.premiumProfile.create({
           data: {
             isActive: true,

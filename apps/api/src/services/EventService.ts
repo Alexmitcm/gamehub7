@@ -128,8 +128,10 @@ export class EventService {
 
     try {
       while (this.eventQueue.length > 0) {
-        const event = this.eventQueue.shift()!;
-        await this.processEvent(event);
+        const event = this.eventQueue.shift();
+        if (event) {
+          await this.processEvent(event);
+        }
       }
     } catch (error) {
       logger.error("Error processing event queue:", error);
