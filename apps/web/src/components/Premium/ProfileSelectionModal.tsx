@@ -24,8 +24,7 @@ export default function ProfileSelectionModal({
   isOpen,
   onClose,
   profiles,
-  onProfileSelect,
-  isLoading = false
+  onProfileSelect
 }: ProfileSelectionModalProps) {
   const [selectedProfileId, setSelectedProfileId] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,6 +84,7 @@ export default function ProfileSelectionModal({
                     Choose Your Permanent Premium Profile
                   </Dialog.Title>
                   <button
+                    type="button"
                     className="rounded-full p-1 hover:bg-gray-100 disabled:opacity-50"
                     disabled={isSubmitting}
                     onClick={handleClose}

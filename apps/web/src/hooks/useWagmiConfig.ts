@@ -1,33 +1,22 @@
-import { useMemo } from "react";
-import { createConfig } from "wagmi";
-import { CHAIN, IS_MAINNET, WALLETCONNECT_PROJECT_ID } from "@hey/data/constants";
+import {
+  CHAIN,
+  IS_MAINNET,
+  WALLETCONNECT_PROJECT_ID
+} from "@hey/data/constants";
 import { familyAccountsConnector } from "family";
+import { useMemo } from "react";
 import { http } from "viem";
+import { createConfig } from "wagmi";
 import { arbitrum } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
+import { clearWagmiStorage } from "@/helpers/clearWagmiStorage";
 import getRpc from "@/helpers/getRpc";
+
+// Clear any existing Wagmi storage to prevent conflicts immediately when module loads
+clearWagmiStorage();
 
 export const useWagmiConfig = () => {
   return useMemo(() => {
-    // Clear any existing Wagmi storage to prevent conflicts
-    if (typeof window !== "undefined") {
-      const keys = Object.keys(localStorage);
-      const wagmiKeys = keys.filter(
-        (key) =>
-          key.startsWith("wagmi") ||
-          key.startsWith("wc") ||
-          key.includes("walletconnect")
-      );
-      
-      // Only clear if there are conflicting keys
-      if (wagmiKeys.length > 0) {
-        for (const key of wagmiKeys) {
-          localStorage.removeItem(key);
-        }
-        console.log("Cleared conflicting Wagmi storage keys:", wagmiKeys);
-      }
-    }
-
     const connectors = [
       familyAccountsConnector(),
       walletConnect({ projectId: WALLETCONNECT_PROJECT_ID }),

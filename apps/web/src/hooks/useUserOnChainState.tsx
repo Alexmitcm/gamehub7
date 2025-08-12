@@ -22,8 +22,8 @@ const useUserOnChainState = () => {
     functionName: "NodeSet",
     query: {
       enabled: !!address,
-      refetchInterval: 30000 // Refetch every 30 seconds, 
-      staleTime: 30000, // 30 seconds
+      refetchInterval: 30000, // Refetch every 30 seconds
+      staleTime: 30000 // 30 seconds
     }
   });
 

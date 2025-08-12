@@ -70,6 +70,7 @@ const OnChainProDashboard = () => {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
+              <title>Error</title>
               <path
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                 strokeLinecap="round"
@@ -103,6 +104,7 @@ const OnChainProDashboard = () => {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
+              <title>Lock</title>
               <path
                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 strokeLinecap="round"
@@ -148,6 +150,7 @@ const OnChainProDashboard = () => {
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <title>Lightning</title>
                   <path
                     d="M13 10V3L4 14h7v7l9-11h-7z"
                     strokeLinecap="round"
@@ -194,6 +197,7 @@ const OnChainProDashboard = () => {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
+                        <title>Dollar</title>
                         <path
                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                           strokeLinecap="round"
@@ -227,6 +231,7 @@ const OnChainProDashboard = () => {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
+                        <title>Vault</title>
                         <path
                           d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                           strokeLinecap="round"
@@ -260,6 +265,7 @@ const OnChainProDashboard = () => {
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
+                        <title>Check</title>
                         <path
                           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                           strokeLinecap="round"
