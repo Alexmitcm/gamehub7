@@ -4,6 +4,19 @@ import handleApiError from "@/utils/handleApiError";
 import { getRedis, setRedis } from "@/utils/redis";
 import prisma from "../../prisma/client";
 
+/**
+ * Helper function to check database connection
+ */
+async function checkDatabaseConnection() {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    return false;
+  }
+}
+
 const getPreferences = async (ctx: Context) => {
   try {
     const account = ctx.get("account");
@@ -18,6 +31,19 @@ const getPreferences = async (ctx: Context) => {
       return ctx.json({ data, status: Status.Success });
     }
 
+    // Check database connection first
+    const dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      console.error("Database connection failed in getPreferences");
+      return ctx.json(
+        { 
+          error: "Database connection failed", 
+          status: Status.Error 
+        },
+        500
+      );
+    }
+
     const cacheKey = `preferences:${account}`;
     let cachedValue = null;
 
@@ -25,10 +51,7 @@ const getPreferences = async (ctx: Context) => {
     try {
       cachedValue = await getRedis(cacheKey);
     } catch (redisError) {
-      console.warn(
-        "Redis cache unavailable, proceeding without cache:",
-        redisError
-      );
+      console.warn("Redis cache unavailable, proceeding without cache:", redisError);
     }
 
     if (cachedValue) {
@@ -40,10 +63,7 @@ const getPreferences = async (ctx: Context) => {
           status: Status.Success
         });
       } catch (parseError) {
-        console.warn(
-          "Failed to parse cached preferences, fetching from database:",
-          parseError
-        );
+        console.warn("Failed to parse cached preferences, fetching from database:", parseError);
       }
     }
 

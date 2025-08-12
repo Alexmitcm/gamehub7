@@ -1,6 +1,7 @@
 import logger from "@hey/helpers/logger";
 import { Hono } from "hono";
 import { z } from "zod";
+import prisma from "../prisma/client";
 import AuthService, {
   type LoginRequest,
   type SyncLensRequest
@@ -32,12 +33,38 @@ const profileUpdateSchema = z.object({
 });
 
 /**
+ * Helper function to check database connection
+ */
+async function checkDatabaseConnection() {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    logger.error("Database connection failed:", error);
+    return false;
+  }
+}
+
+/**
  * POST /api/auth/login
  * Unified login and onboarding endpoint
  * Handles both new user registration and existing user login
  */
 auth.post("/login", async (c) => {
   try {
+    // Check database connection first
+    const dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      logger.error("Database connection failed in login endpoint");
+      return c.json(
+        {
+          error: "Database connection failed",
+          success: false
+        },
+        500
+      );
+    }
+
     const body = await c.req.json();
 
     // Validate request body
@@ -94,6 +121,19 @@ auth.post("/login", async (c) => {
  */
 auth.post("/sync-lens", async (c) => {
   try {
+    // Check database connection first
+    const dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      logger.error("Database connection failed in sync-lens endpoint");
+      return c.json(
+        {
+          error: "Database connection failed",
+          success: false
+        },
+        500
+      );
+    }
+
     const body = await c.req.json();
 
     // Validate request body
@@ -156,6 +196,19 @@ auth.post("/sync-lens", async (c) => {
  */
 auth.get("/profile", async (c) => {
   try {
+    // Check database connection first
+    const dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      logger.error("Database connection failed in profile endpoint");
+      return c.json(
+        {
+          error: "Database connection failed",
+          success: false
+        },
+        500
+      );
+    }
+
     // Get wallet address from query params or headers
     const walletAddress =
       c.req.query("walletAddress") || c.req.header("X-Wallet-Address");
@@ -205,6 +258,19 @@ auth.get("/profile", async (c) => {
  */
 auth.put("/profile", async (c) => {
   try {
+    // Check database connection first
+    const dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      logger.error("Database connection failed in profile update endpoint");
+      return c.json(
+        {
+          error: "Database connection failed",
+          success: false
+        },
+        500
+      );
+    }
+
     const body = await c.req.json();
 
     // Validate request body
@@ -263,6 +329,19 @@ auth.put("/profile", async (c) => {
  */
 auth.get("/profiles", async (c) => {
   try {
+    // Check database connection first
+    const dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      logger.error("Database connection failed in profiles endpoint");
+      return c.json(
+        {
+          error: "Database connection failed",
+          success: false
+        },
+        500
+      );
+    }
+
     const walletAddress = c.req.query("walletAddress");
 
     if (!walletAddress) {
@@ -301,6 +380,19 @@ auth.get("/profiles", async (c) => {
  */
 auth.post("/validate", async (c) => {
   try {
+    // Check database connection first
+    const dbConnected = await checkDatabaseConnection();
+    if (!dbConnected) {
+      logger.error("Database connection failed in validate endpoint");
+      return c.json(
+        {
+          error: "Database connection failed",
+          success: false
+        },
+        500
+      );
+    }
+
     const body = await c.req.json();
     const { token } = body;
 
@@ -347,12 +439,27 @@ auth.post("/validate", async (c) => {
  * GET /api/auth/health
  * Health check endpoint
  */
-auth.get("/health", (c) => {
-  return c.json({
-    message: "Auth service is healthy",
-    success: true,
-    timestamp: new Date().toISOString()
-  });
+auth.get("/health", async (c) => {
+  try {
+    // Check database connection
+    const dbConnected = await checkDatabaseConnection();
+
+    return c.json({
+      database: dbConnected ? "connected" : "disconnected",
+      message: "Auth service health check",
+      success: true,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error("Error in health check:", error);
+    return c.json(
+      {
+        error: "Health check failed",
+        success: false
+      },
+      500
+    );
+  }
 });
 
 /**
