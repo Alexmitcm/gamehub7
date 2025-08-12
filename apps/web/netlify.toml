@@ -5,8 +5,8 @@
 
 [build.environment]
   VITE_IS_PRODUCTION = "true"
-  # Railway API URL
-  VITE_API_URL = "https://defigame-production.up.railway.app"
+  # Set your actual API URL here
+  VITE_API_URL = "https://your-api-domain.com"
 
 [[redirects]]
   from = "/*"
