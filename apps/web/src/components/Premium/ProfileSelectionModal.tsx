@@ -84,10 +84,10 @@ export default function ProfileSelectionModal({
                     Choose Your Permanent Premium Profile
                   </Dialog.Title>
                   <button
-                    type="button"
                     className="rounded-full p-1 hover:bg-gray-100 disabled:opacity-50"
                     disabled={isSubmitting}
                     onClick={handleClose}
+                    type="button"
                   >
                     <XMarkIcon className="h-5 w-5 text-gray-400" />
                   </button>

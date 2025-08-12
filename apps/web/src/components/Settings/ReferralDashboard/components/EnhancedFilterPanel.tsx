@@ -81,6 +81,7 @@ export const EnhancedFilterPanel = ({
           <button
             className="absolute inset-y-0 right-0 flex items-center pr-3"
             onClick={() => handleWalletFilterChange("")}
+            type="button"
           >
             <XMarkIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
           </button>
@@ -119,6 +120,7 @@ export const EnhancedFilterPanel = ({
         <button
           className="flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-3 py-2 font-medium text-gray-700 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          type="button"
         >
           <FunnelIcon className="h-4 w-4" />
           <span>Advanced Filters</span>
@@ -131,6 +133,7 @@ export const EnhancedFilterPanel = ({
           <button
             className="text-gray-500 text-sm hover:text-gray-700"
             onClick={handleClearFilters}
+            type="button"
           >
             Clear all filters
           </button>

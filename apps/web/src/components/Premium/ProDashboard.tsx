@@ -12,7 +12,6 @@ import { useLinkedProfile, useProfileStats } from "@/hooks/usePremium";
 const ProDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-
   const {
     data: statsData,
     isLoading: isLoadingStats,

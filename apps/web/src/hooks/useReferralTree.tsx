@@ -1,5 +1,5 @@
-import { HEY_API_URL } from "@hey/data/frontend-constants";
 import { useQuery } from "@tanstack/react-query";
+import { HEY_API_URL } from "@/lib/constants";
 
 export interface ReferralNode {
   address: string;

@@ -87,6 +87,7 @@ export const EnhancedControlPanel = ({
             disabled={zoomLevel <= 0.1}
             onClick={onZoomOut}
             title="Zoom Out"
+            type="button"
           >
             <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="ml-1 font-medium text-xs sm:text-sm">-</span>
@@ -103,6 +104,7 @@ export const EnhancedControlPanel = ({
             disabled={zoomLevel >= 3}
             onClick={onZoomIn}
             title="Zoom In"
+            type="button"
           >
             <MagnifyingGlassIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="ml-1 font-medium text-xs sm:text-sm">+</span>
@@ -112,6 +114,7 @@ export const EnhancedControlPanel = ({
             className="rounded-lg border border-gray-300 bg-white px-2 py-2 font-medium text-gray-700 text-xs hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:px-3 sm:py-2 sm:text-sm"
             onClick={onResetView}
             title="Reset View"
+            type="button"
           >
             Reset
           </button>
@@ -127,6 +130,7 @@ export const EnhancedControlPanel = ({
             }`}
             onClick={onToggleDrag}
             title={isDragging ? "Disable Drag Mode" : "Enable Drag Mode"}
+            type="button"
           >
             <ArrowsPointingOutIcon className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="hidden sm:inline">

@@ -2,6 +2,12 @@ import GameVaultABI from "../abi/gameVault.json";
 import ReferralABI from "../abi/referral.json";
 import TetherABI from "../abi/tether.json";
 
+// Environment detection
+export const IS_PRODUCTION = import.meta.env.VITE_IS_PRODUCTION === "true";
+export const HEY_API_URL = IS_PRODUCTION
+  ? "https://api.hey.xyz"
+  : import.meta.env.VITE_API_URL || "http://localhost:3010";
+
 // 1. The definitive public RPC URL for Arbitrum One
 export const ARBITRUM_RPC_URL = "https://arb1.arbitrum.io/rpc";
 export const ARBITRUM_CHAIN_ID = 42161;

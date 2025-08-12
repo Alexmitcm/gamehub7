@@ -60,10 +60,10 @@ export const simpleWagmiWarningSuppression = () => {
   // Also try to intercept any existing console methods that might be cached
   if (window.console) {
     // Force re-evaluation of console methods
-    Object.defineProperty(window, 'console', {
+    Object.defineProperty(window, "console", {
+      configurable: false,
       value: console,
-      writable: false,
-      configurable: false
+      writable: false
     });
   }
 

@@ -1,0 +1,14 @@
+[build]
+  base = "apps/web"
+  publish = "dist"
+  command = "pnpm build"
+
+[build.environment]
+  VITE_IS_PRODUCTION = "true"
+  # Set your actual API URL here
+  VITE_API_URL = "https://your-api-domain.com"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

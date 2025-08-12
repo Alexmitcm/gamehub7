@@ -26,7 +26,10 @@ export const useSimplePremium = () => {
   } = useQuery<PremiumStatus>({
     enabled: Boolean(connectedWalletAddress),
     queryFn: () =>
-      hono.premium.getSimpleStatus(connectedWalletAddress as string, currentAccount?.id),
+      hono.premium.getSimpleStatus(
+        connectedWalletAddress as string,
+        currentAccount?.id
+      ),
     queryKey: [
       "simple-premium-status",
       connectedWalletAddress,

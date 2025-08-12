@@ -183,9 +183,9 @@ export default function PremiumProfileManager() {
             </p>
             {hasMultipleProfiles && (
               <button
-                type="button"
                 className="mt-2 inline-flex items-center rounded border border-transparent bg-amber-100 px-3 py-1.5 font-medium text-amber-700 text-xs hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
                 onClick={() => setShowProfileModal(true)}
+                type="button"
               >
                 Select Profile
               </button>

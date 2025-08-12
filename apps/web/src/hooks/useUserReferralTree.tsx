@@ -1,5 +1,5 @@
-import { HEY_API_URL } from "@hey/data/frontend-constants";
 import { useQuery } from "@tanstack/react-query";
+import { HEY_API_URL } from "@/lib/constants";
 
 export interface ReferralNode {
   wallet: string;
@@ -28,13 +28,16 @@ export const useUserReferralTree = () => {
       try {
         // Temporarily use the working premium tree endpoint
         const testWallet = "0x960fceed1a0ac2cc22e6e7bd6876ca527d31d268";
-        const res = await fetch(`${HEY_API_URL}/premium/tree/${testWallet}?maxDepth=3`, {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          method: "GET"
-        });
+        const res = await fetch(
+          `${HEY_API_URL}/premium/tree/${testWallet}?maxDepth=3`,
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            method: "GET"
+          }
+        );
 
         if (!res.ok) {
           const errorText = await res.text();
@@ -45,7 +48,7 @@ export const useUserReferralTree = () => {
         }
 
         const data = await res.json();
-        
+
         // Transform the data to match our expected format
         const transformedData: ReferralTreeResponse = {
           data: data.data.map((node: any) => ({
@@ -64,7 +67,7 @@ export const useUserReferralTree = () => {
             totalNodes: data.data.length
           }
         };
-        
+
         return transformedData;
       } catch (error) {
         console.error("Referral tree fetch error:", error);

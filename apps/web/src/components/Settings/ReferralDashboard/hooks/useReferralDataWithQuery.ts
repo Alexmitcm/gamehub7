@@ -59,12 +59,10 @@ export const useReferralDataWithQuery = (
     childNodes,
     setCurrentNode,
     setParentNode,
-    setChildNode,
     setTreeData,
     setStats,
     setLoadingCurrent,
     setLoadingParent,
-    setLoadingChildren,
     isCacheValid,
     updateLastUpdated
   } = useReferralStore();
