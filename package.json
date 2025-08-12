@@ -15,8 +15,7 @@
     "start": "cd apps/api && tsx src/index.ts",
     "test": "pnpm --recursive --parallel run test",
     "typecheck": "pnpm --recursive --parallel run typecheck",
-    "railway:build": "pnpm install && cd apps/api && pnpm codegen",
-    "railway:start": "cd apps/api && tsx src/index.ts"
+
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.2",
