@@ -1,0 +1,18 @@
+# Exclude everything except the API
+apps/web/
+apps/admin/
+packages/
+node_modules/
+.git/
+.github/
+.vscode/
+*.log
+.env.local
+.env.development
+.env.test
+README.md
+*.md
+script/
+biome.json
+pnpm-workspace.yaml
+pnpm-lock.yaml

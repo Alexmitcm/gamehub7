@@ -1,13 +1,11 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "buildCommand": "cd apps/api && pnpm codegen",
-    "builder": "NIXPACKS"
+    "builder": "DOCKERFILE"
   },
   "deploy": {
     "healthcheckPath": "/ping",
     "healthcheckTimeout": 60,
-    "restartPolicyType": "ALWAYS",
-    "startCommand": "cd apps/api && tsx src/index.ts"
+    "restartPolicyType": "ALWAYS"
   }
 }

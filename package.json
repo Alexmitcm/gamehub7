@@ -6,7 +6,7 @@
   "scripts": {
     "biome:check": "biome check .",
     "biome:fix": "biome check --write .",
-    "build": "cd apps/api && pnpm codegen",
+    "build": "cd apps/api && pnpm install && pnpm codegen",
     "codegen": "pnpm --recursive --parallel run codegen",
     "dep:check": "pnpm dlx sherif@latest",
     "dep:fix": "pnpm dlx sherif@latest --fix",
