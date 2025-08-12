@@ -75,6 +75,13 @@ app.notFound((ctx) =>
 
 const port = Number.parseInt(process.env.PORT || "3010", 10);
 
-serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {
-  logger.info(`Server running on port ${info.port}`);
-});
+// Add error handling for server startup
+try {
+  serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {
+    logger.info(`Server running on port ${info.port}`);
+    logger.info(`Health check available at http://0.0.0.0:${info.port}/ping`);
+  });
+} catch (error) {
+  logger.error("Failed to start server:", error);
+  process.exit(1);
+}
