@@ -712,63 +712,87 @@ export class UserService {
   }
 
   /**
-   * Link a profile to a premium wallet permanently
+   * Link a profile to a wallet permanently
    * This enforces the business rule: first selected profile becomes permanent
    */
   async linkProfileToWallet(
     walletAddress: string,
     profileId: string
   ): Promise<LinkedProfile> {
+    const normalizedAddress = this.normalizeWalletAddress(walletAddress);
+
     try {
-      const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
-      // Data validation: ensure profileId is different from walletAddress
-      if (normalizedAddress.toLowerCase() === profileId.toLowerCase()) {
-        throw new Error("Profile ID cannot be the same as wallet address");
-      }
-
       logger.info(
         `Attempting to link profile ${profileId} to wallet ${normalizedAddress}`
       );
 
-      // Step 1: Check if profile exists and is owned by this wallet
+      // Wrap all operations in a transaction to prevent race conditions
+      const result = await prisma.$transaction(async (tx) => {
+        // Step 1: Check if wallet already has a linked profile (BLOCK any changes)
+        const existingLink = await tx.premiumProfile.findUnique({
+          where: { walletAddress: normalizedAddress }
+        });
+
+        if (existingLink) {
+          logger.error(
+            `Wallet ${normalizedAddress} already has linked profile: ${existingLink.profileId}`
+          );
+          throw new Error(
+            "Wallet already has a linked premium profile. Profile linking is permanent and cannot be changed."
+          );
+        }
+
+        // Step 2: Validate profile ownership
+        const isOwner = await this.profileService.validateProfileOwnership(
+          normalizedAddress,
+          profileId
+        );
+        if (!isOwner) {
+          throw new Error(
+            "Profile is not owned by the provided wallet address"
+          );
+        }
+
+        // Step 3: Check if profile is already linked to another wallet
+        const profileAlreadyLinked = await tx.premiumProfile.findUnique({
+          where: { profileId }
+        });
+
+        if (profileAlreadyLinked) {
+          throw new Error("Profile is already linked to another wallet");
+        }
+
+        // Step 4: Create the permanent link (FIRST and ONLY link for this wallet)
+        const premiumProfile = await tx.premiumProfile.create({
+          data: {
+            isActive: true,
+            linkedAt: new Date(),
+            profileId,
+            walletAddress: normalizedAddress
+          }
+        });
+
+        return premiumProfile;
+      });
+
+      logger.info(
+        `Successfully linked profile ${profileId} to wallet ${normalizedAddress}`
+      );
+
+      // Get profile details for return
       const profile = await this.profileService.getProfileById(profileId);
       if (!profile) {
-        throw new Error("Profile not found");
+        throw new Error("Failed to retrieve linked profile details");
       }
 
-      if (profile.ownedBy.toLowerCase() !== normalizedAddress.toLowerCase()) {
-        throw new Error("Profile is not owned by this wallet");
-      }
-
-      // Step 2: Check if profile is already linked to another wallet
-      const profileAlreadyLinked = await prisma.premiumProfile.findUnique({
-        where: { profileId }
-      });
-
-      if (profileAlreadyLinked) {
-        throw new Error("Profile is already linked to another wallet");
-      }
-
-      // Step 3: Create the permanent link (FIRST and ONLY link for this wallet)
-      const premiumProfile = await prisma.premiumProfile.create({
-        data: {
-          isActive: true,
-          linkedAt: new Date(),
-          profileId,
-          walletAddress: normalizedAddress
-        }
-      });
-
-      // Return the proper LinkedProfile format
       return {
         handle: profile.handle,
-        linkedAt: premiumProfile.linkedAt,
-        profileId: premiumProfile.profileId
+        linkedAt: result.linkedAt,
+        profileId: result.profileId
       };
     } catch (error) {
       logger.error(
-        `Error linking profile ${profileId} to wallet ${walletAddress}:`,
+        `Error linking profile ${profileId} to wallet ${normalizedAddress}:`,
         error
       );
       throw error;

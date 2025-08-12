@@ -11,26 +11,10 @@ import { arbitrum } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
 import getRpc from "@/helpers/getRpc";
 
-// Enhanced connector configuration with better error handling
 const connectors = [
   familyAccountsConnector(),
-  walletConnect({
-    metadata: {
-      description: "Decentralized social media platform",
-      icons: ["https://hey.xyz/favicon.ico"],
-      name: "Hey Social",
-      url:
-        typeof window !== "undefined"
-          ? window.location.origin
-          : "https://hey.xyz"
-    },
-    projectId: WALLETCONNECT_PROJECT_ID,
-    showQrModal: true
-  }),
-  injected({
-    shimDisconnect: true,
-    target: "metaMask"
-  })
+  walletConnect({ projectId: WALLETCONNECT_PROJECT_ID }),
+  injected()
 ];
 
 const config = createConfig({

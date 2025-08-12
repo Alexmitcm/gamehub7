@@ -258,9 +258,9 @@ async function testAuthCore() {
     };
 
     console.log("📋 Service Status:");
-    for (const [service, status] of Object.entries(healthChecks)) {
+    Object.entries(healthChecks).forEach(([service, status]) => {
       console.log(`   ${service}: ${status}`);
-    }
+    });
 
     console.log("\n✅ Core authentication system test completed successfully!");
     console.log("\n💡 Core Features Verified:");

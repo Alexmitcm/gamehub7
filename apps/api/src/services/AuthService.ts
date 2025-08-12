@@ -192,11 +192,6 @@ export class AuthService {
       // If premium on-chain, create permanent profile link
       let premiumProfile = null;
       if (isPremiumOnChain) {
-        // Data validation: ensure profileId is different from walletAddress
-        if (walletAddress.toLowerCase() === selectedProfileId.toLowerCase()) {
-          throw new Error("Profile ID cannot be the same as wallet address");
-        }
-
         premiumProfile = await tx.premiumProfile.create({
           data: {
             isActive: true,

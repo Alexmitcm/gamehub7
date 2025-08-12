@@ -178,7 +178,6 @@ const MainNodeContractManager = () => {
             className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
             disabled={isRewardReferralLoading}
             onClick={handleRewardReferral}
-            type="button"
           >
             {isRewardReferralLoading ? "Processing..." : "Reward Referral"}
           </button>
@@ -186,7 +185,6 @@ const MainNodeContractManager = () => {
             className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
             disabled={isClaimRewardLoading}
             onClick={handleClaimReward}
-            type="button"
           >
             {isClaimRewardLoading ? "Processing..." : "Claim Reward"}
           </button>
@@ -200,11 +198,12 @@ const MainNodeContractManager = () => {
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
+            <label className="mb-2 block font-medium text-gray-700 text-sm" htmlFor="partner-address">
               Partner Address
             </label>
             <div className="flex gap-2">
               <input
+                id="partner-address"
                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onChange={(e) => setPartnerAddress(e.target.value)}
                 placeholder="0x..."
@@ -215,7 +214,6 @@ const MainNodeContractManager = () => {
                 className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 disabled={isSetPartnerLoading}
                 onClick={handleSetPartner}
-                type="button"
               >
                 {isSetPartnerLoading ? "Setting..." : "Set Partner"}
               </button>
@@ -237,7 +235,6 @@ const MainNodeContractManager = () => {
                 className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 disabled={isSetReferralLoading}
                 onClick={handleSetReferral}
-                type="button"
               >
                 {isSetReferralLoading ? "Setting..." : "Set Referral"}
               </button>

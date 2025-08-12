@@ -9,25 +9,8 @@ import { injected, walletConnect } from "wagmi/connectors";
 // Admin panel specific configuration for Arbitrum One
 const connectors = [
   familyAccountsConnector(),
-  walletConnect({
-    metadata: {
-      description: "Admin panel for Hey social media platform",
-      icons: ["https://hey.xyz/favicon.ico"],
-      name: "Hey Admin Panel",
-      url:
-        typeof window !== "undefined"
-          ? window.location.origin
-          : "https://hey.xyz"
-    },
-    // Add optional parameters for better error handling
-    optionalChains: [arbitrum],
-    projectId: WALLETCONNECT_PROJECT_ID,
-    showQrModal: true
-  }),
-  injected({
-    shimDisconnect: true,
-    target: "metaMask"
-  })
+  walletConnect({ projectId: WALLETCONNECT_PROJECT_ID }),
+  injected()
 ];
 
 const config = createConfig({

@@ -36,10 +36,10 @@ export const onRequest = async (context: Context) => {
     let targetUrl: string;
 
     if (!path || path === "/sitemap.xml") {
-      targetUrl = "https://0xhub2-production.up.railway.app/sitemap/all.xml";
+      targetUrl = "https://api.hey.xyz/sitemap/all.xml";
     } else {
       const actualPath = path.replace("/sitemap/", "/");
-      targetUrl = `https://0xhub2-production.up.railway.app/sitemap${actualPath}`;
+      targetUrl = `https://api.hey.xyz/sitemap${actualPath}`;
     }
 
     return createNoCacheResponse(targetUrl);
@@ -51,7 +51,7 @@ export const onRequest = async (context: Context) => {
       path.startsWith("/posts/") ||
       path.startsWith("/g/"))
   ) {
-    const targetUrl = `https://0xhub2-production.up.railway.app/og${path}`;
+    const targetUrl = `https://api.hey.xyz/og${path}`;
     return createNoCacheResponse(targetUrl);
   }
 

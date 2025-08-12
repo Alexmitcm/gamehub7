@@ -139,23 +139,13 @@ export class SimplePremiumService {
   }
 
   /**
-   * Link a profile to a premium wallet
-   * This creates a permanent link that cannot be changed
+   * Link a profile to a premium wallet permanently
    */
   async linkProfile(walletAddress: string, profileId: string): Promise<void> {
+    const normalizedAddress = this.normalizeWalletAddress(walletAddress);
+
     try {
-      const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
-      // Data validation: ensure profileId is different from walletAddress
-      if (normalizedAddress.toLowerCase() === profileId.toLowerCase()) {
-        throw new Error("Profile ID cannot be the same as wallet address");
-      }
-
-      logger.info(
-        `Attempting to link profile ${profileId} to wallet ${normalizedAddress}`
-      );
-
-      // Check if wallet is premium
+      // Verify wallet is premium
       const isPremium = await this.isPremiumWallet(normalizedAddress);
       if (!isPremium) {
         throw new Error("Wallet is not premium");
@@ -167,26 +157,7 @@ export class SimplePremiumService {
       });
 
       if (existingLink) {
-        // Check if the existing link has the same profileId as walletAddress (data corruption)
-        if (
-          existingLink.profileId.toLowerCase() ===
-          existingLink.walletAddress.toLowerCase()
-        ) {
-          logger.warn(
-            `Data corruption detected: profileId equals walletAddress for wallet ${normalizedAddress}. Deleting corrupted record.`
-          );
-
-          // Delete the corrupted record
-          await prisma.premiumProfile.delete({
-            where: { id: existingLink.id }
-          });
-
-          logger.info(
-            `Deleted corrupted PremiumProfile record: ${existingLink.id}`
-          );
-        } else {
-          throw new Error("Wallet already has a linked premium profile");
-        }
+        throw new Error("Wallet already has a linked premium profile");
       }
 
       // Create the permanent link

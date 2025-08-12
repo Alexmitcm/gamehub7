@@ -28,16 +28,13 @@ export const useUserReferralTree = () => {
       try {
         // Temporarily use the working premium tree endpoint
         const testWallet = "0x960fceed1a0ac2cc22e6e7bd6876ca527d31d268";
-        const res = await fetch(
-          `${HEY_API_URL}/premium/tree/${testWallet}?maxDepth=3`,
-          {
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            method: "GET"
-          }
-        );
+        const res = await fetch(`${HEY_API_URL}/premium/tree/${testWallet}?maxDepth=3`, {
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          method: "GET"
+        });
 
         if (!res.ok) {
           const errorText = await res.text();
@@ -48,13 +45,13 @@ export const useUserReferralTree = () => {
         }
 
         const data = await res.json();
-
+        
         // Transform the data to match our expected format
         const transformedData: ReferralTreeResponse = {
           data: data.data.map((node: any) => ({
             balance: node.balance,
             depth: node.depth,
-            isUnbalanced: false, // We'll add this later
+            isUnbalanced: false // We'll add this later, 
             leftChild: node.leftChild,
             parent: node.parent,
             rightChild: node.rightChild,
@@ -67,7 +64,7 @@ export const useUserReferralTree = () => {
             totalNodes: data.data.length
           }
         };
-
+        
         return transformedData;
       } catch (error) {
         console.error("Referral tree fetch error:", error);

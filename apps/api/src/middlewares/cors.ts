@@ -10,8 +10,7 @@ const allowedOrigins = [
   "http://localhost:4786",
   "http://localhost:4787",
   "http://localhost:4788",
-  "https://developer.lens.xyz",
-  "https://fantastic-bombolone-a79536.netlify.app"
+  "https://developer.lens.xyz"
 ];
 
 const cors = corsMiddleware({

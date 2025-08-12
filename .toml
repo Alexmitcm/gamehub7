@@ -1,5 +1,0 @@
-[33ma31ba3be[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add nixpacks.toml configuration - Create explicit Nixpacks configuration for API-only build - Match Railway configuration requirements - Ensure proper build and start commands
-[33m55771375[m Force Railway redeploy - Update version to trigger fresh build and clear cache
-[33m44b92251[m Fix JSON syntax error in package.json - Remove trailing comma that was causing Nixpacks build failure
-[33m5752ef59[m Prepare files for deployment on Netlify and Railway - Update API URLs to defigame-production.up.railway.app - Update Netlify configuration for new repository - Update Vite config with new API URL - Create comprehensive deployment checklist - All configuration files ready for deployment
-[33mafb4f52f[m Remove all Docker files and revert to Nixpacks - Delete Dockerfile and .dockerignore - Update railway.json to use Nixpacks with explicit commands - Restore functional build/start scripts in root package.json - Simplify deployment configuration

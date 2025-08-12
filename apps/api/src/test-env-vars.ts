@@ -34,9 +34,7 @@ function testEnvironmentVariables() {
 
   if (missingVars.length > 0) {
     logger.error(`\n❌ Missing ${missingVars.length} environment variables:`);
-    for (const varName of missingVars) {
-      logger.error(`   - ${varName}`);
-    }
+    missingVars.forEach((varName) => logger.error(`   - ${varName}`));
     logger.error("\nPlease set these variables in your .env file");
     return false;
   }

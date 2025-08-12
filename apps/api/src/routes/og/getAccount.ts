@@ -27,7 +27,7 @@ const getAccount = async (ctx: Context) => {
       return html`
         <html>
           <head>
-            <meta charset="utf-8" />
+            <meta charSet="utf-8" />
             <meta name="viewport" content="width=device-width" />
             <meta http-equiv="content-language" content="en-US" />
             <title>${escTitle}</title>
@@ -38,10 +38,7 @@ const getAccount = async (ctx: Context) => {
             <meta property="og:site_name" content="Hey" />
             <meta property="og:url" content="https://hey.xyz${link}" />
             <meta property="og:image" content="${avatar}" />
-            <meta
-              property="og:logo"
-              content="${STATIC_IMAGES_URL}/app-icon/0.png"
-            />
+            <meta property="og:logo" content="${STATIC_IMAGES_URL}/app-icon/0.png" />
             <meta name="twitter:card" content="summary" />
             <meta name="twitter:title" content="${escTitle}" />
             <meta name="twitter:description" content="${escDescription}" />
@@ -50,9 +47,7 @@ const getAccount = async (ctx: Context) => {
             <link rel="canonical" href="https://hey.xyz${link}" />
           </head>
           <body>
-            <script type="application/ld+json">
-              ${raw(escapedJsonLd)}
-            </script>
+            <script type="application/ld+json">${raw(escapedJsonLd)}</script>
             <img src="${avatar}" alt="${escName}" height="100" width="100" />
             <h1>${escName || username}</h1>
             <h2>${escUsernameWithPrefix}</h2>

@@ -1,6 +1,6 @@
 import { createTrackedStore } from "@/store/createTrackedStore";
 
-export type UserStatus = "Standard" | "OnChainUnlinked" | "ProLinked";
+export type UserStatus = "Standard" | "ProLinked";
 
 interface PremiumState {
   userStatus: UserStatus;
@@ -8,7 +8,7 @@ interface PremiumState {
   linkedProfile: {
     profileId: string;
     handle: string;
-    linkedAt: string;
+    linkedAt: Date;
   } | null;
   isLoading: boolean;
   error: string | null;
@@ -17,7 +17,7 @@ interface PremiumState {
   setUserStatus: (status: UserStatus) => void;
   setIsPremium: (isPremium: boolean) => void;
   setLinkedProfile: (
-    profile: { profileId: string; handle: string; linkedAt: string } | null
+    profile: { profileId: string; handle: string; linkedAt: Date } | null
   ) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;

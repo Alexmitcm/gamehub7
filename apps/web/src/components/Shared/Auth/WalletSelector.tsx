@@ -4,7 +4,6 @@ import { Link } from "react-router";
 import type { Connector } from "wagmi";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import cn from "@/helpers/cn";
-import { handleError } from "@/helpers/errorHandler";
 import getWalletDetails from "@/helpers/getWalletDetails";
 
 const WalletSelector: FC = () => {
@@ -28,9 +27,7 @@ const WalletSelector: FC = () => {
   const handleConnect = async (connector: Connector) => {
     try {
       await connectAsync({ connector });
-    } catch (error: any) {
-      handleError(error, "Wallet Connection");
-    }
+    } catch {}
   };
 
   return activeConnector?.id ? (
@@ -47,9 +44,6 @@ const WalletSelector: FC = () => {
   ) : (
     <div className="inline-block w-full space-y-3 overflow-hidden text-left align-middle">
       {filteredConnectors.map((connector: any) => {
-        const walletDetails = getWalletDetails(connector.id);
-        const isMetaMask = connector.id === "injected";
-
         return (
           <button
             className={cn(
@@ -64,20 +58,13 @@ const WalletSelector: FC = () => {
             onClick={() => handleConnect(connector)}
             type="button"
           >
-            <div className="flex flex-col items-start">
-              <span>{walletDetails.name}</span>
-              {isMetaMask && (
-                <span className="text-gray-500 text-xs">
-                  Make sure MetaMask is installed
-                </span>
-              )}
-            </div>
+            <span>{getWalletDetails(connector.id).name}</span>
             <img
               alt={connector.id}
               className="size-6"
               draggable={false}
               height={24}
-              src={walletDetails.logo}
+              src={getWalletDetails(connector.id).logo}
               width={24}
             />
           </button>
