@@ -4,9 +4,24 @@ import TetherABI from "../abi/tether.json";
 
 // Environment detection
 export const IS_PRODUCTION = import.meta.env.VITE_IS_PRODUCTION === "true";
-export const HEY_API_URL = IS_PRODUCTION
-  ? "https://api.hey.xyz"
-  : import.meta.env.VITE_API_URL || "http://localhost:3010";
+
+// Determine API URL based on environment
+const getApiUrl = () => {
+  // If VITE_API_URL is explicitly set, use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // In production, use the same domain (Railway deployment)
+  if (IS_PRODUCTION) {
+    return window.location.origin;
+  }
+  
+  // Default to localhost for development
+  return "http://localhost:3010";
+};
+
+export const HEY_API_URL = getApiUrl();
 
 // 1. The definitive public RPC URL for Arbitrum One
 export const ARBITRUM_RPC_URL = "https://arb1.arbitrum.io/rpc";
