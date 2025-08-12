@@ -51,7 +51,7 @@ export const useUserReferralTree = () => {
           data: data.data.map((node: any) => ({
             balance: node.balance,
             depth: node.depth,
-            isUnbalanced: false // We'll add this later, 
+            isUnbalanced: false, // We'll add this later
             leftChild: node.leftChild,
             parent: node.parent,
             rightChild: node.rightChild,

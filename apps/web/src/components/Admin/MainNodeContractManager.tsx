@@ -178,6 +178,7 @@ const MainNodeContractManager = () => {
             className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
             disabled={isRewardReferralLoading}
             onClick={handleRewardReferral}
+            type="button"
           >
             {isRewardReferralLoading ? "Processing..." : "Reward Referral"}
           </button>
@@ -185,6 +186,7 @@ const MainNodeContractManager = () => {
             className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
             disabled={isClaimRewardLoading}
             onClick={handleClaimReward}
+            type="button"
           >
             {isClaimRewardLoading ? "Processing..." : "Claim Reward"}
           </button>
@@ -198,13 +200,16 @@ const MainNodeContractManager = () => {
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm" htmlFor="partner-address">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="partner-address"
+            >
               Partner Address
             </label>
             <div className="flex gap-2">
               <input
-                id="partner-address"
                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                id="partner-address"
                 onChange={(e) => setPartnerAddress(e.target.value)}
                 placeholder="0x..."
                 type="text"
@@ -214,18 +219,23 @@ const MainNodeContractManager = () => {
                 className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 disabled={isSetPartnerLoading}
                 onClick={handleSetPartner}
+                type="button"
               >
                 {isSetPartnerLoading ? "Setting..." : "Set Partner"}
               </button>
             </div>
           </div>
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="referral-address"
+            >
               Referral Address
             </label>
             <div className="flex gap-2">
               <input
                 className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                id="referral-address"
                 onChange={(e) => setReferralAddress(e.target.value)}
                 placeholder="0x..."
                 type="text"
@@ -235,6 +245,7 @@ const MainNodeContractManager = () => {
                 className="rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 disabled={isSetReferralLoading}
                 onClick={handleSetReferral}
+                type="button"
               >
                 {isSetReferralLoading ? "Setting..." : "Set Referral"}
               </button>
@@ -250,11 +261,15 @@ const MainNodeContractManager = () => {
         </h3>
         <div className="space-y-4">
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="role-select"
+            >
               Role
             </label>
             <select
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="role-select"
               onChange={(e) => setSelectedRole(e.target.value)}
               value={selectedRole}
             >
@@ -265,11 +280,15 @@ const MainNodeContractManager = () => {
             </select>
           </div>
           <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
+            <label
+              className="mb-2 block font-medium text-gray-700 text-sm"
+              htmlFor="target-address"
+            >
               Target Address
             </label>
             <input
               className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="target-address"
               onChange={(e) => setTargetAddress(e.target.value)}
               placeholder="0x..."
               type="text"
@@ -281,6 +300,7 @@ const MainNodeContractManager = () => {
               className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
               disabled={isRoleActionLoading}
               onClick={handleGrantRole}
+              type="button"
             >
               {isRoleActionLoading ? "Processing..." : "Grant Role"}
             </button>
@@ -288,6 +308,7 @@ const MainNodeContractManager = () => {
               className="rounded-lg bg-red-600 px-4 py-2 font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
               disabled={isRoleActionLoading}
               onClick={handleRevokeRole}
+              type="button"
             >
               {isRoleActionLoading ? "Processing..." : "Revoke Role"}
             </button>
@@ -295,6 +316,7 @@ const MainNodeContractManager = () => {
               className="rounded-lg bg-yellow-600 px-4 py-2 font-medium text-white transition-colors hover:bg-yellow-700 disabled:opacity-50"
               disabled={isRoleActionLoading}
               onClick={handleRenounceRole}
+              type="button"
             >
               {isRoleActionLoading ? "Processing..." : "Renounce Role"}
             </button>

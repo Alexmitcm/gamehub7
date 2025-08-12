@@ -343,11 +343,15 @@ const ReferralContractManager = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="registry-amount"
+              >
                 Registry Amount (wei)
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="registry-amount"
                 onChange={(e) =>
                   setFeeSettings((prev) => ({
                     ...prev,
@@ -360,11 +364,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="first-fee-percent"
+              >
                 First Fee Percent
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="first-fee-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
@@ -379,11 +387,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="second-fee-percent"
+              >
                 Second Fee Percent
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="second-fee-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
@@ -398,11 +410,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="third-fee-percent"
+              >
                 Third Fee Percent
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="third-fee-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
@@ -417,11 +433,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="first-fee-range"
+              >
                 First Fee Range (wei)
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="first-fee-range"
                 onChange={(e) =>
                   setFeeSettings((prev) => ({
                     ...prev,
@@ -434,11 +454,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="second-fee-range"
+              >
                 Second Fee Range (wei)
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="second-fee-range"
                 onChange={(e) =>
                   setFeeSettings((prev) => ({
                     ...prev,
@@ -451,11 +475,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="max-daily-payment"
+              >
                 Max Daily Payment (wei)
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="max-daily-payment"
                 onChange={(e) =>
                   setFeeSettings((prev) => ({
                     ...prev,
@@ -468,11 +496,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="max-value-of-point"
+              >
                 Max Value of Point (wei)
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="max-value-of-point"
                 onChange={(e) =>
                   setFeeSettings((prev) => ({
                     ...prev,
@@ -505,11 +537,15 @@ const ReferralContractManager = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="referral-vault-percent"
+              >
                 Referral Vault %
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="referral-vault-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
@@ -524,11 +560,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="game-vault-percent"
+              >
                 Game Vault %
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="game-vault-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
@@ -543,11 +583,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="dev-vault-percent"
+              >
                 Dev Vault %
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="dev-vault-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
@@ -562,11 +606,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="vip-vault-percent"
+              >
                 VIP Vault %
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="vip-vault-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
@@ -581,11 +629,15 @@ const ReferralContractManager = () => {
               />
             </div>
             <div>
-              <label className="mb-1 block font-medium text-gray-700 text-sm">
+              <label
+                className="mb-1 block font-medium text-gray-700 text-sm"
+                htmlFor="unbalanced-vault-percent"
+              >
                 Unbalanced Vault %
               </label>
               <input
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                id="unbalanced-vault-percent"
                 max="100"
                 min="0"
                 onChange={(e) =>
