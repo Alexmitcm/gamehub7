@@ -6,7 +6,7 @@
     "watchPatterns": ["apps/**", "packages/**/*"]
   },
   "deploy": {
-    "healthcheckPath": "/ping",
+    "healthcheckPath": "/",
     "healthcheckTimeout": 60,
     "limitOverride": {
       "containers": {
@@ -25,6 +25,6 @@
     "sleepApplication": false,
     "startCommand": "pnpm start"
   },
-  "ports": [4783, 8080],
+  "ports": [4783],
   "servicePort": 4783
 }
