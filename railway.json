@@ -18,5 +18,6 @@
     "runtime": "V2",
     "sleepApplication": false,
     "startCommand": "pnpm start"
-  }
+  },
+  "ports": [8080, 4783]
 }
