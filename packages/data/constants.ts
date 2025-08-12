@@ -21,7 +21,7 @@ export const getApiUrl = () => {
   if (typeof window !== "undefined") {
     const hostname = window.location.hostname;
     if (hostname.includes("netlify.app")) {
-      return "https://api.hey.xyz";
+      return "https://0xhub2-production.up.railway.app";
     }
   }
   return HEY_API_URL;
