@@ -4,7 +4,7 @@
 
 [build.environment]
   VITE_IS_PRODUCTION = "true"
-  VITE_API_URL = "https://api.hey.xyz"
+  VITE_API_URL = "https://0xhub2-production.up.railway.app"
   NEXT_PUBLIC_LENS_NETWORK = "mainnet"
   NODE_VERSION = "18"
   NPM_FLAGS = "--legacy-peer-deps"
@@ -16,5 +16,5 @@
 
 [context.production.environment]
   VITE_IS_PRODUCTION = "true"
-  VITE_API_URL = "https://api.hey.xyz"
+  VITE_API_URL = "https://0xhub2-production.up.railway.app"
   NEXT_PUBLIC_LENS_NETWORK = "mainnet"
