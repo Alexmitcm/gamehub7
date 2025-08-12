@@ -1,0 +1,13 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "buildCommand": "pnpm railway:build",
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "healthcheckPath": "/ping",
+    "healthcheckTimeout": 60,
+    "restartPolicyType": "ALWAYS",
+    "startCommand": "pnpm railway:start"
+  }
+}

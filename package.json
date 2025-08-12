@@ -6,15 +6,17 @@
   "scripts": {
     "biome:check": "biome check .",
     "biome:fix": "biome check --write .",
-    "build": "pnpm --recursive --parallel run build",
+    "build": "cd apps/api && pnpm codegen",
     "codegen": "pnpm --recursive --parallel run codegen",
     "dep:check": "pnpm dlx sherif@latest",
     "dep:fix": "pnpm dlx sherif@latest --fix",
     "dev": "pnpm --recursive --parallel run dev",
     "prepare": "husky install",
-    "start": "pnpm --recursive --parallel run start",
+    "start": "cd apps/api && tsx src/index.ts",
     "test": "pnpm --recursive --parallel run test",
-    "typecheck": "pnpm --recursive --parallel run typecheck"
+    "typecheck": "pnpm --recursive --parallel run typecheck",
+    "railway:build": "pnpm install && cd apps/api && pnpm codegen",
+    "railway:start": "cd apps/api && tsx src/index.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.1.2",

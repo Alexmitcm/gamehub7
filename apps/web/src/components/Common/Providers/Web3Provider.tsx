@@ -15,20 +15,21 @@ import getRpc from "@/helpers/getRpc";
 const connectors = [
   familyAccountsConnector(),
   walletConnect({
-    projectId: WALLETCONNECT_PROJECT_ID,
     metadata: {
-      name: "Hey Social",
       description: "Decentralized social media platform",
+      icons: ["https://hey.xyz/favicon.ico"],
+      name: "Hey Social",
       url:
         typeof window !== "undefined"
           ? window.location.origin
-          : "https://hey.xyz",
-      icons: ["https://hey.xyz/favicon.ico"]
-    }
+          : "https://hey.xyz"
+    },
+    projectId: WALLETCONNECT_PROJECT_ID,
+    showQrModal: true
   }),
   injected({
-    target: "metaMask",
-    shimDisconnect: true
+    shimDisconnect: true,
+    target: "metaMask"
   })
 ];
 

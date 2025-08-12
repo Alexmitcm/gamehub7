@@ -10,6 +10,8 @@
   NPM_FLAGS = "--legacy-peer-deps"
   # Force override of any cached values
   FORCE_API_URL = "https://0xhub2-production.up.railway.app"
+  # WalletConnect configuration
+  VITE_WALLETCONNECT_PROJECT_ID = "cd542acc70c2b548030f9901a52e70c8"
 
 [[redirects]]
   from = "/*"
@@ -22,3 +24,12 @@
   NEXT_PUBLIC_LENS_NETWORK = "mainnet"
   # Ensure production uses Railway API
   FORCE_RAILWAY_API = "true"
+  # WalletConnect configuration
+  VITE_WALLETCONNECT_PROJECT_ID = "cd542acc70c2b548030f9901a52e70c8"
+
+[context.deploy-preview.environment]
+  VITE_IS_PRODUCTION = "false"
+  VITE_API_URL = "https://0xhub2-production.up.railway.app"
+  NEXT_PUBLIC_LENS_NETWORK = "mainnet"
+  # WalletConnect configuration for preview deployments
+  VITE_WALLETCONNECT_PROJECT_ID = "cd542acc70c2b548030f9901a52e70c8"
