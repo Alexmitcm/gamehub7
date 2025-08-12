@@ -1,11 +1,13 @@
 [build]
   command = "pnpm build"
-  publish = "dist"
+  publish = "apps/web/dist"
 
 [build.environment]
   VITE_IS_PRODUCTION = "true"
   VITE_API_URL = "https://api.hey.xyz"
   NEXT_PUBLIC_LENS_NETWORK = "mainnet"
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[redirects]]
   from = "/*"
