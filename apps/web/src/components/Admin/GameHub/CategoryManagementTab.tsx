@@ -27,7 +27,7 @@ const CategoryManagementTab = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://defigame-production.up.railway.app/games/manage/categories"
+        "https://gamehub4-production.up.railway.app/games/manage/categories"
       );
       if (response.ok) {
         const data = await response.json();
@@ -58,7 +58,7 @@ const CategoryManagementTab = () => {
 
     try {
       const response = await fetch(
-        "https://defigame-production.up.railway.app/games/manage/categories",
+        "https://gamehub4-production.up.railway.app/games/manage/categories",
         {
           body: JSON.stringify({
             name: newCategoryName.trim(),
@@ -101,7 +101,7 @@ const CategoryManagementTab = () => {
 
     try {
       const response = await fetch(
-        `https://defigame-production.up.railway.app/games/manage/categories/${categoryId}`,
+        `https://gamehub4-production.up.railway.app/games/manage/categories/${categoryId}`,
         {
           method: "DELETE"
         }
