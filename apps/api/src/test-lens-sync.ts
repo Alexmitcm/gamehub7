@@ -4,7 +4,8 @@ import { config } from "dotenv";
 // Load environment variables
 config();
 
-const API_BASE_URL = process.env.HEY_API_URL || "http://localhost:3010";
+const API_BASE_URL =
+  process.env.HEY_API_URL || "https://defigame-production.up.railway.app";
 
 /**
  * Test the Lens authentication bridge

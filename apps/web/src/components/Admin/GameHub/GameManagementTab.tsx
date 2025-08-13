@@ -19,7 +19,7 @@ const GameManagementTab = () => {
   const fetchGames = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:3010/games/manage");
+      const response = await fetch("https://defigame-production.up.railway.app/games/manage");
       if (response.ok) {
         const data = await response.json();
         setGames(data.games || []);
@@ -40,7 +40,7 @@ const GameManagementTab = () => {
     if (!confirm("Are you sure you want to delete this game?")) return;
 
     try {
-      const response = await fetch(`http://localhost:3010/games/manage/${gameId}`, {
+      const response = await fetch(`https://defigame-production.up.railway.app/games/manage/${gameId}`, {
         method: "DELETE"
       });
 

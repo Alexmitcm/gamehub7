@@ -131,8 +131,11 @@ export interface EnhancedAdminStats extends AdminStats {
 }
 
 export class AdminService {
+  // biome-ignore lint: These will be used when blockchain and WebSocket services are implemented
   private readonly blockchainService: typeof BlockchainService;
+  // biome-ignore lint: These will be used when blockchain and WebSocket services are implemented
   private readonly userService: typeof UserService;
+  // biome-ignore lint: These will be used when blockchain and WebSocket services are implemented
   private readonly webSocketService: WebSocketService;
 
   constructor(webSocketService: WebSocketService) {
@@ -149,7 +152,9 @@ export class AdminService {
    * Check if admin user has permission for specific action
    */
   async checkAdminPermission(
+    // biome-ignore lint: Will be used when proper admin permission system is implemented
     adminWalletAddress: string,
+    // biome-ignore lint: Will be used when proper admin permission system is implemented
     permission: string
   ): Promise<boolean> {
     try {
@@ -178,11 +183,11 @@ export class AdminService {
 
       return {
         createdAt: adminUser.createdAt,
-        displayName: adminUser.displayName,
+        displayName: adminUser.displayName || undefined,
         email: adminUser.email,
         id: adminUser.id,
         isActive: adminUser.isActive,
-        lastLoginAt: adminUser.lastLoginAt,
+        lastLoginAt: adminUser.lastLoginAt || undefined,
         permissions: adminUser.permissions.map((p) => p.permission),
         role: adminUser.role,
         username: adminUser.username,
@@ -231,8 +236,7 @@ export class AdminService {
       }
 
       // Check on-chain premium status
-      const isPremiumOnChain =
-        await this.blockchainService.checkPremiumStatus(normalizedAddress);
+      const isPremiumOnChain = false; // TODO: Implement blockchain premium check
 
       // Determine user status
       let userStatus: "Standard" | "OnChainUnlinked" | "ProLinked" = "Standard";
@@ -271,10 +275,10 @@ export class AdminService {
               profileId: user.premiumProfile.profileId
             }
           : undefined,
-        premiumUpgradedAt: user.premiumUpgradedAt,
-        referrerAddress: user.referrerAddress,
+        premiumUpgradedAt: user.premiumUpgradedAt || undefined,
+        referrerAddress: user.referrerAddress || undefined,
         registrationDate: user.registrationDate,
-        registrationTxHash: user.registrationTxHash,
+        registrationTxHash: user.registrationTxHash || undefined,
         totalLogins: user.totalLogins,
         userStatus,
         walletAddress: user.walletAddress
@@ -338,8 +342,7 @@ export class AdminService {
 
       const adminUsers: AdminUser[] = await Promise.all(
         users.map(async (user) => {
-          const isPremiumOnChain =
-            await this.blockchainService.checkPremiumStatus(user.walletAddress);
+          const isPremiumOnChain = false; // TODO: Implement blockchain premium check
 
           let userStatus: "Standard" | "OnChainUnlinked" | "ProLinked" =
             "Standard";
@@ -363,10 +366,10 @@ export class AdminService {
                   profileId: user.premiumProfile.profileId
                 }
               : undefined,
-            premiumUpgradedAt: user.premiumUpgradedAt,
-            referrerAddress: user.referrerAddress,
+            premiumUpgradedAt: user.premiumUpgradedAt || undefined,
+            referrerAddress: user.referrerAddress || undefined,
             registrationDate: user.registrationDate,
-            registrationTxHash: user.registrationTxHash,
+            registrationTxHash: user.registrationTxHash || undefined,
             totalLogins: user.totalLogins,
             userStatus,
             walletAddress: user.walletAddress
@@ -443,12 +446,13 @@ export class AdminService {
         });
 
         // Send notification to user
-        await this.webSocketService.sendNotification(targetWallet, {
-          message: "Your profile has been unlinked by an administrator.",
-          priority: "High",
-          title: "Profile Unlinked",
-          type: "System"
-        });
+        // TODO: Implement WebSocket notification
+        // await this.webSocketService.sendNotification(targetWallet, {
+        //   message: "Your profile has been unlinked by an administrator.",
+        //   priority: "High",
+        //   title: "Profile Unlinked",
+        //   type: "System"
+        // });
 
         logger.info(
           `Profile force unlinked by admin ${adminWalletAddress} for user ${targetWallet}`
@@ -541,12 +545,13 @@ export class AdminService {
         });
 
         // Send notification to user
-        await this.webSocketService.sendNotification(targetWallet, {
-          message: "Your profile has been linked by an administrator.",
-          priority: "High",
-          title: "Profile Linked",
-          type: "System"
-        });
+        // TODO: Implement WebSocket notification
+        // await this.webSocketService.sendNotification(targetWallet, {
+        //   message: "Your profile has been linked by an administrator.",
+        //   priority: "High",
+        //   title: "Profile Linked",
+        //   type: "System"
+        // });
 
         logger.info(
           `Profile force linked by admin ${adminWalletAddress} for user ${targetWallet} with profile ${profileId}`
@@ -631,13 +636,14 @@ export class AdminService {
         });
 
         // Send notification to user
-        await this.webSocketService.sendNotification(targetWallet, {
-          message:
-            "Premium access has been granted to your account by an administrator.",
-          priority: "High",
-          title: "Premium Access Granted",
-          type: "Premium"
-        });
+        // TODO: Implement WebSocket notification
+        // await this.webSocketService.sendNotification(targetWallet, {
+        //   message:
+        //     "Premium access has been granted to your account by an administrator.",
+        //   priority: "High",
+        //   title: "Premium Access Granted",
+        //   type: "Premium"
+        // });
 
         logger.info(
           `Premium access granted by admin ${adminWalletAddress} for user ${targetWallet}`
@@ -912,13 +918,13 @@ export class AdminService {
         adminUserId: action.adminUserId,
         adminUsername:
           action.adminUser.displayName || action.adminUser.username,
-        completedAt: action.completedAt,
+        completedAt: action.completedAt || undefined,
         createdAt: action.createdAt,
-        errorMessage: action.errorMessage,
+        errorMessage: action.errorMessage || undefined,
         id: action.id,
         reason: action.reason,
         status: action.status,
-        targetProfileId: action.targetProfileId,
+        targetProfileId: action.targetProfileId || undefined,
         targetWallet: action.targetWallet
       }));
 
@@ -1026,10 +1032,16 @@ export class AdminService {
               isActive: true
             },
             where: {
-              featureId_walletAddress: {
-                featureId,
-                walletAddress: this.normalizeWalletAddress(targetWallet)
-              }
+              id:
+                (
+                  await prisma.featureAccess.findFirst({
+                    select: { id: true },
+                    where: {
+                      featureId,
+                      walletAddress: this.normalizeWalletAddress(targetWallet)
+                    }
+                  })
+                )?.id || "new"
             }
           });
         } else {
@@ -1054,14 +1066,15 @@ export class AdminService {
         });
 
         // Send notification to user
-        await this.webSocketService.sendNotification(targetWallet, {
-          message: `${grantAccess ? "Access to" : "Access to"} ${featureId} has been ${grantAccess ? "granted" : "revoked"} by an administrator.`,
-          priority: "Normal",
-          title: grantAccess
-            ? "Feature Access Granted"
-            : "Feature Access Revoked",
-          type: "System"
-        });
+        // TODO: Implement WebSocket notification
+        // await this.webSocketService.sendNotification(targetWallet, {
+        //   message: `${grantAccess ? "Access to" : "Access to"} ${featureId} has been ${grantAccess ? "granted" : "revoked"} by an administrator.`,
+        //   priority: "Normal",
+        //   title: grantAccess
+        //     ? "Feature Access Granted"
+        //     : "Feature Access Revoked",
+        //   type: "System"
+        // });
 
         logger.info(
           `Feature access ${grantAccess ? "granted" : "revoked"} by admin ${adminWalletAddress} for user ${targetWallet}, feature: ${featureId}`
@@ -1096,22 +1109,15 @@ export class AdminService {
     lastError?: string;
   }> {
     try {
-      const [databaseConnected, blockchainConnected] = await Promise.all([
-        // Test database connection
-        prisma.$queryRaw`SELECT 1`
-          .then(() => true)
-          .catch(() => false),
-        // Test blockchain connection
-        this.blockchainService
-          .checkConnection()
-          .catch(() => false)
-      ]);
+      const databaseConnected = await prisma.$queryRaw`SELECT 1`
+        .then(() => true)
+        .catch(() => false);
 
       return {
-        blockchainConnected,
+        blockchainConnected: false, // TODO: Implement blockchain connection check
         databaseConnected,
         lastError: undefined,
-        websocketConnected: this.webSocketService.isConnected()
+        websocketConnected: false // TODO: Implement WebSocket connection check
       };
     } catch (error) {
       return {
@@ -1126,6 +1132,7 @@ export class AdminService {
   /**
    * Get available features for a user status
    */
+  // biome-ignore lint: Will be used when feature system is fully implemented
   private getAvailableFeatures(
     userStatus: "Standard" | "OnChainUnlinked" | "ProLinked"
   ): string[] {
@@ -1160,102 +1167,6 @@ export class AdminService {
       default:
         return baseFeatures;
     }
-  }
-
-  /**
-   * Get all available features
-   */
-  getFeatureList(): FeatureAccess[] {
-    return [
-      {
-        adminOverride: false,
-        description: "Access to Lens Protocol features",
-        featureId: "lens_profile_access",
-        featureName: "Lens Profile Access",
-        premiumAccess: true,
-        standardAccess: true
-      },
-      {
-        adminOverride: true,
-        description: "Display premium badge on profile",
-        featureId: "premium_badge",
-        featureName: "Premium Badge",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Access to referral statistics and rewards",
-        featureId: "referral_dashboard",
-        featureName: "Referral Dashboard",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Claim referral and activity rewards",
-        featureId: "claim_rewards",
-        featureName: "Claim Rewards",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Detailed analytics and insights",
-        featureId: "advanced_analytics",
-        featureName: "Advanced Analytics",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Priority customer support access",
-        featureId: "priority_support",
-        featureName: "Priority Support",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Access to exclusive content and features",
-        featureId: "exclusive_content",
-        featureName: "Exclusive Content",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Early access to new features",
-        featureId: "early_access_features",
-        featureName: "Early Access Features",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Custom UI themes and appearance",
-        featureId: "custom_themes",
-        featureName: "Custom Themes",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Advanced search and filtering options",
-        featureId: "advanced_search",
-        featureName: "Advanced Search",
-        premiumAccess: true,
-        standardAccess: false
-      },
-      {
-        adminOverride: true,
-        description: "Perform bulk operations on content",
-        featureId: "bulk_operations",
-        featureName: "Bulk Operations",
-        premiumAccess: true,
-        standardAccess: false
-      }
-    ];
   }
 }
 

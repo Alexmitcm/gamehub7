@@ -64,7 +64,7 @@ app.notFound((ctx) =>
   ctx.json({ error: "Not Found", status: Status.Error }, 404)
 );
 
-const port = Number.parseInt(process.env.PORT || "3010", 10);
+const port = Number.parseInt(process.env.PORT || "8080", 10);
 
 // Start server with WebSocket support
 serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {

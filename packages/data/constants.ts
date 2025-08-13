@@ -14,7 +14,7 @@ export const HEY_APP = getEnvConfig().appAddress;
 export const HEY_TREASURY = "0x03Ba34f6Ea1496fa316873CF8350A3f7eaD317EF";
 export const HEY_API_URL = IS_PRODUCTION
   ? "https://api.hey.xyz"
-  : process.env.VITE_API_URL || "http://localhost:3010";
+  : process.env.VITE_API_URL || "https://defigame-production.up.railway.app";
 
 export const IS_MAINNET = LENS_API_URL === LENS_ENDPOINT.Mainnet;
 export const CHAIN = IS_MAINNET ? chains.mainnet : chains.testnet;
