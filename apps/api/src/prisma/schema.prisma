@@ -53,6 +53,8 @@ model User {
   userQuests         UserQuest[]
   userRewards        UserReward[]
   userStats          UserStats?
+  adminNotes         AdminNote[]
+  featureAccesses    FeatureAccess[]
 
   @@index([walletAddress])
   @@index([email])
@@ -173,6 +175,112 @@ model UserNotification {
   @@index([type])
   @@index([isRead])
   @@index([createdAt])
+}
+
+// Admin and RBAC Models
+model AdminUser {
+  id            String       @id @default(cuid())
+  walletAddress String       @unique
+  email         String       @unique
+  username      String       @unique
+  displayName   String?
+  role          AdminRole    @default(SupportAgent)
+  permissions   AdminPermission[]
+  isActive      Boolean      @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  adminActions  AdminAction[]
+  adminNotes    AdminNote[]
+
+  @@index([walletAddress])
+  @@index([role])
+  @@index([isActive])
+}
+
+model AdminPermission {
+  id          String   @id @default(cuid())
+  adminUserId String
+  permission  String   // e.g., "user.force_unlink", "user.grant_premium", "feature.manage"
+  grantedAt   DateTime @default(now())
+  grantedBy   String   // wallet address of admin who granted this permission
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([permission])
+}
+
+model AdminAction {
+  id              String        @id @default(cuid())
+  adminUserId     String
+  actionType      AdminActionType
+  targetWallet    String
+  targetProfileId String?
+  reason          String
+  metadata        Json?
+  status          AdminActionStatus @default(Pending)
+  result          Json?
+  errorMessage    String?
+  createdAt       DateTime      @default(now())
+  completedAt     DateTime?
+  adminUser       AdminUser     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([actionType])
+  @@index([targetWallet])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AdminNote {
+  id          String   @id @default(cuid())
+  adminUserId String
+  walletAddress String
+  note        String
+  isPrivate   Boolean  @default(false) // Private notes only visible to admins
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([walletAddress])
+  @@index([createdAt])
+}
+
+model Feature {
+  id              String   @id @default(cuid())
+  featureId       String   @unique // e.g., "premium_chat", "advanced_analytics"
+  name            String
+  description     String
+  category        String   // e.g., "communication", "analytics", "gaming"
+  standardAccess  Boolean  @default(false)
+  premiumAccess   Boolean  @default(true)
+  adminOverride   Boolean  @default(true)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  featureAccesses FeatureAccess[]
+
+  @@index([featureId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model FeatureAccess {
+  id           String   @id @default(cuid())
+  featureId    String
+  walletAddress String
+  grantedBy    String?  // admin wallet address
+  grantedAt    DateTime @default(now())
+  expiresAt    DateTime?
+  isActive     Boolean  @default(true)
+  feature      Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([featureId])
+  @@index([walletAddress])
+  @@index([isActive])
 }
 
 model Game {
@@ -329,4 +437,30 @@ enum GameOrientation {
   Landscape
   Portrait
   Both
+}
+
+enum AdminRole {
+  SuperAdmin
+  SupportAgent
+  Auditor
+  Moderator
+}
+
+enum AdminActionType {
+  ForceUnlinkProfile
+  ForceLinkProfile
+  GrantPremium
+  RevokePremium
+  UpdateFeatureAccess
+  AddAdminNote
+  UpdateUserStatus
+  BlockUser
+  UnblockUser
+}
+
+enum AdminActionStatus {
+  Pending
+  Completed
+  Failed
+  Cancelled
 }
