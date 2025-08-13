@@ -16,8 +16,8 @@ COPY packages/indexer/package.json ./packages/indexer/
 COPY packages/types/package.json ./packages/types/
 COPY packages/config/package.json ./packages/config/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (ignore supabase warnings)
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy source code
 COPY . .
