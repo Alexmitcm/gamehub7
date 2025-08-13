@@ -1,6 +1,6 @@
 import { SparklesIcon } from "@heroicons/react/24/outline";
-import { useSimplePremium } from "@/hooks/useSimplePremium";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
+import { useSimplePremium } from "@/hooks/useSimplePremium";
 
 const JoinProBanner = () => {
   const { premiumStatus, isLoading } = useSimplePremium();

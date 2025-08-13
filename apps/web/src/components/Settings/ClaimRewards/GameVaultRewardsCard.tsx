@@ -42,9 +42,9 @@ const GameVaultRewardsCard = () => {
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <h3 className="mb-4 font-semibold text-gray-900 text-lg dark:text-white">
-        Balanced Game Vault Rewards
-      </h3>
+             <h3 className="mb-4 font-semibold text-gray-900 text-lg dark:text-white">
+         Balanced Game Vault Rewards
+       </h3>
 
       <div className="mb-4">
         <div className="text-gray-500 text-sm dark:text-gray-400">

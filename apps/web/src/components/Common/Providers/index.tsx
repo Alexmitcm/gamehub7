@@ -4,11 +4,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "@/components/Common/ErrorBoundary";
-import SimplePremiumProvider from "@/components/Premium/SimplePremiumProvider";
 import authLink from "@/helpers/authLink";
 import { ThemeProvider } from "@/hooks/useTheme";
 import PreferencesProvider from "./PreferencesProvider";
 import Web3Provider from "./Web3Provider";
+import SimplePremiumProvider from "@/components/Premium/SimplePremiumProvider";
 
 export const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } }
@@ -29,7 +29,9 @@ const Providers = ({ children }: ProvidersProps) => {
             <PreferencesProvider>
               <HelmetProvider>
                 <ThemeProvider>
-                  <SimplePremiumProvider>{children}</SimplePremiumProvider>
+                  <SimplePremiumProvider>
+                    {children}
+                  </SimplePremiumProvider>
                 </ThemeProvider>
               </HelmetProvider>
             </PreferencesProvider>

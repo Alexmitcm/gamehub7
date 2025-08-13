@@ -15,4 +15,4 @@ const PremiumProvider = ({ children }: PremiumProviderProps) => {
   );
 };
 
-export default PremiumProvider;
+export default PremiumProvider; 

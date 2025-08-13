@@ -45,12 +45,12 @@ async function simpleWalletTest() {
     ];
 
     console.log("📋 Required Environment Variables:");
-    for (const envVar of requiredEnvVars) {
+    requiredEnvVars.forEach((envVar) => {
       const value = process.env[envVar];
       const status = value ? "✅ SET" : "❌ MISSING";
       const displayValue = value ? `${value.substring(0, 20)}...` : "Not set";
       console.log(`   ${envVar}: ${status} (${displayValue})`);
-    }
+    });
 
     // Test 3: Database Connection Test (if DATABASE_URL is available)
     console.log("\n🗄️ 3. Database Connection Test...");
@@ -133,7 +133,7 @@ async function simpleWalletTest() {
       usdt: process.env.USDT_CONTRACT_ADDRESS
     };
 
-    for (const [name, address] of Object.entries(contractAddresses)) {
+    Object.entries(contractAddresses).forEach(([name, address]) => {
       if (address) {
         const isValid = /^0x[a-fA-F0-9]{40}$/.test(address);
         console.log(
@@ -142,7 +142,7 @@ async function simpleWalletTest() {
       } else {
         console.log(`   ${name}: ❌ MISSING`);
       }
-    }
+    });
 
     // Test 6: Summary Report
     console.log("\n📊 6. Summary Report...");
@@ -188,11 +188,11 @@ async function simpleWalletTest() {
       console.log(
         "   To run full tests, set the following environment variables:"
       );
-      for (const envVar of requiredEnvVars) {
+      requiredEnvVars.forEach((envVar) => {
         if (!process.env[envVar]) {
           console.log(`   - ${envVar}`);
         }
-      }
+      });
     }
 
     if (

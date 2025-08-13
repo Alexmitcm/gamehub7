@@ -41,11 +41,10 @@ const { useStore: usePremiumStore } = createTrackedStore<PremiumState>(
     setLinkedProfile: (profile) => set({ linkedProfile: profile }),
     setLoading: (loading) => set({ isLoading: loading }),
 
-    setUserStatus: (status) =>
-      set({
-        isPremium: status === "ProLinked",
-        userStatus: status
-      })
+    setUserStatus: (status) => set({ 
+      userStatus: status,
+      isPremium: status === "ProLinked"
+    })
   })
 );
 

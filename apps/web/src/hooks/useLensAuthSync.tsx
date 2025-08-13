@@ -15,7 +15,7 @@ import {
 export const useLensAuthSync = () => {
   const lastSyncAttempt = useRef<number>(0);
   const [isInitialized, setIsInitialized] = useState(false);
-
+  
   const {
     mutate: syncLens,
     isPending,
@@ -27,13 +27,44 @@ export const useLensAuthSync = () => {
         lensAccessToken?.length || 0
       );
 
-      // First, debug the token to understand what's happening (optional)
+      // Validate token format first
+      if (!lensAccessToken || lensAccessToken.length < 50) {
+        throw new Error("Invalid Lens token format");
+      }
+
+      // Check if token looks like a valid JWT
+      const tokenParts = lensAccessToken.split(".");
+      if (tokenParts.length !== 3) {
+        throw new Error("Invalid JWT token format");
+      }
+
+      // Try to decode and validate token payload
+      try {
+        const payload = JSON.parse(atob(tokenParts[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (payload.exp && payload.exp < currentTime) {
+          throw new Error("Lens token is expired");
+        }
+        
+        if (!payload.sub) {
+          throw new Error("Lens token missing subject");
+        }
+      } catch (decodeError) {
+        if (decodeError instanceof Error && decodeError.message.includes("expired")) {
+          throw decodeError;
+        }
+        console.warn("🔍 Could not decode token payload, proceeding with sync");
+      }
+
+      // First, debug the token to understand what's happening
       try {
         const debugResponse = await hono.auth.debugToken(lensAccessToken);
         console.log("🔍 Lens token debug info:", debugResponse);
 
         if (!debugResponse.success) {
           console.warn("🔍 Token debug failed:", debugResponse.error);
+          // Continue with sync even if debug fails
         } else if (debugResponse.tokenInfo?.isExpired) {
           throw new Error("Lens token is expired");
         } else if (!debugResponse.tokenInfo?.walletAddress) {
@@ -41,7 +72,6 @@ export const useLensAuthSync = () => {
         }
       } catch (debugError) {
         console.error("🔍 Token debug error:", debugError);
-        // If debug fails due to network issues, continue with sync
         // If debug fails due to token issues, throw the error
         if (
           debugError instanceof Error &&
@@ -61,13 +91,16 @@ export const useLensAuthSync = () => {
     onError: (error) => {
       console.error("Failed to sync Lens authentication:", error);
 
-      // If the error is due to an invalid token, we should clear the invalid token
+      // If the error is due to an invalid or expired token, clear it
       if (
         error.message.includes("Invalid Lens access token") ||
         error.message.includes("Authentication failed") ||
-        error.message.includes("401")
+        error.message.includes("401") ||
+        error.message.includes("expired") ||
+        error.message.includes("Invalid JWT token format") ||
+        error.message.includes("Invalid Lens token format")
       ) {
-        console.log("🔍 Clearing invalid Lens token due to sync failure");
+        console.log("🔍 Clearing invalid/expired Lens token due to sync failure");
         signOut();
       }
     },
@@ -130,7 +163,7 @@ export const useLensAuthSync = () => {
     // Additional validation: check if token contains test data
     try {
       const payload = JSON.parse(atob(tokenParts[1]));
-      if (payload.sub?.includes("1234567890abcdef")) {
+      if (payload.sub && payload.sub.includes("1234567890abcdef")) {
         console.error(
           "🔍 Token contains test data, clearing and skipping auto-sync"
         );

@@ -26,60 +26,6 @@
     <link rel="stylesheet" href="/src/font.css" />
     <link rel="stylesheet" href="/src/styles.css" />
 
-    <!-- Early Wagmi warning suppression -->
-    <script>
-      (function() {
-        // Store original console methods immediately
-        const originalLog = console.log;
-        const originalWarn = console.warn;
-        const originalError = console.error;
-
-                 // Filter function for Wagmi warnings
-         function shouldSuppress(args) {
-           // Convert arguments-like object to array
-           var argsArray = Array.prototype.slice.call(args);
-           return argsArray.some(function(arg) {
-             // String checks
-             if (typeof arg === 'string') {
-               var lowerArg = arg.toLowerCase();
-               return lowerArg.includes('restore will override') || 
-                      lowerArg.includes('core/history') || 
-                      lowerArg.includes('wagmi');
-             }
-             
-             // Object checks
-             if (typeof arg === 'object' && arg !== null) {
-               return arg.msg === 'Restore will override. history' ||
-                      arg.context === 'core/history' ||
-                      arg.level === 50 ||
-                      (arg.msg && arg.msg.includes('Restore will override')) ||
-                      (arg.context && arg.context.includes('core/history'));
-             }
-             
-             return false;
-           });
-         }
-
-        // Override console methods
-        console.log = function() {
-          if (shouldSuppress(arguments)) return;
-          originalLog.apply(console, arguments);
-        };
-
-        console.warn = function() {
-          if (shouldSuppress(arguments)) return;
-          originalWarn.apply(console, arguments);
-        };
-
-        console.error = function() {
-          if (shouldSuppress(arguments)) return;
-          originalError.apply(console, arguments);
-        };
-
-        console.log('🚫 Early Wagmi warning suppression loaded');
-      })();
-    </script>
-
     <!-- Cloudflare Insights - disabled in development -->
     <script>
       if (window.location.hostname !== 'localhost') {

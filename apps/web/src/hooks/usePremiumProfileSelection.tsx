@@ -70,7 +70,7 @@ export function usePremiumProfileSelection() {
   };
 
   // Fetch premium status for the connected wallet (GET with auth)
-  const fetchPremiumStatusWithAuth = async (_walletAddress: string) => {
+  const fetchPremiumStatusWithAuth = async (walletAddress: string) => {
     try {
       setIsLoading(true);
       setError(null);

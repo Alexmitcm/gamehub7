@@ -25,9 +25,9 @@ const NodeInspector = ({ node, isVisible, onClose }: NodeInspectorProps) => {
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-60 bg-white/95 p-2 shadow-xl backdrop-blur-sm sm:w-68 md:w-76 md:p-3 lg:w-84 lg:p-4 xl:w-96 xl:p-6">
+    <div className="fixed inset-y-0 right-0 z-50 w-60 bg-white/95 p-2 shadow-xl backdrop-blur-sm sm:w-68 md:w-76 lg:w-84 xl:w-96 md:p-3 lg:p-4 xl:p-6">
       <div className="mb-2 flex items-center justify-between md:mb-3 lg:mb-4 xl:mb-6">
-        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-base lg:text-lg">
+        <h3 className="font-semibold text-xs text-gray-900 sm:text-sm md:text-base lg:text-lg">
           Node Inspector
         </h3>
         <button
@@ -39,7 +39,7 @@ const NodeInspector = ({ node, isVisible, onClose }: NodeInspectorProps) => {
         </button>
       </div>
 
-      <div className="max-h-[calc(100vh-120px)] space-y-1.5 overflow-y-auto md:space-y-2 lg:space-y-3 xl:space-y-4">
+      <div className="space-y-1.5 md:space-y-2 lg:space-y-3 xl:space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
         {/* Player Address */}
         <div className="rounded-lg border border-gray-200 p-1.5 md:p-2 lg:p-3 xl:p-4">
           <div className="mb-1 flex items-center justify-between md:mb-1.5 lg:mb-2">
@@ -140,9 +140,7 @@ const NodeInspector = ({ node, isVisible, onClose }: NodeInspectorProps) => {
         {/* Balance */}
         <div className="rounded-lg border border-gray-200 p-1.5 md:p-2 lg:p-3 xl:p-4">
           <div className="mb-1 md:mb-1.5 lg:mb-2">
-            <span className="font-medium text-gray-900 text-xs sm:text-xs md:text-sm">
-              Balance
-            </span>
+            <span className="font-medium text-gray-900 text-xs sm:text-xs md:text-sm">Balance</span>
           </div>
           <div className="font-mono text-gray-700 text-xs sm:text-xs md:text-sm">
             {Number(node.balance).toFixed(4)} USDT
@@ -152,25 +150,17 @@ const NodeInspector = ({ node, isVisible, onClose }: NodeInspectorProps) => {
         {/* Points */}
         <div className="rounded-lg border border-gray-200 p-1.5 md:p-2 lg:p-3 xl:p-4">
           <div className="mb-1 md:mb-1.5 lg:mb-2">
-            <span className="font-medium text-gray-900 text-xs sm:text-xs md:text-sm">
-              Points
-            </span>
+            <span className="font-medium text-gray-900 text-xs sm:text-xs md:text-sm">Points</span>
           </div>
-          <div className="font-mono text-gray-700 text-xs sm:text-xs md:text-sm">
-            {node.point}
-          </div>
+          <div className="font-mono text-gray-700 text-xs sm:text-xs md:text-sm">{node.point}</div>
         </div>
 
         {/* Depth */}
         <div className="rounded-lg border border-gray-200 p-1.5 md:p-2 lg:p-3 xl:p-4">
           <div className="mb-1 md:mb-1.5 lg:mb-2">
-            <span className="font-medium text-gray-900 text-xs sm:text-xs md:text-sm">
-              Depth
-            </span>
+            <span className="font-medium text-gray-900 text-xs sm:text-xs md:text-sm">Depth</span>
           </div>
-          <div className="font-mono text-gray-700 text-xs sm:text-xs md:text-sm">
-            {node.depth}
-          </div>
+          <div className="font-mono text-gray-700 text-xs sm:text-xs md:text-sm">{node.depth}</div>
         </div>
 
         {/* Start Time - Ensured to be visible */}

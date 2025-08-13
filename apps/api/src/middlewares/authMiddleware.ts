@@ -1,6 +1,7 @@
 import { LENS_API_URL } from "@hey/data/constants";
 import type { Context, Next } from "hono";
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import JwtService from "../services/JwtService";
 
 const jwksUri = `${LENS_API_URL.replace("/graphql", "")}/.well-known/jwks.json`;
 // Cache the JWKS for 12 hours
@@ -15,7 +16,7 @@ const authMiddleware = async (c: Context, next: Next) => {
   if (!token) {
     // Try Authorization header
     const authHeader = c.req.header("Authorization");
-    if (authHeader?.startsWith("Bearer ")) {
+    if (authHeader && authHeader.startsWith("Bearer ")) {
       token = authHeader.substring(7); // Remove "Bearer " prefix
     }
   }
@@ -30,13 +31,36 @@ const authMiddleware = async (c: Context, next: Next) => {
   }
 
   try {
-    const { payload } = await jwtVerify(token, JWKS);
+    // First try to verify with our own JWT service (more reliable)
+    const decodedToken = JwtService.verifyToken(token);
+    if (decodedToken) {
+      c.set("jwtPayload", decodedToken);
+      c.set("verifiedToken", token);
+      c.set("walletAddress", decodedToken.walletAddress);
+      c.set("account", decodedToken.walletAddress);
+      return next();
+    }
 
-    // Set the verified payload in context for use in route handlers
-    c.set("jwtPayload", payload);
-    c.set("verifiedToken", token);
+    // If our JWT service fails, try Lens JWT as fallback
+    try {
+      const { payload } = await jwtVerify(token, JWKS);
 
-    return next();
+      // Set the verified payload in context for use in route handlers
+      c.set("jwtPayload", payload);
+      c.set("verifiedToken", token);
+
+      // Extract wallet address from Lens JWT
+      const walletAddress = payload.act?.sub;
+      if (walletAddress) {
+        c.set("walletAddress", walletAddress);
+        c.set("account", walletAddress);
+      }
+
+      return next();
+    } catch (lensError) {
+      // Both verifications failed
+      throw lensError;
+    }
   } catch (error) {
     console.error("JWT verification failed:", error);
     return c.json({ error: "Unauthorized - Invalid token" }, 401);

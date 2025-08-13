@@ -4,12 +4,12 @@ import JwtService from "../services/JwtService";
 
 const generateTestJwt = async (c: Context) => {
   try {
-    const { walletAddress, profileId } = await c.req.json();
+    const { walletAddress } = await c.req.json();
 
-    if (!walletAddress || !profileId) {
+    if (!walletAddress) {
       return c.json(
         {
-          error: "walletAddress and profileId are required",
+          error: "walletAddress is required",
           status: Status.Error,
           success: false
         },
@@ -19,16 +19,14 @@ const generateTestJwt = async (c: Context) => {
 
     // Generate a test JWT with the provided data
     const token = JwtService.generateToken({
-      isPremium: false, // Default to false for testing
-      profileId,
+      status: "Standard",
       walletAddress
     });
 
     return c.json(
       {
         data: {
-          isPremium: false,
-          profileId,
+          status: "Standard",
           token,
           walletAddress
         },

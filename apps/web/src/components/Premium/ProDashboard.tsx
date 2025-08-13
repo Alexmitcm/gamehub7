@@ -6,11 +6,13 @@ import {
 } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { formatEther } from "viem";
-
+import { useAccount } from "wagmi";
 import { useLinkedProfile, useProfileStats } from "@/hooks/usePremium";
+
 
 const ProDashboard = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { address: connectedAddress } = useAccount();
 
   const {
     data: statsData,
@@ -227,6 +229,9 @@ const ProDashboard = () => {
             </div>
           </div>
         )}
+
+
+
     </div>
   );
 };

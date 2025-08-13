@@ -3,6 +3,7 @@ import {
   BookmarkIcon as BookmarkOutline,
   GlobeAltIcon as GlobeOutline,
   HomeIcon as HomeOutline,
+  PlayIcon as PlayOutline,
   UserCircleIcon,
   UserGroupIcon as UserGroupOutline
 } from "@heroicons/react/24/outline";
@@ -11,6 +12,7 @@ import {
   BookmarkIcon as BookmarkSolid,
   GlobeAltIcon as GlobeSolid,
   HomeIcon as HomeSolid,
+  PlayIcon as PlaySolid,
   UserGroupIcon as UserGroupSolid
 } from "@heroicons/react/24/solid";
 import { STATIC_IMAGES_URL } from "@hey/data/constants";
@@ -40,6 +42,11 @@ const navigationItems = {
     solid: <GlobeSolid className="size-6" />,
     title: "Explore"
   },
+  "/gamehub": {
+    outline: <PlayOutline className="size-6" />,
+    solid: <PlaySolid className="size-6" />,
+    title: "Game Hub"
+  },
   "/groups": {
     outline: <UserGroupOutline className="size-6" />,
     solid: <UserGroupSolid className="size-6" />,
@@ -63,6 +70,7 @@ const NavItems = memo(({ isLoggedIn }: { isLoggedIn: boolean }) => {
   const routes = [
     "/",
     "/explore",
+    "/gamehub",
     ...(isLoggedIn ? ["/notifications", "/groups", "/bookmarks"] : [])
   ];
 

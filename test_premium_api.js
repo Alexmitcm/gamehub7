@@ -5,21 +5,18 @@ const testPremiumAPI = async () => {
 
   try {
     console.log("🧪 Testing Premium API...");
-
+    
     // Test simple status endpoint
-    const response = await fetch(
-      "http://localhost:3003/api/premium/simple-status",
-      {
-        body: JSON.stringify({
-          profileId: testProfileId,
-          walletAddress: testWallet
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        method: "POST"
-      }
-    );
+    const response = await fetch("http://localhost:3003/api/premium/simple-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        walletAddress: testWallet,
+        profileId: testProfileId
+      })
+    });
 
     const data = await response.json();
     console.log("✅ API Response:", data);
@@ -33,10 +30,11 @@ const testPremiumAPI = async () => {
     } else {
       console.log("❌ API returned error:", data);
     }
+
   } catch (error) {
     console.error("❌ API test failed:", error.message);
   }
 };
 
 // Run the test
-testPremiumAPI();
+testPremiumAPI(); 

@@ -3,12 +3,14 @@ import {
   BoltIcon,
   GlobeAltIcon as GlobeOutline,
   HomeIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  PlayIcon
 } from "@heroicons/react/24/outline";
 import {
   BellIcon as BellIconSolid,
   GlobeAltIcon as GlobeSolid,
-  HomeIcon as HomeIconSolid
+  HomeIcon as HomeIconSolid,
+  PlayIcon as PlayIconSolid
 } from "@heroicons/react/24/solid";
 import getAvatar from "@hey/helpers/getAvatar";
 import type { MouseEvent, ReactNode } from "react";
@@ -73,6 +75,12 @@ const BottomNavigation = () => {
       outline: <GlobeOutline className="size-6" />,
       path: "/explore",
       solid: <GlobeSolid className="size-6" />
+    },
+    {
+      label: "Game Hub",
+      outline: <PlayIcon className="size-6" />,
+      path: "/gamehub",
+      solid: <PlayIconSolid className="size-6" />
     },
     {
       label: "Notifications",

@@ -52,12 +52,10 @@ export class ProfileService {
 
   async getProfileById(profileId: string): Promise<LensProfile | null> {
     try {
-      // Check if this is a mock profile ID (wallet address format)
+      // Check if this is a mock profile (wallet address as profile ID)
+      // This is a temporary fix for the mock profile system
       if (profileId.startsWith("0x") && profileId.length === 42) {
-        logger.info(`Mock profile lookup for profile ID: ${profileId}`);
-
-        // Return a mock profile for wallet address format IDs
-        // This is a temporary fix until we resolve the Lens API issue
+        logger.info(`Mock profile lookup for profileId (wallet): ${profileId}`);
         return {
           handle: "soli",
           id: profileId,
@@ -66,7 +64,6 @@ export class ProfileService {
         };
       }
 
-      // For real Lens profile IDs, try to query the Lens API
       const query = `
         query GetProfile($request: ProfileRequest!) {
           profile(request: $request) {

@@ -9,10 +9,6 @@ export const onRequest = async (context: Context) => {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  // Get API URL from environment or use Railway URL as fallback
-  const API_BASE_URL =
-    process.env.VITE_API_URL || "https://defigame-production.up.railway.app";
-
   const isBot =
     /bot|baidu|iframely|whatsapp|babbar|bytedance|facebook|meta/.test(
       userAgent
@@ -40,10 +36,10 @@ export const onRequest = async (context: Context) => {
     let targetUrl: string;
 
     if (!path || path === "/sitemap.xml") {
-      targetUrl = `${API_BASE_URL}/sitemap/all.xml`;
+      targetUrl = "https://api.hey.xyz/sitemap/all.xml";
     } else {
       const actualPath = path.replace("/sitemap/", "/");
-      targetUrl = `${API_BASE_URL}/sitemap${actualPath}`;
+      targetUrl = `https://api.hey.xyz/sitemap${actualPath}`;
     }
 
     return createNoCacheResponse(targetUrl);
@@ -55,7 +51,7 @@ export const onRequest = async (context: Context) => {
       path.startsWith("/posts/") ||
       path.startsWith("/g/"))
   ) {
-    const targetUrl = `${API_BASE_URL}/og${path}`;
+    const targetUrl = `https://api.hey.xyz/og${path}`;
     return createNoCacheResponse(targetUrl);
   }
 

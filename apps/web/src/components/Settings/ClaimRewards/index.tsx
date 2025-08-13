@@ -15,14 +15,11 @@ const ClaimRewardsPage = () => {
   return (
     <PageLayout title="Claim Your Rewards">
       <Card>
-        <CardHeader
-          icon={<BackButton path="/settings" />}
-          title="Claim Your Rewards"
-        />
+        <CardHeader icon={<BackButton path="/settings" />} title="Claim Your Rewards" />
         <ClaimRewardsContent />
       </Card>
     </PageLayout>
   );
 };
 
-export default ClaimRewardsPage;
+export default ClaimRewardsPage; 

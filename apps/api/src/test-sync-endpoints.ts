@@ -13,9 +13,9 @@ async function testSyncEndpoints() {
     // Test 1: Debug token endpoint with invalid token
     console.log("\n1. Testing debug-token with invalid token...");
     const debugResponse = await fetch(`${API_BASE_URL}/auth/debug-token`, {
-      body: JSON.stringify({ lensAccessToken: "invalid-token" }),
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      method: "POST"
+      body: JSON.stringify({ lensAccessToken: "invalid-token" })
     });
 
     const debugResult = await debugResponse.json();
@@ -25,9 +25,9 @@ async function testSyncEndpoints() {
     // Test 2: Sync-lens endpoint with invalid token
     console.log("\n2. Testing sync-lens with invalid token...");
     const syncResponse = await fetch(`${API_BASE_URL}/auth/sync-lens`, {
-      body: JSON.stringify({ lensAccessToken: "invalid-token" }),
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      method: "POST"
+      body: JSON.stringify({ lensAccessToken: "invalid-token" })
     });
 
     const syncResult = await syncResponse.json();
@@ -36,13 +36,12 @@ async function testSyncEndpoints() {
 
     // Test 3: Debug token endpoint with valid JWT format but invalid signature
     console.log("\n3. Testing debug-token with valid JWT format...");
-    const validFormatToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIweDAzQmEzNGY2ZWE0OTk2ZmEzMTY4NzNDRjgzNTBBM2Y3ZWFEMzE3RUYiLCJwcm9maWxlSWQiOiIxOTkyMjQ3ODY0NTI1MTQ2MzQ2NjE4MzQ3ODY5NjIxMzg2MzIzNzcyMTk3NDg1MDc3OTIwOTg1OTkzOTAyNDEwMjQyNzg0Nzc5OTE3MCIsImlhdCI6MTczNTQ5NzI5MCwiZXhwIjoxNzM1NTgzNjkwfQ.test";
-
+    const validFormatToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIweDAzQmEzNGY2ZWE0OTk2ZmEzMTY4NzNDRjgzNTBBM2Y3ZWFEMzE3RUYiLCJwcm9maWxlSWQiOiIxOTkyMjQ3ODY0NTI1MTQ2MzQ2NjE4MzQ3ODY5NjIxMzg2MzIzNzcyMTk3NDg1MDc3OTIwOTg1OTkzOTAyNDEwMjQyNzg0Nzc5OTE3MCIsImlhdCI6MTczNTQ5NzI5MCwiZXhwIjoxNzM1NTgzNjkwfQ.test";
+    
     const debugResponse2 = await fetch(`${API_BASE_URL}/auth/debug-token`, {
-      body: JSON.stringify({ lensAccessToken: validFormatToken }),
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      method: "POST"
+      body: JSON.stringify({ lensAccessToken: validFormatToken })
     });
 
     const debugResult2 = await debugResponse2.json();
@@ -52,9 +51,9 @@ async function testSyncEndpoints() {
     // Test 4: Sync-lens endpoint with valid JWT format but invalid signature
     console.log("\n4. Testing sync-lens with valid JWT format...");
     const syncResponse2 = await fetch(`${API_BASE_URL}/auth/sync-lens`, {
-      body: JSON.stringify({ lensAccessToken: validFormatToken }),
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      method: "POST"
+      body: JSON.stringify({ lensAccessToken: validFormatToken })
     });
 
     const syncResult2 = await syncResponse2.json();
@@ -62,9 +61,10 @@ async function testSyncEndpoints() {
     console.log("Response:", syncResult2);
 
     console.log("\n✅ All tests completed!");
+
   } catch (error) {
     console.error("❌ Test failed:", error);
   }
 }
 
-testSyncEndpoints();
+testSyncEndpoints(); 

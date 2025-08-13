@@ -3,6 +3,7 @@ import generateUUID from "@hey/helpers/generateUUID";
 import type { Dispatch, SetStateAction } from "react";
 import { Tabs } from "@/components/Shared/UI";
 
+
 interface FeedTypeProps {
   feedType: AccountFeedType;
   setFeedType: Dispatch<SetStateAction<AccountFeedType>>;

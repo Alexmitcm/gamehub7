@@ -99,24 +99,24 @@ export class UserService {
   ): Promise<UserProfile> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const user = await prisma.user.upsert({
+        where: { walletAddress: normalizedAddress },
+        update: {
+          ...userData,
+          updatedAt: new Date()
+        },
         create: {
           walletAddress: normalizedAddress,
           ...userData,
-          lastActiveAt: new Date(),
           registrationDate: new Date(),
+          lastActiveAt: new Date(),
           totalLogins: 1
         },
         include: {
           preferences: true,
           userStats: true
-        },
-        update: {
-          ...userData,
-          updatedAt: new Date()
-        },
-        where: { walletAddress: normalizedAddress }
+        }
       });
 
       // Create default preferences if they don't exist
@@ -133,9 +133,7 @@ export class UserService {
         });
       }
 
-      logger.info(
-        `User profile created/updated for wallet: ${normalizedAddress}`
-      );
+      logger.info(`User profile created/updated for wallet: ${normalizedAddress}`);
       return this.mapUserToProfile(user);
     } catch (error) {
       logger.error(`Error creating/updating user ${walletAddress}:`, error);
@@ -149,14 +147,14 @@ export class UserService {
   async getUserProfile(walletAddress: string): Promise<UserProfile | null> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const user = await prisma.user.findUnique({
+        where: { walletAddress: normalizedAddress },
         include: {
           preferences: true,
-          premiumProfile: true,
-          userStats: true
-        },
-        where: { walletAddress: normalizedAddress }
+          userStats: true,
+          premiumProfile: true
+        }
       });
 
       if (!user) {
@@ -176,15 +174,15 @@ export class UserService {
   async updateUserActivity(walletAddress: string): Promise<void> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       await prisma.user.update({
+        where: { walletAddress: normalizedAddress },
         data: {
           lastActiveAt: new Date(),
           totalLogins: {
             increment: 1
           }
-        },
-        where: { walletAddress: normalizedAddress }
+        }
       });
 
       logger.debug(`User activity updated for wallet: ${normalizedAddress}`);
@@ -212,22 +210,19 @@ export class UserService {
   ): Promise<void> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       await prisma.userPreferences.upsert({
+        where: { walletAddress: normalizedAddress },
+        update: preferences,
         create: {
           walletAddress: normalizedAddress,
           ...preferences
-        },
-        update: preferences,
-        where: { walletAddress: normalizedAddress }
+        }
       });
 
       logger.info(`User preferences updated for wallet: ${normalizedAddress}`);
     } catch (error) {
-      logger.error(
-        `Error updating user preferences for ${walletAddress}:`,
-        error
-      );
+      logger.error(`Error updating user preferences for ${walletAddress}:`, error);
       throw new Error("Failed to update user preferences");
     }
   }
@@ -238,7 +233,7 @@ export class UserService {
   async getUserStats(walletAddress: string): Promise<UserStats | null> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const stats = await prisma.userStats.findUnique({
         where: { walletAddress: normalizedAddress }
       });
@@ -248,16 +243,16 @@ export class UserService {
       }
 
       return {
-        daysAsPremium: stats.daysAsPremium,
-        questsCompleted: stats.questsCompleted,
-        questsInProgress: stats.questsInProgress,
-        referralCount: stats.referralCount,
+        totalPosts: stats.totalPosts,
         totalComments: stats.totalComments,
-        totalEarnings: Number(stats.totalEarnings),
+        totalLikes: stats.totalLikes,
         totalFollowers: stats.totalFollowers,
         totalFollowing: stats.totalFollowing,
-        totalLikes: stats.totalLikes,
-        totalPosts: stats.totalPosts
+        daysAsPremium: stats.daysAsPremium,
+        referralCount: stats.referralCount,
+        totalEarnings: Number(stats.totalEarnings),
+        questsCompleted: stats.questsCompleted,
+        questsInProgress: stats.questsInProgress
       };
     } catch (error) {
       logger.error(`Error getting user stats for ${walletAddress}:`, error);
@@ -274,14 +269,14 @@ export class UserService {
   ): Promise<void> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       await prisma.userStats.upsert({
+        where: { walletAddress: normalizedAddress },
+        update: statsUpdate,
         create: {
           walletAddress: normalizedAddress,
           ...statsUpdate
-        },
-        update: statsUpdate,
-        where: { walletAddress: normalizedAddress }
+        }
       });
 
       logger.debug(`User stats updated for wallet: ${normalizedAddress}`);
@@ -307,32 +302,30 @@ export class UserService {
   ): Promise<UserReward> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const reward = await prisma.userReward.create({
         data: {
+          walletAddress: normalizedAddress,
+          type: rewardData.type,
           amount: rewardData.amount,
           currency: rewardData.currency || "USDT",
-          sourceId: rewardData.sourceId,
-          sourceMetadata: rewardData.sourceMetadata,
           sourceType: rewardData.sourceType,
-          type: rewardData.type,
-          walletAddress: normalizedAddress
+          sourceId: rewardData.sourceId,
+          sourceMetadata: rewardData.sourceMetadata
         }
       });
 
-      logger.info(
-        `User reward created for wallet: ${normalizedAddress}, amount: ${rewardData.amount}`
-      );
-
+      logger.info(`User reward created for wallet: ${normalizedAddress}, amount: ${rewardData.amount}`);
+      
       return {
-        amount: Number(reward.amount),
-        claimedAt: reward.claimedAt || undefined,
-        createdAt: reward.createdAt,
-        currency: reward.currency,
         id: reward.id,
-        sourceType: reward.sourceType,
+        type: reward.type,
+        amount: Number(reward.amount),
+        currency: reward.currency,
         status: reward.status,
-        type: reward.type
+        sourceType: reward.sourceType,
+        createdAt: reward.createdAt,
+        claimedAt: reward.claimedAt || undefined
       };
     } catch (error) {
       logger.error(`Error creating user reward for ${walletAddress}:`, error);
@@ -349,24 +342,24 @@ export class UserService {
   ): Promise<UserReward[]> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const rewards = await prisma.userReward.findMany({
-        orderBy: { createdAt: "desc" },
         where: {
           walletAddress: normalizedAddress,
           ...(status && { status })
-        }
+        },
+        orderBy: { createdAt: 'desc' }
       });
 
-      return rewards.map((reward) => ({
-        amount: Number(reward.amount),
-        claimedAt: reward.claimedAt || undefined,
-        createdAt: reward.createdAt,
-        currency: reward.currency,
+      return rewards.map(reward => ({
         id: reward.id,
-        sourceType: reward.sourceType,
+        type: reward.type,
+        amount: Number(reward.amount),
+        currency: reward.currency,
         status: reward.status,
-        type: reward.type
+        sourceType: reward.sourceType,
+        createdAt: reward.createdAt,
+        claimedAt: reward.claimedAt || undefined
       }));
     } catch (error) {
       logger.error(`Error getting user rewards for ${walletAddress}:`, error);
@@ -390,37 +383,33 @@ export class UserService {
   ): Promise<UserQuest> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const quest = await prisma.userQuest.create({
         data: {
-          description: questData.description,
+          walletAddress: normalizedAddress,
           questId: questData.questId,
-          rewardAmount: questData.rewardAmount,
-          targetProgress: questData.targetProgress,
           title: questData.title,
+          description: questData.description,
           type: questData.type,
-          walletAddress: normalizedAddress
+          targetProgress: questData.targetProgress,
+          rewardAmount: questData.rewardAmount
         }
       });
 
-      logger.info(
-        `User quest created for wallet: ${normalizedAddress}, quest: ${questData.title}`
-      );
-
+      logger.info(`User quest created for wallet: ${normalizedAddress}, quest: ${questData.title}`);
+      
       return {
-        completedAt: quest.completedAt || undefined,
-        createdAt: quest.createdAt,
-        currentProgress: quest.currentProgress,
-        description: quest.description,
         id: quest.id,
         questId: quest.questId,
-        rewardAmount: quest.rewardAmount
-          ? Number(quest.rewardAmount)
-          : undefined,
-        status: quest.status,
-        targetProgress: quest.targetProgress,
         title: quest.title,
-        type: quest.type
+        description: quest.description,
+        type: quest.type,
+        status: quest.status,
+        currentProgress: quest.currentProgress,
+        targetProgress: quest.targetProgress,
+        rewardAmount: quest.rewardAmount ? Number(quest.rewardAmount) : undefined,
+        createdAt: quest.createdAt,
+        completedAt: quest.completedAt || undefined
       };
     } catch (error) {
       logger.error(`Error creating user quest for ${walletAddress}:`, error);
@@ -438,12 +427,12 @@ export class UserService {
   ): Promise<UserQuest | null> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const quest = await prisma.userQuest.findFirst({
         where: {
+          walletAddress: normalizedAddress,
           questId: questId,
-          status: "Active",
-          walletAddress: normalizedAddress
+          status: "Active"
         }
       });
 
@@ -455,38 +444,31 @@ export class UserService {
       const isCompleted = newProgress >= quest.targetProgress;
 
       const updatedQuest = await prisma.userQuest.update({
+        where: { id: quest.id },
         data: {
-          completedAt: isCompleted ? new Date() : undefined,
           currentProgress: newProgress,
-          status: isCompleted ? "Completed" : "Active"
-        },
-        where: { id: quest.id }
+          status: isCompleted ? "Completed" : "Active",
+          completedAt: isCompleted ? new Date() : undefined
+        }
       });
 
-      logger.info(
-        `Quest progress updated for wallet: ${normalizedAddress}, quest: ${questId}, progress: ${newProgress}/${quest.targetProgress}`
-      );
-
+      logger.info(`Quest progress updated for wallet: ${normalizedAddress}, quest: ${questId}, progress: ${newProgress}/${quest.targetProgress}`);
+      
       return {
-        completedAt: updatedQuest.completedAt || undefined,
-        createdAt: updatedQuest.createdAt,
-        currentProgress: updatedQuest.currentProgress,
-        description: updatedQuest.description,
         id: updatedQuest.id,
         questId: updatedQuest.questId,
-        rewardAmount: updatedQuest.rewardAmount
-          ? Number(updatedQuest.rewardAmount)
-          : undefined,
-        status: updatedQuest.status,
-        targetProgress: updatedQuest.targetProgress,
         title: updatedQuest.title,
-        type: updatedQuest.type
+        description: updatedQuest.description,
+        type: updatedQuest.type,
+        status: updatedQuest.status,
+        currentProgress: updatedQuest.currentProgress,
+        targetProgress: updatedQuest.targetProgress,
+        rewardAmount: updatedQuest.rewardAmount ? Number(updatedQuest.rewardAmount) : undefined,
+        createdAt: updatedQuest.createdAt,
+        completedAt: updatedQuest.completedAt || undefined
       };
     } catch (error) {
-      logger.error(
-        `Error updating quest progress for ${walletAddress}:`,
-        error
-      );
+      logger.error(`Error updating quest progress for ${walletAddress}:`, error);
       throw new Error("Failed to update quest progress");
     }
   }
@@ -500,29 +482,27 @@ export class UserService {
   ): Promise<UserQuest[]> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const quests = await prisma.userQuest.findMany({
-        orderBy: { createdAt: "desc" },
         where: {
           walletAddress: normalizedAddress,
           ...(status && { status })
-        }
+        },
+        orderBy: { createdAt: 'desc' }
       });
 
-      return quests.map((quest) => ({
-        completedAt: quest.completedAt || undefined,
-        createdAt: quest.createdAt,
-        currentProgress: quest.currentProgress,
-        description: quest.description,
+      return quests.map(quest => ({
         id: quest.id,
         questId: quest.questId,
-        rewardAmount: quest.rewardAmount
-          ? Number(quest.rewardAmount)
-          : undefined,
-        status: quest.status,
-        targetProgress: quest.targetProgress,
         title: quest.title,
-        type: quest.type
+        description: quest.description,
+        type: quest.type,
+        status: quest.status,
+        currentProgress: quest.currentProgress,
+        targetProgress: quest.targetProgress,
+        rewardAmount: quest.rewardAmount ? Number(quest.rewardAmount) : undefined,
+        createdAt: quest.createdAt,
+        completedAt: quest.completedAt || undefined
       }));
     } catch (error) {
       logger.error(`Error getting user quests for ${walletAddress}:`, error);
@@ -536,14 +516,7 @@ export class UserService {
   async createUserNotification(
     walletAddress: string,
     notificationData: {
-      type:
-        | "Welcome"
-        | "Premium"
-        | "Quest"
-        | "Reward"
-        | "Referral"
-        | "System"
-        | "Marketing";
+      type: "Welcome" | "Premium" | "Quest" | "Reward" | "Referral" | "System" | "Marketing";
       title: string;
       message: string;
       priority?: "Low" | "Normal" | "High" | "Urgent";
@@ -553,27 +526,22 @@ export class UserService {
   ): Promise<void> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       await prisma.userNotification.create({
         data: {
-          actionMetadata: notificationData.actionMetadata,
-          actionUrl: notificationData.actionUrl,
+          walletAddress: normalizedAddress,
+          type: notificationData.type,
+          title: notificationData.title,
           message: notificationData.message,
           priority: notificationData.priority || "Normal",
-          title: notificationData.title,
-          type: notificationData.type,
-          walletAddress: normalizedAddress
+          actionUrl: notificationData.actionUrl,
+          actionMetadata: notificationData.actionMetadata
         }
       });
 
-      logger.info(
-        `User notification created for wallet: ${normalizedAddress}, type: ${notificationData.type}`
-      );
+      logger.info(`User notification created for wallet: ${normalizedAddress}, type: ${notificationData.type}`);
     } catch (error) {
-      logger.error(
-        `Error creating user notification for ${walletAddress}:`,
-        error
-      );
+      logger.error(`Error creating user notification for ${walletAddress}:`, error);
       throw new Error("Failed to create user notification");
     }
   }
@@ -584,46 +552,41 @@ export class UserService {
   async getUserNotifications(
     walletAddress: string,
     isRead?: boolean,
-    limit = 50
-  ): Promise<
-    Array<{
-      id: string;
-      type: string;
-      title: string;
-      message: string;
-      priority: string;
-      isRead: boolean;
-      actionUrl?: string;
-      createdAt: Date;
-    }>
-  > {
+    limit: number = 50
+  ): Promise<Array<{
+    id: string;
+    type: string;
+    title: string;
+    message: string;
+    priority: string;
+    isRead: boolean;
+    actionUrl?: string;
+    createdAt: Date;
+  }>> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const notifications = await prisma.userNotification.findMany({
-        orderBy: { createdAt: "desc" },
-        take: limit,
         where: {
           walletAddress: normalizedAddress,
           ...(isRead !== undefined && { isRead })
-        }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit
       });
 
-      return notifications.map((notification) => ({
-        actionUrl: notification.actionUrl || undefined,
-        createdAt: notification.createdAt,
+      return notifications.map(notification => ({
         id: notification.id,
-        isRead: notification.isRead,
+        type: notification.type,
+        title: notification.title,
         message: notification.message,
         priority: notification.priority,
-        title: notification.title,
-        type: notification.type
+        isRead: notification.isRead,
+        actionUrl: notification.actionUrl || undefined,
+        createdAt: notification.createdAt
       }));
     } catch (error) {
-      logger.error(
-        `Error getting user notifications for ${walletAddress}:`,
-        error
-      );
+      logger.error(`Error getting user notifications for ${walletAddress}:`, error);
       throw new Error("Failed to get user notifications");
     }
   }
@@ -637,24 +600,21 @@ export class UserService {
   ): Promise<void> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       await prisma.userNotification.updateMany({
-        data: {
-          isRead: true,
-          readAt: new Date()
-        },
         where: {
           id: notificationId,
           walletAddress: normalizedAddress
+        },
+        data: {
+          isRead: true,
+          readAt: new Date()
         }
       });
 
       logger.debug(`Notification marked as read: ${notificationId}`);
     } catch (error) {
-      logger.error(
-        `Error marking notification as read for ${walletAddress}:`,
-        error
-      );
+      logger.error(`Error marking notification as read for ${walletAddress}:`, error);
       throw new Error("Failed to mark notification as read");
     }
   }
@@ -663,9 +623,7 @@ export class UserService {
    * Get user's premium status with enhanced linking logic
    * Returns: 'Standard' | 'OnChainUnlinked' | 'ProLinked'
    */
-  async getUserPremiumStatus(
-    walletAddress: string
-  ): Promise<UserPremiumStatus> {
+  async getUserPremiumStatus(walletAddress: string): Promise<UserPremiumStatus> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
       logger.info(`Getting premium status for wallet: ${normalizedAddress}`);
@@ -715,10 +673,7 @@ export class UserService {
    * Link a profile to a wallet permanently
    * This enforces the business rule: first selected profile becomes permanent
    */
-  async linkProfileToWallet(
-    walletAddress: string,
-    profileId: string
-  ): Promise<LinkedProfile> {
+  async linkProfileToWallet(walletAddress: string, profileId: string): Promise<LinkedProfile> {
     const normalizedAddress = this.normalizeWalletAddress(walletAddress);
 
     try {
@@ -803,9 +758,7 @@ export class UserService {
    * Auto-link the first profile for premium wallets that are not linked
    * This enforces the business rule: first selected profile becomes permanent
    */
-  async autoLinkFirstProfile(
-    walletAddress: string
-  ): Promise<LinkedProfile | null> {
+  async autoLinkFirstProfile(walletAddress: string): Promise<LinkedProfile | null> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
 
@@ -915,9 +868,7 @@ export class UserService {
    * Get profiles for a wallet with business logic enforcement
    * Returns only unlinked profiles for premium wallets that haven't linked yet
    */
-  async getAvailableProfiles(
-    walletAddress: string
-  ): Promise<AvailableProfilesResult> {
+  async getAvailableProfiles(walletAddress: string): Promise<AvailableProfilesResult> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
       logger.info(
@@ -980,17 +931,14 @@ export class UserService {
   async hasLinkedProfile(walletAddress: string): Promise<boolean> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       const premiumProfile = await prisma.premiumProfile.findUnique({
         where: { walletAddress: normalizedAddress }
       });
 
       return Boolean(premiumProfile);
     } catch (error) {
-      logger.error(
-        `Error checking linked profile for ${walletAddress}:`,
-        error
-      );
+      logger.error(`Error checking linked profile for ${walletAddress}:`, error);
       return false;
     }
   }
@@ -998,24 +946,22 @@ export class UserService {
   /**
    * Get all premium profiles (for admin/debug purposes)
    */
-  async getAllPremiumProfiles(): Promise<
-    Array<{
-      walletAddress: string;
-      profileId: string;
-      linkedAt: Date;
-      isActive: boolean;
-    }>
-  > {
+  async getAllPremiumProfiles(): Promise<Array<{
+    walletAddress: string;
+    profileId: string;
+    linkedAt: Date;
+    isActive: boolean;
+  }>> {
     try {
       const profiles = await prisma.premiumProfile.findMany({
-        orderBy: { linkedAt: "desc" },
+        where: { isActive: true },
         select: {
-          isActive: true,
-          linkedAt: true,
+          walletAddress: true,
           profileId: true,
-          walletAddress: true
+          linkedAt: true,
+          isActive: true
         },
-        where: { isActive: true }
+        orderBy: { linkedAt: 'desc' }
       });
 
       return profiles;
@@ -1031,18 +977,16 @@ export class UserService {
   async deactivateProfile(walletAddress: string): Promise<void> {
     try {
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
-
+      
       await prisma.premiumProfile.update({
+        where: { walletAddress: normalizedAddress },
         data: {
-          deactivatedAt: new Date(),
-          isActive: false
-        },
-        where: { walletAddress: normalizedAddress }
+          isActive: false,
+          deactivatedAt: new Date()
+        }
       });
 
-      logger.info(
-        `Deactivated premium profile for wallet: ${normalizedAddress}`
-      );
+      logger.info(`Deactivated premium profile for wallet: ${normalizedAddress}`);
     } catch (error) {
       logger.error(`Error deactivating profile for ${walletAddress}:`, error);
       throw new Error("Failed to deactivate premium profile");
@@ -1061,22 +1005,22 @@ export class UserService {
   // Helper method to map database user to UserProfile interface
   private mapUserToProfile(user: any): UserProfile {
     return {
+      walletAddress: user.walletAddress,
+      email: user.email || undefined,
+      username: user.username || undefined,
+      displayName: user.displayName || undefined,
       avatarUrl: user.avatarUrl || undefined,
       bio: user.bio || undefined,
-      displayName: user.displayName || undefined,
-      email: user.email || undefined,
-      lastActiveAt: user.lastActiveAt,
       location: user.location || undefined,
-      premiumStatus: user.premiumStatus,
-      referrerAddress: user.referrerAddress || undefined,
-      registrationDate: user.registrationDate,
-      totalLogins: user.totalLogins,
+      website: user.website || undefined,
       twitterHandle: user.twitterHandle || undefined,
-      username: user.username || undefined,
-      walletAddress: user.walletAddress,
-      website: user.website || undefined
+      premiumStatus: user.premiumStatus,
+      registrationDate: user.registrationDate,
+      referrerAddress: user.referrerAddress || undefined,
+      lastActiveAt: user.lastActiveAt,
+      totalLogins: user.totalLogins
     };
   }
 }
 
-export default new UserService();
+export default new UserService(); 

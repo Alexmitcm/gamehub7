@@ -74,8 +74,8 @@ export default defineConfig({
     tailwindcss(),
     EnvironmentPlugin({
       NEXT_PUBLIC_LENS_NETWORK: "mainnet",
-      VITE_API_URL: process.env.VITE_API_URL || "http://localhost:3010",
-      VITE_IS_PRODUCTION: process.env.VITE_IS_PRODUCTION || false
+      VITE_API_URL: "http://localhost:3009",
+      VITE_IS_PRODUCTION: false
     })
   ],
   server: {

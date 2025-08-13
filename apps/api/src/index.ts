@@ -3,11 +3,13 @@ import "dotenv/config";
 import { Status } from "@hey/data/enums";
 import logger from "@hey/helpers/logger";
 import { Hono } from "hono";
+import { serveStatic } from "@hono/node-server/serve-static";
 import authContext from "./context/authContext";
 import cors from "./middlewares/cors";
 import infoLogger from "./middlewares/infoLogger";
 import authRouter from "./routes/auth";
 import cronRouter from "./routes/cron";
+import gamesRouter from "./routes/games";
 import lensRouter from "./routes/lens";
 import liveRouter from "./routes/live";
 import metadataRouter from "./routes/metadata";
@@ -30,11 +32,15 @@ app.use(cors);
 app.use(authContext);
 app.use(infoLogger);
 
+// Static file serving for uploads (serve from apps/api working dir)
+app.use("/uploads/*", serveStatic({ root: "." }));
+
 // Routes
 app.get("/ping", ping);
 app.route("/auth", authRouter);
 app.route("/lens", lensRouter);
 app.route("/cron", cronRouter);
+app.route("/games", gamesRouter);
 app.route("/live", liveRouter);
 app.route("/metadata", metadataRouter);
 app.route("/oembed", oembedRouter);

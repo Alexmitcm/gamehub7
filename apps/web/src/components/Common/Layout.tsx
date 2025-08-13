@@ -13,8 +13,8 @@ import Navbar from "@/components/Shared/Navbar";
 import BottomNavigation from "@/components/Shared/Navbar/BottomNavigation";
 import { Spinner } from "@/components/Shared/UI";
 import reloadAllTabs from "@/helpers/reloadAllTabs";
-import { useLensAuthSync } from "@/hooks/useLensAuthSync";
 import { useTheme } from "@/hooks/useTheme";
+import { useLensAuthSync } from "@/hooks/useLensAuthSync";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { hydrateAuthTokens, signOut } from "@/store/persisted/useAuthStore";
 import { usePreferencesStore } from "@/store/persisted/usePreferencesStore";
@@ -29,7 +29,7 @@ const Layout = () => {
   const { resetPreferences } = usePreferencesStore();
   const isMounted = useIsClient();
   const { accessToken } = hydrateAuthTokens();
-
+  
   // Auto-sync Lens authentication with our backend
   useLensAuthSync();
 

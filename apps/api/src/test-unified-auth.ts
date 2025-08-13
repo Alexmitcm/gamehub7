@@ -44,9 +44,9 @@ async function testUnifiedAuth() {
 
       if (profiles.profiles.length > 0) {
         console.log("   📋 Profile List:");
-        for (const [index, profile] of profiles.profiles.entries()) {
+        profiles.profiles.forEach((profile, index) => {
           console.log(`     ${index + 1}. ${profile.handle} (${profile.id})`);
-        }
+        });
       }
 
       // Use the first available profile for testing
@@ -212,9 +212,9 @@ async function testUnifiedAuth() {
     };
 
     console.log("📋 Service Status:");
-    for (const [service, status] of Object.entries(healthChecks)) {
+    Object.entries(healthChecks).forEach(([service, status]) => {
       console.log(`   ${service}: ${status}`);
-    }
+    });
 
     console.log(
       "\n✅ Unified authentication system test completed successfully!"

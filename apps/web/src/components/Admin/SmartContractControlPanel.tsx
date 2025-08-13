@@ -193,7 +193,6 @@ const SmartContractControlPanel = () => {
                   } `}
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  type="button"
                 >
                   <div className="flex items-center space-x-2">
                     <Icon className="h-5 w-5" />

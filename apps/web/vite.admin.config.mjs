@@ -74,7 +74,7 @@ export default defineConfig({
     tailwindcss(),
     EnvironmentPlugin({
       NEXT_PUBLIC_LENS_NETWORK: "mainnet",
-      VITE_API_URL: "http://localhost:3010",
+      VITE_API_URL: "http://localhost:3009",
       VITE_IS_PRODUCTION: false
     })
   ],
@@ -82,4 +82,4 @@ export default defineConfig({
     port: 4784, // Admin panel runs on port 4784
     strictPort: false
   }
-});
+}); 

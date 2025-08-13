@@ -1,12 +1,7 @@
 import { useAccount, useReadContract } from "wagmi";
 import { MAINNET_CONTRACTS, REFERRAL_ABI } from "../../../../lib/constants";
-import type { ReferralStats } from "../types";
-import {
-  buildTreeStructure,
-  calculateStats,
-  filterTree,
-  parseReferralNode
-} from "../utils/treeUtils";
+import { buildTreeStructure, calculateStats, filterTree, parseReferralNode } from "../utils/treeUtils";
+import type { ReferralNode, ReferralStats, TreeNode } from "../types";
 
 export const useReferralData = (
   expandedNodes: Set<string>,
@@ -20,45 +15,39 @@ export const useReferralData = (
     isLoading: isLoadingCurrent,
     error: contractError
   } = useReadContract({
-    abi: REFERRAL_ABI,
     address: MAINNET_CONTRACTS.REFERRAL as `0x${string}`,
+    abi: REFERRAL_ABI,
+    functionName: "NodeSet",
     args: [connectedAddress as `0x${string}`],
-    enabled: !!connectedAddress,
-    functionName: "NodeSet"
+    enabled: !!connectedAddress
   });
 
   // Parse current node data
-  const currentNode = currentNodeData
-    ? parseReferralNode(currentNodeData)
-    : null;
+  const currentNode = currentNodeData ? parseReferralNode(currentNodeData) : null;
 
   // Fetch parent node data if current node has a parent
-  const { data: parentNodeData, isLoading: isLoadingParent } = useReadContract({
-    abi: REFERRAL_ABI,
+  const {
+    data: parentNodeData,
+    isLoading: isLoadingParent
+  } = useReadContract({
     address: MAINNET_CONTRACTS.REFERRAL as `0x${string}`,
+    abi: REFERRAL_ABI,
+    functionName: "NodeSet",
     args: [currentNode?.parent as `0x${string}`],
-    enabled:
-      !!currentNode?.parent &&
-      currentNode.parent !== "0x0000000000000000000000000000000000000000",
-    functionName: "NodeSet"
+    enabled: !!currentNode?.parent && currentNode.parent !== "0x0000000000000000000000000000000000000000"
   });
 
   // Parse parent node data
   const parentNode = parentNodeData ? parseReferralNode(parentNodeData) : null;
 
   // Build tree structure
-  const treeData = currentNode
-    ? buildTreeStructure(currentNode, expandedNodes, parentNode)
-    : null;
+  const treeData = currentNode ? buildTreeStructure(currentNode, expandedNodes, parentNode) : null;
 
   // Filter tree based on wallet filter
-  const filteredTree =
-    treeData && walletFilter ? filterTree(treeData, walletFilter) : treeData;
+  const filteredTree = treeData && walletFilter ? filterTree(treeData, walletFilter) : treeData;
 
   // Calculate stats
-  const stats: ReferralStats | null = currentNode
-    ? calculateStats(currentNode)
-    : null;
+  const stats: ReferralStats | null = currentNode ? calculateStats(currentNode) : null;
 
   return {
     connectedAddress,
@@ -82,21 +71,19 @@ export const useChildNodeData = (childAddress: string | null) => {
     error: childError,
     refetch: refetchChild
   } = useReadContract({
-    abi: REFERRAL_ABI,
     address: MAINNET_CONTRACTS.REFERRAL as `0x${string}`,
+    abi: REFERRAL_ABI,
+    functionName: "NodeSet",
     args: [childAddress as `0x${string}`],
-    enabled:
-      !!childAddress &&
-      childAddress !== "0x0000000000000000000000000000000000000000",
-    functionName: "NodeSet"
+    enabled: !!childAddress && childAddress !== "0x0000000000000000000000000000000000000000"
   });
 
   const childNode = childNodeData ? parseReferralNode(childNodeData) : null;
 
   return {
-    childError,
     childNode,
     isLoadingChild,
+    childError,
     refetchChild
   };
 };

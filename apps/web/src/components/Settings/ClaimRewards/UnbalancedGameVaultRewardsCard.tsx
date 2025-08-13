@@ -86,4 +86,4 @@ const UnbalancedGameVaultRewardsCard = () => {
   );
 };
 
-export default UnbalancedGameVaultRewardsCard;
+export default UnbalancedGameVaultRewardsCard; 

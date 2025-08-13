@@ -1,9 +1,10 @@
-import logger from "@hey/helpers/logger";
 import prisma from "../prisma/client";
+import logger from "@hey/helpers/logger";
 import BlockchainService from "./BlockchainService";
 import EventService from "./EventService";
 import JwtService from "./JwtService";
 import ProfileService from "./ProfileService";
+import SimplePremiumService from "./SimplePremiumService";
 
 export interface LoginRequest {
   walletAddress: string;
@@ -71,13 +72,15 @@ export interface UserProfile {
 }
 
 export class AuthService {
-  private readonly blockchainService: BlockchainService;
-  private readonly profileService: ProfileService;
-  private readonly eventService: EventService;
-  private readonly jwtService: JwtService;
+  private readonly blockchainService: typeof BlockchainService;
+  private readonly simplePremiumService: typeof SimplePremiumService;
+  private readonly profileService: typeof ProfileService;
+  private readonly eventService: typeof EventService;
+  private readonly jwtService: typeof JwtService;
 
   constructor() {
     this.blockchainService = BlockchainService;
+    this.simplePremiumService = SimplePremiumService;
     this.profileService = ProfileService;
     this.eventService = EventService;
     this.jwtService = JwtService;
@@ -112,7 +115,7 @@ export class AuthService {
 
       // Step 2: Check on-chain premium status
       const isPremiumOnChain =
-        await this.blockchainService.isWalletPremium(normalizedAddress);
+        await this.simplePremiumService.isPremiumWallet(normalizedAddress);
       logger.info(
         `On-chain premium status for ${normalizedAddress}: ${isPremiumOnChain}`
       );
@@ -146,7 +149,19 @@ export class AuthService {
     selectedProfileId: string,
     isPremiumOnChain: boolean
   ): Promise<LoginResponse> {
-    logger.info(`Creating new user: ${walletAddress}`);
+    logger.info(
+      `Login/Onboard request for wallet: ${walletAddress}, profile: ${selectedProfileId}`
+    );
+
+    // Check premium status on-chain
+    const isPremiumOnChainVerified =
+      await this.simplePremiumService.isPremiumWallet(walletAddress);
+    logger.info(
+      `Wallet ${walletAddress} premium status: ${isPremiumOnChainVerified}`
+    );
+
+    // Use the verified premium status
+    const finalPremiumStatus = isPremiumOnChainVerified;
 
     // Validate profile ownership
     const isProfileOwner = await this.profileService.validateProfileOwnership(
@@ -154,16 +169,22 @@ export class AuthService {
       selectedProfileId
     );
     if (!isProfileOwner) {
+      logger.error(
+        `Profile ownership validation failed for wallet: ${walletAddress}, profile: ${selectedProfileId}`
+      );
       throw new Error(
         "Selected profile is not owned by the provided wallet address"
       );
     }
 
     // Get profile details
+    logger.info(`Getting profile details for profileId: ${selectedProfileId}`);
     const profile = await this.profileService.getProfileById(selectedProfileId);
     if (!profile) {
+      logger.error(`Profile not found for profileId: ${selectedProfileId}`);
       throw new Error("Selected profile not found");
     }
+    logger.info(`Profile found: ${profile.handle} (${profile.id})`);
 
     // Create user with transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -171,9 +192,9 @@ export class AuthService {
       const user = await tx.user.create({
         data: {
           lastActiveAt: new Date(),
-          premiumUpgradedAt: isPremiumOnChain ? new Date() : undefined,
+          premiumUpgradedAt: finalPremiumStatus ? new Date() : undefined,
           registrationDate: new Date(),
-          status: isPremiumOnChain ? "Premium" : "Standard",
+          status: finalPremiumStatus ? "Premium" : "Standard",
           totalLogins: 1,
           walletAddress
         }
@@ -191,7 +212,7 @@ export class AuthService {
 
       // If premium on-chain, create permanent profile link
       let premiumProfile = null;
-      if (isPremiumOnChain) {
+      if (finalPremiumStatus) {
         premiumProfile = await tx.premiumProfile.create({
           data: {
             isActive: true,
@@ -212,7 +233,7 @@ export class AuthService {
     // Create welcome notification
     await this.eventService.emitEvent({
       metadata: {
-        isPremium: isPremiumOnChain,
+        isPremium: finalPremiumStatus,
         profileHandle: profile.handle,
         profileId: selectedProfileId
       },
@@ -230,7 +251,7 @@ export class AuthService {
 
     return {
       isNewUser: true,
-      message: isPremiumOnChain
+      message: finalPremiumStatus
         ? "Welcome! Your premium account has been created and profile linked."
         : "Welcome! Your account has been created. Upgrade to premium to unlock exclusive features.",
       success: true,
@@ -564,22 +585,27 @@ export class AuthService {
       }
 
       // Step 3: Use existing loginOrOnboard logic
-      const loginResult = await this.loginOrOnboard({
-        selectedProfileId,
-        walletAddress: normalizedAddress
-      });
+      try {
+        const loginResult = await this.loginOrOnboard({
+          selectedProfileId,
+          walletAddress: normalizedAddress
+        });
 
-      logger.info(
-        `Lens sync successful for wallet: ${normalizedAddress}, isNewUser: ${loginResult.isNewUser}`
-      );
+        logger.info(
+          `Lens sync successful for wallet: ${normalizedAddress}, isNewUser: ${loginResult.isNewUser}`
+        );
 
-      return {
-        isNewUser: loginResult.isNewUser,
-        message: "Lens authentication synced successfully",
-        success: true,
-        token: loginResult.token,
-        user: loginResult.user
-      };
+        return {
+          isNewUser: loginResult.isNewUser,
+          message: "Lens authentication synced successfully",
+          success: true,
+          token: loginResult.token,
+          user: loginResult.user
+        };
+      } catch (loginError) {
+        logger.error(`Error in loginOrOnboard: ${loginError}`);
+        throw new Error("Authentication failed");
+      }
     } catch (error) {
       logger.error("Error in Lens sync:", error);
       throw error;

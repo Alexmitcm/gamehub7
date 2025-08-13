@@ -10,4 +10,4 @@ const port = 3006;
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Test server running on port ${info.port}`);
-});
+}); 

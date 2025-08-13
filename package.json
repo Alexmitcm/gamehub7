@@ -24,5 +24,8 @@
   "packageManager": "pnpm@10.4.1",
   "engines": {
     "node": ">=18.x <=22.x"
+  },
+  "dependencies": {
+    "unzip-stream": "^0.3.4"
   }
 }

@@ -1,5 +1,5 @@
-import logger from "@hey/helpers/logger";
 import { config } from "dotenv";
+import logger from "@hey/helpers/logger";
 
 // Load environment variables
 config();
@@ -12,13 +12,14 @@ async function testBlockchainService() {
     logger.info("🧪 Testing BlockchainService instantiation");
 
     // Try to import BlockchainService instance
-    const _blockchainService = await import("./services/BlockchainService");
+    const blockchainService = await import("./services/BlockchainService");
     logger.info("✅ BlockchainService imported successfully");
 
     logger.info("✅ BlockchainService instantiated successfully");
+
   } catch (error) {
     logger.error("❌ BlockchainService instantiation failed:", error);
-
+    
     // Log the full error details
     if (error instanceof Error) {
       logger.error("Error name:", error.name);
@@ -37,4 +38,4 @@ testBlockchainService()
   .catch((error) => {
     logger.error("💥 BlockchainService test failed:", error);
     process.exit(1);
-  });
+  }); 

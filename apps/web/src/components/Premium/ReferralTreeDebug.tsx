@@ -15,31 +15,25 @@ export default function ReferralTreeDebug() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <h2 className="font-bold text-xl">Referral Tree Debug</h2>
-
-      <div className="rounded bg-gray-100 p-4">
-        <h3 className="mb-2 font-semibold">Meta Data:</h3>
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-bold">Referral Tree Debug</h2>
+      
+      <div className="bg-gray-100 p-4 rounded">
+        <h3 className="font-semibold mb-2">Meta Data:</h3>
         <pre className="text-sm">{JSON.stringify(data?.meta, null, 2)}</pre>
       </div>
 
-      <div className="rounded bg-gray-100 p-4">
-        <h3 className="mb-2 font-semibold">
-          Raw Nodes ({data?.data.length} nodes):
-        </h3>
-        <pre className="max-h-96 overflow-auto text-sm">
-          {JSON.stringify(data?.data, null, 2)}
-        </pre>
+      <div className="bg-gray-100 p-4 rounded">
+        <h3 className="font-semibold mb-2">Raw Nodes ({data?.data.length} nodes):</h3>
+        <pre className="text-sm overflow-auto max-h-96">{JSON.stringify(data?.data, null, 2)}</pre>
       </div>
 
-      <div className="rounded bg-gray-100 p-4">
-        <h3 className="mb-2 font-semibold">Tree Structure Analysis:</h3>
-        <div className="space-y-1 text-sm">
+      <div className="bg-gray-100 p-4 rounded">
+        <h3 className="font-semibold mb-2">Tree Structure Analysis:</h3>
+        <div className="text-sm space-y-1">
           {data?.data.map((node, index) => (
-            <div className="border-b pb-1" key={index}>
-              <div>
-                Node {index + 1}: {node.address}
-              </div>
+            <div key={index} className="border-b pb-1">
+              <div>Node {index + 1}: {node.address}</div>
               <div>Depth: {node.depth}</div>
               <div>Parent: {node.parent || "None"}</div>
               <div>Left Child: {node.leftChild || "None"}</div>
@@ -52,4 +46,4 @@ export default function ReferralTreeDebug() {
       </div>
     </div>
   );
-}
+} 

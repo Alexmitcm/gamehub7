@@ -6,6 +6,7 @@ import SingleAccount from "@/components/Shared/Account/SingleAccount";
 import Bookmarks from "@/components/Shared/Navbar/NavItems/Bookmarks";
 import Groups from "@/components/Shared/Navbar/NavItems/Groups";
 import Logout from "@/components/Shared/Navbar/NavItems/Logout";
+import OnChainDashboardMobile from "@/components/Shared/Navbar/NavItems/OnChainDashboardMobile";
 import Settings from "@/components/Shared/Navbar/NavItems/Settings";
 import Support from "@/components/Shared/Navbar/NavItems/Support";
 import SwitchAccount from "@/components/Shared/Navbar/NavItems/SwitchAccount";
@@ -65,6 +66,14 @@ const MobileDrawerMenu = () => {
             />
             <Link onClick={handleCloseDrawer} to="/groups">
               <Groups className={cn(itemClass, "px-4")} />
+            </Link>
+            <Link onClick={handleCloseDrawer} to="/gamehub">
+              <div className={cn(itemClass, "px-4")}>
+                <div className="flex items-center space-x-3">
+                  <span className="text-lg">🎮</span>
+                  <span>Game Hub</span>
+                </div>
+              </div>
             </Link>
             <Link onClick={handleCloseDrawer} to="/bookmarks">
               <Bookmarks className={cn(itemClass, "px-4")} />

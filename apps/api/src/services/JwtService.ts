@@ -89,7 +89,7 @@ export class JwtService {
       }
 
       // Generate new token with same payload but new expiration
-      const { iat: _iat, exp: _exp, ...payload } = decoded;
+      const { iat, exp, ...payload } = decoded;
       return this.generateToken(payload);
     } catch (error) {
       logger.error("Error refreshing JWT token:", error);

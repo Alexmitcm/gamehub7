@@ -175,6 +175,70 @@ model UserNotification {
   @@index([createdAt])
 }
 
+model Game {
+  id             String           @id @default(cuid())
+  title          String
+  slug           String           @unique
+  description    String
+  instructions   String?
+  packageUrl     String
+  entryFilePath  String           @default("index.html")
+  iconUrl        String
+  coverImageUrl  String
+  width          Int              @default(1280)
+  height         Int              @default(720)
+  orientation    GameOrientation  @default(Landscape)
+  developerName  String?
+  version        String?
+  status         GameStatus       @default(Draft)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  GameScreenshot GameScreenshot[]
+  categories     GameCategory[]   @relation("GameToGameCategory")
+  GameTag        GameTag[]        @relation("GameToGameTag")
+
+  @@index([slug])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model GameCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String?  @unique
+  description String?
+  metaDescription String?
+  icon      String?
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  games     Game[]   @relation("GameToGameCategory")
+
+  @@index([name])
+  @@index([slug])
+}
+
+model GameScreenshot {
+  id        String   @id
+  gameId    String
+  imageUrl  String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  Game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
+  @@index([order])
+}
+
+model GameTag {
+  id        String   @id
+  name      String   @unique
+  createdAt DateTime @default(now())
+  Game      Game[]   @relation("GameToGameTag")
+
+  @@index([name])
+}
+
 enum UserStatus {
   Standard
   Premium
@@ -254,4 +318,15 @@ enum NotificationPriority {
   Normal
   High
   Urgent
+}
+
+enum GameStatus {
+  Draft
+  Published
+}
+
+enum GameOrientation {
+  Landscape
+  Portrait
+  Both
 }

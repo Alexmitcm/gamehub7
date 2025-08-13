@@ -44,16 +44,10 @@ const formatTreeData = (nodes: ReferralNode[]): TreeNode | null => {
     if (!treeNode) continue;
 
     if (node.leftChild && nodeMap.has(node.leftChild.toLowerCase())) {
-      const leftChild = nodeMap.get(node.leftChild.toLowerCase());
-      if (leftChild) {
-        treeNode.children.push(leftChild);
-      }
+      treeNode.children.push(nodeMap.get(node.leftChild.toLowerCase())!);
     }
     if (node.rightChild && nodeMap.has(node.rightChild.toLowerCase())) {
-      const rightChild = nodeMap.get(node.rightChild.toLowerCase());
-      if (rightChild) {
-        treeNode.children.push(rightChild);
-      }
+      treeNode.children.push(nodeMap.get(node.rightChild.toLowerCase())!);
     }
   }
 
@@ -135,9 +129,7 @@ const TreeNodeComponent = ({
       {children.map((child, index) => {
         // For binary trees, position left child to the left, right child to the right
         const isLeftChild = index === 0;
-        const childX = isLeftChild
-          ? x - childSpacing / 2
-          : x + childSpacing / 2;
+        const childX = isLeftChild ? x - childSpacing / 2 : x + childSpacing / 2;
         const childY = y + levelHeight;
 
         return (
@@ -253,18 +245,15 @@ export default function ReferralTreeGraph({
     const childDimensions = node.children.map((child) =>
       calculateTreeDimensions(child, level + 1)
     );
-
+    
     // For binary trees, calculate width based on left and right branches
     let totalWidth = 200;
     if (node.children.length === 1) {
       totalWidth = Math.max(200, childDimensions[0].width);
     } else if (node.children.length === 2) {
-      totalWidth = Math.max(
-        200,
-        childDimensions[0].width + childDimensions[1].width + 250
-      );
+      totalWidth = Math.max(200, childDimensions[0].width + childDimensions[1].width + 250);
     }
-
+    
     const maxChildHeight = Math.max(
       ...childDimensions.map((dim) => dim.height)
     );
@@ -306,7 +295,6 @@ export default function ReferralTreeGraph({
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           width={svgWidth}
         >
-          <title>Referral Tree Visualization</title>
           <TreeNodeComponent
             node={treeData}
             onNodeClick={handleNodeClick}

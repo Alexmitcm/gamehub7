@@ -8,6 +8,7 @@ import GroupSettings from "@/components/Group/Settings";
 import { default as GroupMonetizeSettings } from "@/components/Group/Settings/Monetize";
 import { default as GroupPersonalizeSettings } from "@/components/Group/Settings/Personalize";
 import RulesSettings from "@/components/Group/Settings/Rules";
+import GameHub from "@/components/GameHub";
 import Groups from "@/components/Groups";
 import Home from "@/components/Home";
 import Notification from "@/components/Notification";
@@ -30,6 +31,9 @@ import SessionsSettings from "@/components/Settings/Sessions";
 import UsernameSettings from "@/components/Settings/Username";
 import Custom404 from "@/components/Shared/404";
 import AdminPanel from "./components/Admin";
+import AdminGamesPage from "@/components/Admin/GameHub/pages/AdminGamesPage";
+import NewGamePage from "@/components/Admin/GameHub/pages/NewGamePage";
+import EditGamePage from "@/components/Admin/GameHub/pages/EditGamePage";
 import {
   PremiumPage,
   PremiumTestPage,
@@ -40,6 +44,7 @@ import TestClaimRewardsPage from "./components/Settings/ClaimRewards/TestClaimRe
 import ReferralDashboard from "./components/Settings/ReferralDashboard";
 import RewardsSettings from "./components/Settings/Rewards";
 import Staff from "./components/Staff";
+import GameDetail from "@/components/GameDetail";
 
 const Routes = () => {
   return (
@@ -50,6 +55,8 @@ const Routes = () => {
           <Route element={<Explore />} path="explore" />
           <Route element={<Search />} path="search" />
           <Route element={<Groups />} path="groups" />
+          <Route element={<GameHub />} path="gamehub" />
+          <Route element={<GameDetail />} path="gamehub/:slug" />
           <Route element={<Bookmarks />} path="bookmarks" />
           <Route element={<Notification />} path="notifications" />
           <Route element={<ViewAccount />} path="account/:address" />
@@ -92,7 +99,12 @@ const Routes = () => {
           <Route path="staff">
             <Route element={<Staff />} index />
           </Route>
-          <Route element={<AdminPanel />} path="admin" />
+          <Route path="admin">
+            <Route element={<AdminPanel />} index />
+            <Route element={<AdminGamesPage />} path="games" />
+            <Route element={<NewGamePage />} path="games/new" />
+            <Route element={<EditGamePage />} path="games/edit/:id" />
+          </Route>
           <Route element={<Support />} path="support" />
           <Route element={<Terms />} path="terms" />
           <Route element={<Privacy />} path="privacy" />

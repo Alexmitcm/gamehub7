@@ -40,6 +40,11 @@ const GlobalShortcuts = () => {
     navigate("/bookmarks");
   });
 
+  // Go to game hub
+  useHotkeys("g", () => {
+    navigate("/gamehub");
+  });
+
   // Go to settings
   useHotkeys(KeyboardShortcuts.GoToSettings.key, () => {
     navigate("/settings");
