@@ -1,8 +1,4 @@
-import {
-  CHAIN,
-  IS_MAINNET,
-  WALLETCONNECT_PROJECT_ID
-} from "@hey/data/constants";
+import { CHAIN, IS_MAINNET, WALLETCONNECT_PROJECT_ID } from "@hey/data/constants";
 import { familyAccountsConnector } from "family";
 import type { ReactNode } from "react";
 import { http } from "viem";
@@ -117,78 +113,48 @@ const suppressWagmiWarnings = () => {
 // Apply warning suppression
 suppressWagmiWarnings();
 
-// Check if MetaMask is available
-const isMetaMaskAvailable = () => {
-  if (typeof window === "undefined") return false;
+// Note: MetaMask availability check and WalletConnect connectivity testing are available but not used in this simplified version
 
-  try {
-    return (
-      typeof (window as any).ethereum !== "undefined" &&
-      (window as any).ethereum.isMetaMask
-    );
-  } catch {
-    return false;
-  }
-};
+// Note: Advanced connector initialization with connectivity testing is available but not used in this simplified version
 
-// Create connectors with better error handling
-const createConnectors = () => {
-  const connectors = [];
-
-  // Family connector with error handling
-  try {
-    const familyConnector = familyAccountsConnector();
-    if (familyConnector) {
-      connectors.push(familyConnector);
-    }
-  } catch (error) {
-    console.warn("Failed to initialize family connector:", error);
-  }
-
-  // WalletConnect connector
-  try {
-    connectors.push(walletConnect({ projectId: WALLETCONNECT_PROJECT_ID }));
-  } catch (error) {
-    console.warn("Failed to initialize WalletConnect:", error);
-  }
-
-  // Injected connector (MetaMask, etc.) with availability check
-  if (isMetaMaskAvailable()) {
-    try {
-      const injectedConnector = injected({
-        shimDisconnect: true,
-        target: "metaMask"
-      });
-      connectors.push(injectedConnector);
-    } catch (error) {
-      console.warn("Failed to initialize injected connector:", error);
-    }
-  } else {
-    console.log("MetaMask not available, skipping injected connector");
-  }
-
-  return connectors.filter(Boolean);
-};
-
-const config = createConfig({
-  batch: {
-    multicall: true
-  },
-  chains: [CHAIN, arbitrum],
-  connectors: createConnectors(),
-  // Add configuration to reduce history restoration conflicts
-  ssr: false, // Disable SSR to reduce hydration conflicts
-  transports: {
-    [CHAIN.id]: getRpc({ mainnet: IS_MAINNET }),
-    [arbitrum.id]: http("https://arb1.arbitrum.io/rpc")
-  }
-});
+// Note: Async connector initialization is available but not used in this simplified version
 
 interface Web3ProviderProps {
   children: ReactNode;
 }
 
 const Web3Provider = ({ children }: Web3ProviderProps) => {
+  const config = createConfig({
+    batch: {
+      multicall: true
+    },
+    chains: [CHAIN, arbitrum],
+    connectors: [
+      // Family connector
+      familyAccountsConnector(),
+      // WalletConnect connector (for browser wallets)
+      walletConnect({ 
+        projectId: WALLETCONNECT_PROJECT_ID,
+        metadata: {
+          name: "Hey",
+          description: "Hey Social Media Platform",
+          url: typeof window !== "undefined" ? window.location.origin : "https://hey.xyz",
+          icons: ["https://static.hey.xyz/images/placeholder.webp"]
+        }
+      }),
+      // Injected connector (MetaMask)
+      injected({
+        shimDisconnect: true,
+        target: "metaMask"
+      })
+    ],
+    ssr: false,
+    transports: {
+      [CHAIN.id]: getRpc({ mainnet: IS_MAINNET }),
+      [arbitrum.id]: http("https://arb1.arbitrum.io/rpc")
+    }
+  });
+
   return <WagmiProvider config={config}>{children}</WagmiProvider>;
 };
 

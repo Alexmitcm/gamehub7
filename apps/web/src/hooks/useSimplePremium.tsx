@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { hono } from "@/helpers/fetcher";
-import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { usePremiumStore } from "@/store/premiumStore";
 
 interface PremiumStatus {
@@ -14,7 +13,6 @@ interface PremiumStatus {
 }
 
 export const useSimplePremium = () => {
-  const { currentAccount } = useAccountStore();
   const { address: connectedWalletAddress } = useAccount();
   const { setUserStatus, setLinkedProfile } = usePremiumStore();
 
@@ -26,11 +24,10 @@ export const useSimplePremium = () => {
   } = useQuery<PremiumStatus>({
     enabled: Boolean(connectedWalletAddress),
     queryFn: () =>
-      hono.premium.getSimpleStatus(connectedWalletAddress!, currentAccount?.id),
+      hono.premium.getSimpleStatus(connectedWalletAddress!),
     queryKey: [
       "simple-premium-status",
-      connectedWalletAddress,
-      currentAccount?.id
+      connectedWalletAddress
     ],
     retry: 2,
     staleTime: 5 * 60 * 1000 // 5 minutes
@@ -69,7 +66,6 @@ export const useSimplePremium = () => {
     }
   }, [
     connectedWalletAddress,
-    currentAccount?.id,
     premiumStatus,
     isLoading,
     error,

@@ -17,7 +17,7 @@ interface UserProfilesResponse {
 }
 
 const fetchUserProfiles = async (): Promise<UserProfilesResponse> => {
-  const response = await fetch("/api/premium/profiles", {
+        const response = await fetch("/api/premium/profiles", {
     headers: {
       "Content-Type": "application/json",
       "X-Access-Token": localStorage.getItem("accessToken") || ""

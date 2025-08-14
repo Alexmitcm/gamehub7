@@ -1,11 +1,14 @@
 import { ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { useAccount, useConnect } from "wagmi";
 import { Button, Spinner } from "@/components/Shared/UI";
 import useHandleWrongNetwork from "@/hooks/useHandleWrongNetwork";
 import { usePremiumRegistration } from "@/hooks/usePremiumRegistration";
 
 const PremiumRegistration = () => {
   const [referrerAddress, setReferrerAddress] = useState("");
+  const { address, isConnected, connector } = useAccount();
+  const { connect, connectors, isPending: isConnecting } = useConnect();
 
   const {
     // State
@@ -14,8 +17,6 @@ const PremiumRegistration = () => {
     isWrongNetwork,
     referrerStatus,
     usdtBalance,
-    isConnected,
-    address,
 
     // Functions
     validateReferrer,
@@ -23,6 +24,34 @@ const PremiumRegistration = () => {
   } = usePremiumRegistration();
 
   const handleWrongNetwork = useHandleWrongNetwork();
+
+  // Check if MetaMask is available
+  const isMetaMaskAvailable = () => {
+    if (typeof window === "undefined") return false;
+    
+    // Check multiple ways MetaMask might be available
+    const hasEthereum = !!(window as any).ethereum;
+    const isMetaMask = !!(window as any).ethereum?.isMetaMask;
+    const hasMetaMaskProvider = !!(window as any).ethereum?.providers?.find((p: any) => p.isMetaMask);
+    
+    console.log("MetaMask detection:", {
+      hasEthereum,
+      isMetaMask,
+      hasMetaMaskProvider,
+      ethereum: (window as any).ethereum
+    });
+    
+    return hasEthereum && (isMetaMask || hasMetaMaskProvider);
+  };
+
+  // Check if connected wallet is MetaMask
+  const isMetaMaskWallet =
+    connector?.name === "MetaMask" ||
+    connector?.name === "Injected" ||
+    isMetaMaskAvailable();
+
+  // Check if we need to switch to Arbitrum (only for MetaMask)
+  const needsArbitrumSwitch = isMetaMaskWallet && isWrongNetwork && isConnected;
 
   const handleReferrerChange = (value: string) => {
     setReferrerAddress(value);
@@ -37,10 +66,43 @@ const PremiumRegistration = () => {
     }
   };
 
+  const handleConnectMetaMask = async () => {
+    try {
+      // Check if MetaMask is available first
+      if (!isMetaMaskAvailable()) {
+        throw new Error("MetaMask extension not found");
+      }
+
+      // Find MetaMask connector
+      const metaMaskConnector = connectors.find(
+        (c) => c.name === "MetaMask" || c.name === "Injected"
+      );
+
+      if (metaMaskConnector) {
+        await connect({ connector: metaMaskConnector });
+      } else {
+        // Fallback: try to connect to any available connector
+        const availableConnector = connectors.find((c) => c.ready);
+        if (availableConnector) {
+          await connect({ connector: availableConnector });
+        } else {
+          throw new Error("No wallet connectors available");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to connect MetaMask:", error);
+      // Don't show alert, let the UI handle the error state
+    }
+  };
+
+  const handleInstallMetaMask = () => {
+    window.open("https://metamask.io/download/", "_blank");
+  };
+
   // Check if registration button should be disabled
   const isButtonDisabled =
     isLoading ||
-    isWrongNetwork ||
+    (isMetaMaskWallet && isWrongNetwork) ||
     !referrerStatus.isValid ||
     Number.parseFloat(usdtBalance) < 200 ||
     !isConnected ||
@@ -55,12 +117,125 @@ const PremiumRegistration = () => {
     return "border-gray-300";
   };
 
-  // Network error state
-  if (isWrongNetwork) {
+  // Not connected state - show MetaMask connection
+  if (!isConnected) {
     return (
-      <div className="w-full max-w-md space-y-6">
+      <div className="mx-auto w-full max-w-md space-y-4">
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+          <div className="mb-3 flex items-center gap-3">
+            <div className="h-5 w-5 rounded-full bg-yellow-100 p-0.5">
+              <svg
+                aria-hidden="true"
+                className="h-4 w-4 text-yellow-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  clipRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  fillRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-medium text-yellow-900">
+                MetaMask Wallet Required
+              </h3>
+              <p className="text-sm text-yellow-700">
+                Please connect your MetaMask wallet to register for Hey Pro.
+              </p>
+            </div>
+          </div>
+
+          {/* MetaMask not available - show install option */}
+          {isMetaMaskAvailable() ? null : (
+            <div className="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-3">
+              <div className="mb-2 flex items-center gap-2">
+                <svg
+                  className="h-4 w-4 text-orange-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-sm font-medium text-orange-800">
+                  MetaMask Not Found
+                </span>
+              </div>
+                              <p className="mb-3 text-xs text-orange-700">
+                MetaMask extension is required for premium registration. Please install it first.
+              </p>
+              <Button
+                className="w-full"
+                onClick={handleInstallMetaMask}
+                outline
+              >
+                Install MetaMask
+              </Button>
+            </div>
+          )}
+
+          {/* Connect MetaMask button */}
+          <Button
+            className="w-full"
+            disabled={isConnecting || !isMetaMaskAvailable()}
+            loading={isConnecting}
+            onClick={handleConnectMetaMask}
+          >
+            {isConnecting ? (
+              <div className="flex items-center gap-2">
+                <Spinner className="size-4" />
+                <span>Connecting...</span>
+              </div>
+            ) : !isMetaMaskAvailable() ? (
+              "MetaMask Not Available"
+            ) : (
+              "Connect MetaMask Wallet"
+            )}
+          </Button>
+
+          {/* Help text */}
+          <div className="mt-3 text-xs text-yellow-600">
+            <p>• Make sure MetaMask is installed and unlocked</p>
+            <p>• Refresh the page after installing MetaMask</p>
+            <p>• Premium registration requires MetaMask wallet</p>
+          </div>
+
+          {/* Debug section - only show in development */}
+          {process.env.NODE_ENV === "development" && (
+            <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <h4 className="mb-2 text-sm font-medium text-gray-700">Debug Info</h4>
+              <div className="space-y-1 text-xs text-gray-600">
+                <p>MetaMask Available: {isMetaMaskAvailable() ? "Yes" : "No"}</p>
+                <p>Available Connectors: {connectors.filter(c => c.ready).length}</p>
+                <p>Connector Names: {connectors.filter(c => c.ready).map(c => c.name).join(", ")}</p>
+                <button
+                  className="mt-2 rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+                  onClick={() => {
+                    console.log("Available connectors:", connectors);
+                    console.log("Window ethereum:", (window as any).ethereum);
+                  }}
+                >
+                  Log Debug Info
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // MetaMask wallet on wrong network state
+  if (needsArbitrumSwitch) {
+    return (
+      <div className="mx-auto w-full max-w-md space-y-4">
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <div className="flex items-center gap-3">
+          <div className="mb-3 flex items-center gap-3">
             <div className="h-5 w-5 rounded-full bg-red-100 p-0.5">
               <svg
                 aria-hidden="true"
@@ -76,14 +251,17 @@ const PremiumRegistration = () => {
               </svg>
             </div>
             <div>
-              <h3 className="font-medium text-red-900">Wrong Network</h3>
+              <h3 className="font-medium text-red-900">
+                Switch to Arbitrum One
+              </h3>
               <p className="text-red-700 text-sm">
-                Please switch to Arbitrum One to register for Hey Pro.
+                Your MetaMask wallet needs to be on Arbitrum One network to
+                register for Hey Pro.
               </p>
             </div>
           </div>
           <Button
-            className="mt-3 w-full"
+            className="w-full"
             disabled={isLoading}
             onClick={handleWrongNetwork}
           >
@@ -101,42 +279,8 @@ const PremiumRegistration = () => {
     );
   }
 
-  // Not connected state
-  if (!isConnected) {
-    return (
-      <div className="w-full max-w-md space-y-6">
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-          <div className="flex items-center gap-3">
-            <div className="h-5 w-5 rounded-full bg-yellow-100 p-0.5">
-              <svg
-                aria-hidden="true"
-                className="h-4 w-4 text-yellow-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  clipRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  fillRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-medium text-yellow-900">
-                Wallet Not Connected
-              </h3>
-              <p className="text-sm text-yellow-700">
-                Please connect your wallet to register for Hey Pro.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full max-w-md space-y-6">
+    <div className="mx-auto w-full max-w-md space-y-4">
       {/* Registration Form */}
       <div className="space-y-4">
         {/* Referrer Input */}
@@ -259,18 +403,20 @@ const PremiumRegistration = () => {
       <div className="rounded-lg bg-green-50 p-4">
         <div className="flex items-center gap-2">
           <div
-            className={`h-2 w-2 rounded-full ${isWrongNetwork ? "bg-red-500" : "bg-green-500"}`}
+            className={`h-2 w-2 rounded-full ${needsArbitrumSwitch ? "bg-red-500" : "bg-green-500"}`}
           />
           <span
-            className={`text-sm ${isWrongNetwork ? "text-red-700" : "text-green-700"}`}
+            className={`text-sm ${needsArbitrumSwitch ? "text-red-700" : "text-green-700"}`}
           >
-            {isWrongNetwork ? "Wrong Network" : "Connected to Arbitrum One"}
+            {needsArbitrumSwitch
+              ? "Wrong Network"
+              : "Connected to Arbitrum One"}
           </span>
         </div>
         <p className="mt-1 text-green-600 text-xs">
           {address?.slice(0, 6)}...{address?.slice(-4)}
         </p>
-        {isWrongNetwork && (
+        {needsArbitrumSwitch && (
           <div className="mt-2">
             <Button className="w-full" onClick={handleWrongNetwork} outline>
               <ArrowsRightLeftIcon className="mr-2 h-4 w-4" />

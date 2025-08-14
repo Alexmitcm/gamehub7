@@ -43,14 +43,16 @@ export function usePremiumProfileSelection() {
       setIsLoading(true);
       setError(null);
 
-      // Use POST endpoint instead of GET (no auth required)
-      const response = await fetch("/api/premium/status", {
-        body: JSON.stringify({ walletAddress }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        method: "POST"
-      });
+      // Use the correct endpoint with query parameter
+      const response = await fetch(
+        `/api/premium/user-status?walletAddress=${walletAddress}`,
+        {
+          headers: {
+            "Content-Type": "application/json"
+          },
+          method: "GET"
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -58,8 +60,8 @@ export function usePremiumProfileSelection() {
       }
 
       const data = await response.json();
-      setPremiumStatus(data);
-      return data;
+      setPremiumStatus(data.data); // Note: endpoint returns { data: result }
+      return data.data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       setError(errorMessage);
@@ -114,13 +116,15 @@ export function usePremiumProfileSelection() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch("/api/premium/profiles", {
-        body: JSON.stringify({ walletAddress }),
-        headers: {
-          "Content-Type": "application/json"
-        },
-        method: "POST"
-      });
+      const response = await fetch(
+        `/api/premium/profiles?walletAddress=${walletAddress}`,
+        {
+          headers: {
+            "Content-Type": "application/json"
+          },
+          method: "GET"
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch available profiles");
@@ -215,7 +219,7 @@ export function usePremiumProfileSelection() {
   // Initialize premium status when wallet connects
   useEffect(() => {
     if (address) {
-      fetchPremiumStatus(address); // Use POST method (no auth required)
+      fetchPremiumStatus(address); // Use GET method with query parameter
     } else {
       setPremiumStatus(null);
       setAvailableProfiles(null);
