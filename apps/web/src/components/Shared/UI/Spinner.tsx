@@ -4,7 +4,7 @@ import cn from "@/helpers/cn";
 
 const spinnerVariants = cva("", {
   defaultVariants: { size: "md" },
-  variants: { size: { md: "size-7", sm: "size-5", xs: "size-4" } }
+  variants: { size: { lg: "size-8", md: "size-7", sm: "size-5", xs: "size-4" } }
 });
 
 interface SpinnerProps extends VariantProps<typeof spinnerVariants> {

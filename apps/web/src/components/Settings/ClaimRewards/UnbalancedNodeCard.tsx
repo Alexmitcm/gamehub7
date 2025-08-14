@@ -11,14 +11,13 @@ const UnbalancedNodeCard = () => {
       abi: REFERRAL_ABI,
       address: MAINNET_CONTRACTS.REFERRAL as `0x${string}`,
       args: address ? [address] : undefined,
-      enabled: !!address,
       functionName: "UnbalancedNodeSet"
     });
 
   // Extract payment from unbalanced node data (second element in the returned array)
   const unbalancedNode = unbalancedNodeData
     ? {
-        payment: unbalancedNodeData[1]
+        payment: unbalancedNodeData && Array.isArray(unbalancedNodeData) && unbalancedNodeData[1] ? unbalancedNodeData[1] as bigint : undefined
       }
     : undefined;
 

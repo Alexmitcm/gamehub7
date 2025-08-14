@@ -42,7 +42,7 @@ const buttonVariants = cva(
     variants: {
       outline: { false: "", true: "" },
       size: { lg: "px-5 py-1.5", md: "px-4 py-1", sm: "px-3 py-0.5 text-sm" },
-      variant: { primary: "" }
+      variant: { primary: "", secondary: "", outline: "", destructive: "" }
     }
   }
 );

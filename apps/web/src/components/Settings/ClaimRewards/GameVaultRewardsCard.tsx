@@ -1,11 +1,10 @@
 import { toast } from "react-hot-toast";
 import { formatUnits } from "viem";
-import { useAccount, useContractRead } from "wagmi";
+import { useContractRead } from "wagmi";
 import useClaimBalancedGameReward from "@/hooks/useClaimBalancedGameReward";
 import { GAME_VAULT_ABI, MAINNET_CONTRACTS } from "@/lib/constants";
 
 const GameVaultRewardsCard = () => {
-  const { address } = useAccount();
   const { claimBalancedGameReward, isPending, isSuccess, error } =
     useClaimBalancedGameReward();
 
@@ -18,7 +17,6 @@ const GameVaultRewardsCard = () => {
     abi: GAME_VAULT_ABI,
     address: MAINNET_CONTRACTS.BALANCED_GAME_VAULT as `0x${string}`,
     args: [],
-    enabled: !!address,
     functionName: "playerBalance"
   });
 
@@ -36,7 +34,7 @@ const GameVaultRewardsCard = () => {
     toast.error(`Failed to claim rewards: ${error.message}`);
   }
 
-  const formattedBalance = balance ? formatUnits(balance, 6) : "0";
+  const formattedBalance = balance ? formatUnits(balance as bigint, 6) : "0";
   const isDisabled = !balance || balance === 0n || isPending;
   const isLoading = isBalanceLoading || isPending;
 

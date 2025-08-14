@@ -4,14 +4,33 @@ import { z } from "zod";
 import AdminService from "@/services/AdminService";
 import handleApiError from "@/utils/handleApiError";
 
+// Create mock WebSocketService for AdminService
+const mockWebSocketService = {
+  broadcastPremiumStatusUpdate: () => {},
+  broadcastProfileLinkedUpdate: () => {},
+  broadcastRegistrationUpdate: () => {},
+  broadcastTransactionUpdate: () => {},
+  getStats: () => ({ connectedClients: 0 }),
+  sendNotification: () => {}
+};
+
+// Create AdminService instance
+const adminService = new AdminService(mockWebSocketService as any);
+
 // Validation schemas
 const walletAddressSchema = z.object({
   walletAddress: z.string().min(1, "Wallet address is required")
 });
 
 const paginationSchema = z.object({
-  limit: z.string().optional(),
-  page: z.string().optional()
+  limit: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseInt(val, 10) : undefined)),
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number.parseInt(val, 10) : undefined))
 });
 
 const adminActionSchema = z.object({
@@ -53,7 +72,7 @@ export async function getAdminUserView(ctx: Context) {
   try {
     const { walletAddress } = walletAddressSchema.parse(ctx.req.query());
 
-    const result = await AdminService.getAdminUserView(walletAddress);
+    const result = await adminService.getAdminUserView(walletAddress);
 
     return ctx.json({
       data: result,
@@ -72,7 +91,7 @@ export async function getAdminUserViewPost(ctx: Context) {
     const body = await ctx.req.json();
     const { walletAddress } = walletAddressSchema.parse(body);
 
-    const result = await AdminService.getAdminUserView(walletAddress);
+    const result = await adminService.getAdminUserView(walletAddress);
 
     return ctx.json({
       data: result,
@@ -95,7 +114,7 @@ export async function getAllAdminUsers(ctx: Context) {
       | "ProLinked"
       | undefined;
 
-    const result = await AdminService.getAllAdminUsers(page, limit, status);
+    const result = await adminService.getAllAdminUsers(page, limit, status);
 
     return ctx.json({
       data: result,
@@ -114,7 +133,7 @@ export async function getAllAdminUsersPost(ctx: Context) {
     const body = await ctx.req.json();
     const { page = 1, limit = 50, status } = body;
 
-    const result = await AdminService.getAllAdminUsers(page, limit, status);
+    const result = await adminService.getAllAdminUsers(page, limit, status);
 
     return ctx.json({
       data: result,
@@ -134,7 +153,7 @@ export async function forceUnlinkProfile(ctx: Context) {
     const { adminWalletAddress, targetWallet, reason } =
       adminActionSchema.parse(body);
 
-    const result = await AdminService.forceUnlinkProfile(
+    const result = await adminService.forceUnlinkProfile(
       adminWalletAddress,
       targetWallet,
       reason
@@ -158,7 +177,7 @@ export async function forceLinkProfile(ctx: Context) {
     const { adminWalletAddress, targetWallet, profileId, reason } =
       forceLinkProfileSchema.parse(body);
 
-    const result = await AdminService.forceLinkProfile(
+    const result = await adminService.forceLinkProfile(
       adminWalletAddress,
       targetWallet,
       profileId,
@@ -183,7 +202,7 @@ export async function grantPremiumAccess(ctx: Context) {
     const { adminWalletAddress, targetWallet, reason } =
       adminActionSchema.parse(body);
 
-    const result = await AdminService.grantPremiumAccess(
+    const result = await adminService.grantPremiumAccess(
       adminWalletAddress,
       targetWallet,
       reason
@@ -207,7 +226,7 @@ export async function addAdminNote(ctx: Context) {
     const { adminWalletAddress, targetWallet, note, isPrivate } =
       adminNoteSchema.parse(body);
 
-    const result = await AdminService.addAdminNote(
+    const result = await adminService.addAdminNote(
       adminWalletAddress,
       targetWallet,
       note,
@@ -228,7 +247,7 @@ export async function addAdminNote(ctx: Context) {
  */
 export async function getAdminStats(ctx: Context) {
   try {
-    const result = await AdminService.getEnhancedAdminStats();
+    const result = await adminService.getEnhancedAdminStats();
 
     return ctx.json({
       data: result,
@@ -249,7 +268,7 @@ export async function getAdminActionHistory(ctx: Context) {
     const actionType = ctx.req.query("actionType") as string | undefined;
     const status = ctx.req.query("status") as string | undefined;
 
-    const result = await AdminService.getAdminActionHistory(
+    const result = await adminService.getAdminActionHistory(
       page,
       limit,
       adminId,
@@ -274,7 +293,7 @@ export async function getAdminActionHistoryPost(ctx: Context) {
     const body = await ctx.req.json();
     const { page = 1, limit = 50, adminId, actionType, status } = body;
 
-    const result = await AdminService.getAdminActionHistory(
+    const result = await adminService.getAdminActionHistory(
       page,
       limit,
       adminId,
@@ -296,7 +315,7 @@ export async function getAdminActionHistoryPost(ctx: Context) {
  */
 export async function getFeatureList(ctx: Context) {
   try {
-    const result = await AdminService.getFeatureList();
+    const result = await adminService.getFeatureList();
 
     return ctx.json({
       data: result,
@@ -322,7 +341,7 @@ export async function updateFeatureAccess(ctx: Context) {
       expiresAt
     } = featureAccessSchema.parse(body);
 
-    const result = await AdminService.updateFeatureAccess(
+    const result = await adminService.updateFeatureAccess(
       adminWalletAddress,
       targetWallet,
       featureId,
@@ -347,7 +366,7 @@ export async function getAdminUserInfo(ctx: Context) {
   try {
     const { walletAddress } = walletAddressSchema.parse(ctx.req.query());
 
-    const result = await AdminService.getAdminUserInfo(walletAddress);
+    const result = await adminService.getAdminUserInfo(walletAddress);
 
     return ctx.json({
       data: result,
@@ -366,7 +385,7 @@ export async function getAdminUserInfoPost(ctx: Context) {
     const body = await ctx.req.json();
     const { walletAddress } = walletAddressSchema.parse(body);
 
-    const result = await AdminService.getAdminUserInfo(walletAddress);
+    const result = await adminService.getAdminUserInfo(walletAddress);
 
     return ctx.json({
       data: result,

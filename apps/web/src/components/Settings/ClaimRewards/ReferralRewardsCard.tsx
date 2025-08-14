@@ -18,12 +18,11 @@ const ReferralRewardsCard = () => {
     abi: REFERRAL_ABI,
     address: MAINNET_CONTRACTS.REFERRAL as `0x${string}`,
     args: address ? [address] : undefined,
-    enabled: !!address,
     functionName: "NodeSet"
   });
 
   // Extract balance from node data (second element in the returned array)
-  const balance = nodeData ? nodeData[1] : undefined;
+  const balance = nodeData && Array.isArray(nodeData) && nodeData[1] ? nodeData[1] as bigint : undefined;
 
   const handleClaim = () => {
     claimReferralReward();

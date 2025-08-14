@@ -26,6 +26,7 @@
     "node": ">=18.x <=22.x"
   },
   "dependencies": {
+    "jspdf": "^3.0.1",
     "unzip-stream": "^0.3.4"
   }
 }
