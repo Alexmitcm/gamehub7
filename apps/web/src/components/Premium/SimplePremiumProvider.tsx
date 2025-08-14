@@ -5,7 +5,8 @@ interface SimplePremiumProviderProps {
 }
 
 const SimplePremiumProvider = ({ children }: SimplePremiumProviderProps) => {
-  // Initialize premium status on app startup
+  // Always call the hook to maintain hooks order
+  // The hook will handle the case where account is not available
   useSimplePremium();
 
   return <>{children}</>;

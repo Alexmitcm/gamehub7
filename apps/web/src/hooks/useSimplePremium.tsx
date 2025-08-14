@@ -13,8 +13,11 @@ interface PremiumStatus {
 }
 
 export const useSimplePremium = () => {
-  const { address: connectedWalletAddress } = useAccount();
+  const account = useAccount();
   const { setUserStatus, setLinkedProfile } = usePremiumStore();
+
+  // Safely extract wallet address with null checks
+  const connectedWalletAddress = account?.address;
 
   // Query to get premium status using the connected wallet address
   const {
@@ -23,8 +26,12 @@ export const useSimplePremium = () => {
     error
   } = useQuery<PremiumStatus>({
     enabled: Boolean(connectedWalletAddress),
-    queryFn: () =>
-      hono.premium.getSimpleStatus(connectedWalletAddress!),
+    queryFn: () => {
+      if (!connectedWalletAddress) {
+        throw new Error("No wallet address available");
+      }
+      return hono.premium.getSimpleStatus(connectedWalletAddress);
+    },
     queryKey: [
       "simple-premium-status",
       connectedWalletAddress
@@ -78,6 +85,7 @@ export const useSimplePremium = () => {
     isLoading,
     isPremium: premiumStatus?.userStatus === "ProLinked",
     linkedProfile: premiumStatus?.linkedProfile,
-    premiumStatus
+    premiumStatus,
+    isConnected: Boolean(connectedWalletAddress)
   };
 };
