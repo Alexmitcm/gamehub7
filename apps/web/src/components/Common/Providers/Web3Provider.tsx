@@ -168,11 +168,7 @@ const Web3Provider = ({ children }: Web3ProviderProps) => {
     ssr: false,
     transports: {
       [CHAIN.id]: getRpcWithProxy(),
-      [arbitrum.id]: http("https://arb1.arbitrum.io/rpc", {
-        retryCount: 3,
-        retryDelay: 1000,
-        timeout: 30000
-      })
+      [arbitrum.id]: http("https://arb1.arbitrum.io/rpc")
     }
   });
 

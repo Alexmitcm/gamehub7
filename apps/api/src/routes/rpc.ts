@@ -1,4 +1,5 @@
 import { IS_MAINNET } from "@hey/data/constants";
+import { Status } from "@hey/data/enums";
 import { LENS_MAINNET_RPCS, LENS_TESTNET_RPCS } from "@hey/data/rpcs";
 import logger from "@hey/helpers/logger";
 import { Hono } from "hono";
@@ -37,49 +38,29 @@ rpcRouter.post("/", async (c) => {
         });
 
         if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          if (contentType?.includes("application/json")) {
-            const data = await response.json();
-            logger.info(`RPC request successful via: ${rpcUrl}`);
-            return c.json(data);
-          }
-          // If response is not JSON, log and continue to next RPC
-          logger.warn(
-            `RPC endpoint returned non-JSON response: ${rpcUrl}, content-type: ${contentType}`
-          );
-          continue;
+          const data = await response.json();
+          logger.info(`RPC request successful via: ${rpcUrl}`);
+          return c.json(data);
         }
-        logger.warn(
-          `RPC endpoint returned error status: ${rpcUrl}, status: ${response.status}`
-        );
-      } catch (error) {
+      } catch {
         // Continue to next RPC if this one fails
-        logger.warn(`RPC endpoint failed: ${rpcUrl}, error: ${error}`);
+        logger.warn(`RPC endpoint failed: ${rpcUrl}`);
       }
     }
 
     // If all RPCs fail, return error
     return c.json(
       {
-        error: {
-          code: -32603,
-          message: "All RPC endpoints failed"
-        },
-        id: body.id || null,
-        jsonrpc: "2.0"
+        error: "All RPC endpoints failed",
+        status: Status.Error
       },
       500
     );
-  } catch (error) {
-    logger.error(`RPC proxy error: ${error}`);
+  } catch {
     return c.json(
       {
-        error: {
-          code: -32700,
-          message: "Invalid request body"
-        },
-        id: null,
-        jsonrpc: "2.0"
+        error: "Invalid request body",
+        status: Status.Error
       },
       400
     );

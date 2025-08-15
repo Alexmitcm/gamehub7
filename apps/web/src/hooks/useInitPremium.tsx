@@ -18,7 +18,7 @@ interface PremiumStatus {
   linkedProfile?: {
     profileId: string;
     handle: string;
-    linkedAt: string;
+    linkedAt: Date;
   } | null;
 }
 
@@ -28,7 +28,7 @@ interface AvailableProfiles {
   linkedProfile?: {
     profileId: string;
     handle: string;
-    linkedAt: string;
+    linkedAt: Date;
   } | null;
 }
 
@@ -72,7 +72,7 @@ export const useInitPremium = () => {
       setUserStatus("ProLinked");
       setLinkedProfile({
         handle: data.handle,
-        linkedAt: data.linkedAt,
+        linkedAt: new Date(data.linkedAt),
         profileId: data.profileId
       });
       setError(null);
@@ -93,7 +93,7 @@ export const useInitPremium = () => {
       setUserStatus("ProLinked");
       setLinkedProfile({
         handle: data.handle,
-        linkedAt: data.linkedAt,
+        linkedAt: new Date(data.linkedAt),
         profileId: data.profileId
       });
       setError(null);

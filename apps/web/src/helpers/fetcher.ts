@@ -60,17 +60,8 @@ const fetchApi = async <T>(
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    let result: any;
-    try {
-      result = await response.json();
-      console.log("🔍 Response data:", result);
-    } catch (jsonError) {
-      console.error("🔍 JSON parsing error:", jsonError);
-      console.error("🔍 Response text:", await response.text());
-      throw new Error(
-        `Invalid JSON response: ${jsonError instanceof Error ? jsonError.message : "Unknown error"}`
-      );
-    }
+    const result = await response.json();
+    console.log("🔍 Response data:", result);
 
     // Handle API responses with success/error format
     if (result.success === true) {
