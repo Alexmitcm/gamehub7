@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import { readFileSync } from "fs";
 import fetch from "node-fetch";
 
-const RAILWAY_URL = "https://gamehub4-production.up.railway.app";
+const RAILWAY_URL = "https://game5-production.up.railway.app";
 
 async function testRailwayConnection() {
   console.log("🚀 Comprehensive Railway Connection Test");

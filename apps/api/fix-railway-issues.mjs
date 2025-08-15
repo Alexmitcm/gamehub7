@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const RAILWAY_URL = "https://gamehub4-production.up.railway.app";
+const RAILWAY_URL = "https://game5-production.up.railway.app";
 
 console.log("🔧 Railway Backend Issue Fix Script");
 console.log("=".repeat(50));
@@ -51,7 +51,7 @@ console.log("");
 
 console.log("STEP 2: Fix Database Connection");
 console.log("1. Go to Railway Dashboard: https://railway.app/dashboard");
-console.log("2. Select your project: gamehub4-production");
+console.log("2. Select your project: game5-production");
 console.log("3. Go to Variables tab");
 console.log("4. Add DATABASE_URL with your Supabase connection string:");
 console.log("   DATABASE_URL=postgresql://postgres:[password]@db.hyzardurrtfrglfuelyd.supabase.co:5432/postgres");
@@ -123,7 +123,7 @@ checkCurrentStatus().then(() => {
   console.log("🔗 Useful Links:");
   console.log("- Railway Dashboard: https://railway.app/dashboard");
   console.log("- Supabase Dashboard: https://supabase.com/dashboard");
-  console.log("- Project URL: https://gamehub4-production.up.railway.app");
+  console.log("- Project URL: https://game5-production.up.railway.app");
   console.log("");
   console.log("💡 Tips:");
   console.log("- The AdminService fix is a code change that needs to be deployed");

@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-const RAILWAY_URL = "https://gamehub4-production.up.railway.app";
+const RAILWAY_URL = "https://game5-production.up.railway.app";
 
 async function quickRailwayTest() {
   console.log("🚀 Quick Railway Connection Test");

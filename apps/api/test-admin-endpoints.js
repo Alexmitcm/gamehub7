@@ -1,4 +1,4 @@
-const API_BASE = "https://gamehub4-production.up.railway.app";
+const API_BASE = "https://game5-production.up.railway.app";
 
 async function testAdminEndpoints() {
   console.log("🧪 Testing Admin Endpoints...\n");

@@ -5,7 +5,7 @@ import { config } from "dotenv";
 config();
 
 const API_BASE_URL =
-  process.env.HEY_API_URL || "https://gamehub4-production.up.railway.app";
+  process.env.HEY_API_URL || "https://game5-production.up.railway.app";
 
 /**
  * Test the Lens authentication bridge

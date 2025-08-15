@@ -22,7 +22,7 @@ const GamePlayer = ({ gameFileUrl, entryFilePath, title, width, height }: GamePl
 
         // Use the server-based game URL with detected entry file path
         const entry = entryFilePath || "index.html";
-        const gameUrl = `${import.meta.env.VITE_API_URL || 'https://gamehub4-production.up.railway.app'}${gameFileUrl}/${entry}`;
+        const gameUrl = `${import.meta.env.VITE_API_URL || 'https://game5-production.up.railway.app'}${gameFileUrl}/${entry}`;
         setGameContent(gameUrl);
       } catch (err) {
         console.error("Error loading game:", err);
