@@ -35,4 +35,4 @@ EXPOSE 8080
 WORKDIR /app/apps/api
 
 # Start the application with migrations
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=src/prisma/schema.prisma && pnpm start"]
+CMD npx prisma migrate deploy --schema=src/prisma/schema.prisma && pnpm start
