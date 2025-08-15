@@ -38,7 +38,7 @@ rpcRouter.post("/", async (c) => {
 
         if (response.ok) {
           const contentType = response.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
+          if (contentType?.includes("application/json")) {
             const data = await response.json();
             logger.info(`RPC request successful via: ${rpcUrl}`);
             return c.json(data);
