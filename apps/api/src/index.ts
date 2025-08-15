@@ -24,6 +24,7 @@ import debugProfileRouter from "./routes/premium/debug-profile";
 import testLensRouter from "./routes/premium/test-lens";
 import premiumRegistrationRouter from "./routes/premium-registration";
 import referralRouter from "./routes/referral/tree";
+import rpcRouter from "./routes/rpc";
 import sitemapRouter from "./routes/sitemap";
 import generateTestJwt from "./routes/test-jwt";
 
@@ -54,6 +55,7 @@ app.route("/premium/debug", debugRouter);
 app.route("/premium/debug-profile", debugProfileRouter);
 app.route("/premium/test-lens", testLensRouter);
 app.route("/referral", referralRouter);
+app.route("/rpc", rpcRouter);
 app.route("/sitemap", sitemapRouter);
 app.route("/og", ogRouter);
 

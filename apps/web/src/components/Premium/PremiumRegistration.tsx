@@ -1,14 +1,18 @@
 import { ArrowsRightLeftIcon } from "@heroicons/react/24/outline";
+import type { AccountFragment } from "@hey/indexer";
 import { useState } from "react";
 import { useAccount, useConnect } from "wagmi";
+import SingleAccount from "@/components/Shared/Account/SingleAccount";
 import { Button, Spinner } from "@/components/Shared/UI";
 import useHandleWrongNetwork from "@/hooks/useHandleWrongNetwork";
 import { usePremiumRegistration } from "@/hooks/usePremiumRegistration";
+import { useAccountStore } from "@/store/persisted/useAccountStore";
 
 const PremiumRegistration = () => {
   const [referrerAddress, setReferrerAddress] = useState("");
   const { address, isConnected, connector } = useAccount();
   const { connect, connectors, isPending: isConnecting } = useConnect();
+  const { currentAccount } = useAccountStore();
 
   const {
     // State
@@ -28,19 +32,21 @@ const PremiumRegistration = () => {
   // Check if MetaMask is available
   const isMetaMaskAvailable = () => {
     if (typeof window === "undefined") return false;
-    
+
     // Check multiple ways MetaMask might be available
     const hasEthereum = !!(window as any).ethereum;
     const isMetaMask = !!(window as any).ethereum?.isMetaMask;
-    const hasMetaMaskProvider = !!(window as any).ethereum?.providers?.find((p: any) => p.isMetaMask);
-    
+    const hasMetaMaskProvider = !!(window as any).ethereum?.providers?.find(
+      (p: any) => p.isMetaMask
+    );
+
     console.log("MetaMask detection:", {
+      ethereum: (window as any).ethereum,
       hasEthereum,
-      isMetaMask,
       hasMetaMaskProvider,
-      ethereum: (window as any).ethereum
+      isMetaMask
     });
-    
+
     return hasEthereum && (isMetaMask || hasMetaMaskProvider);
   };
 
@@ -152,22 +158,24 @@ const PremiumRegistration = () => {
             <div className="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-3">
               <div className="mb-2 flex items-center gap-2">
                 <svg
+                  aria-hidden="true"
                   className="h-4 w-4 text-orange-600"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
                   <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
                     clipRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    fillRule="evenodd"
                   />
                 </svg>
-                <span className="text-sm font-medium text-orange-800">
+                <span className="font-medium text-orange-800 text-sm">
                   MetaMask Not Found
                 </span>
               </div>
-                              <p className="mb-3 text-xs text-orange-700">
-                MetaMask extension is required for premium registration. Please install it first.
+              <p className="mb-3 text-orange-700 text-xs">
+                MetaMask extension is required for premium registration. Please
+                install it first.
               </p>
               <Button
                 className="w-full"
@@ -191,10 +199,10 @@ const PremiumRegistration = () => {
                 <Spinner className="size-4" />
                 <span>Connecting...</span>
               </div>
-            ) : !isMetaMaskAvailable() ? (
-              "MetaMask Not Available"
-            ) : (
+            ) : isMetaMaskAvailable() ? (
               "Connect MetaMask Wallet"
+            ) : (
+              "MetaMask Not Available"
             )}
           </Button>
 
@@ -208,17 +216,31 @@ const PremiumRegistration = () => {
           {/* Debug section - only show in development */}
           {process.env.NODE_ENV === "development" && (
             <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <h4 className="mb-2 text-sm font-medium text-gray-700">Debug Info</h4>
-              <div className="space-y-1 text-xs text-gray-600">
-                <p>MetaMask Available: {isMetaMaskAvailable() ? "Yes" : "No"}</p>
-                <p>Available Connectors: {connectors.filter(c => c.ready).length}</p>
-                <p>Connector Names: {connectors.filter(c => c.ready).map(c => c.name).join(", ")}</p>
+              <h4 className="mb-2 font-medium text-gray-700 text-sm">
+                Debug Info
+              </h4>
+              <div className="space-y-1 text-gray-600 text-xs">
+                <p>
+                  MetaMask Available: {isMetaMaskAvailable() ? "Yes" : "No"}
+                </p>
+                <p>
+                  Available Connectors:{" "}
+                  {connectors.filter((c) => c.ready).length}
+                </p>
+                <p>
+                  Connector Names:{" "}
+                  {connectors
+                    .filter((c) => c.ready)
+                    .map((c) => c.name)
+                    .join(", ")}
+                </p>
                 <button
-                  className="mt-2 rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+                  className="mt-2 rounded bg-blue-500 px-2 py-1 text-white text-xs hover:bg-blue-600"
                   onClick={() => {
                     console.log("Available connectors:", connectors);
                     console.log("Window ethereum:", (window as any).ethereum);
                   }}
+                  type="button"
                 >
                   Log Debug Info
                 </button>
@@ -281,6 +303,16 @@ const PremiumRegistration = () => {
 
   return (
     <div className="mx-auto w-full max-w-md space-y-4">
+      {/* Profile Display */}
+      {currentAccount && (
+        <SingleAccount
+          account={currentAccount as AccountFragment}
+          isVerified
+          linkToAccount={false}
+          showUserPreview={false}
+        />
+      )}
+
       {/* Registration Form */}
       <div className="space-y-4">
         {/* Referrer Input */}

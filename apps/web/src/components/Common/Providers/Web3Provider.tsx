@@ -1,11 +1,11 @@
-import { CHAIN, IS_MAINNET, WALLETCONNECT_PROJECT_ID } from "@hey/data/constants";
+import { CHAIN, WALLETCONNECT_PROJECT_ID } from "@hey/data/constants";
 import { familyAccountsConnector } from "family";
 import type { ReactNode } from "react";
 import { http } from "viem";
 import { createConfig, WagmiProvider } from "wagmi";
 import { arbitrum } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
-import getRpc from "@/helpers/getRpc";
+import getRpcWithProxy from "@/helpers/getRpcWithProxy";
 
 // Comprehensive warning suppression for Wagmi history restoration
 const suppressWagmiWarnings = () => {
@@ -150,7 +150,7 @@ const Web3Provider = ({ children }: Web3ProviderProps) => {
     ],
     ssr: false,
     transports: {
-      [CHAIN.id]: getRpc({ mainnet: IS_MAINNET }),
+      [CHAIN.id]: getRpcWithProxy(),
       [arbitrum.id]: http("https://arb1.arbitrum.io/rpc")
     }
   });
