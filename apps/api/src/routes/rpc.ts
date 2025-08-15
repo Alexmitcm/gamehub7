@@ -1,5 +1,4 @@
 import { IS_MAINNET } from "@hey/data/constants";
-import { Status } from "@hey/data/enums";
 import { LENS_MAINNET_RPCS, LENS_TESTNET_RPCS } from "@hey/data/rpcs";
 import logger from "@hey/helpers/logger";
 import { Hono } from "hono";
@@ -38,29 +37,49 @@ rpcRouter.post("/", async (c) => {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          logger.info(`RPC request successful via: ${rpcUrl}`);
-          return c.json(data);
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            logger.info(`RPC request successful via: ${rpcUrl}`);
+            return c.json(data);
+          }
+          // If response is not JSON, log and continue to next RPC
+          logger.warn(
+            `RPC endpoint returned non-JSON response: ${rpcUrl}, content-type: ${contentType}`
+          );
+          continue;
         }
-      } catch {
+        logger.warn(
+          `RPC endpoint returned error status: ${rpcUrl}, status: ${response.status}`
+        );
+      } catch (error) {
         // Continue to next RPC if this one fails
-        logger.warn(`RPC endpoint failed: ${rpcUrl}`);
+        logger.warn(`RPC endpoint failed: ${rpcUrl}, error: ${error}`);
       }
     }
 
     // If all RPCs fail, return error
     return c.json(
       {
-        error: "All RPC endpoints failed",
-        status: Status.Error
+        error: {
+          code: -32603,
+          message: "All RPC endpoints failed"
+        },
+        id: body.id || null,
+        jsonrpc: "2.0"
       },
       500
     );
-  } catch {
+  } catch (error) {
+    logger.error(`RPC proxy error: ${error}`);
     return c.json(
       {
-        error: "Invalid request body",
-        status: Status.Error
+        error: {
+          code: -32700,
+          message: "Invalid request body"
+        },
+        id: null,
+        jsonrpc: "2.0"
       },
       400
     );

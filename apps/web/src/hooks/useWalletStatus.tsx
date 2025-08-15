@@ -22,7 +22,14 @@ const fetchWalletStatus = async (): Promise<WalletStatusResponse> => {
     throw new Error("Failed to fetch wallet status");
   }
 
-  return response.json();
+  try {
+    return await response.json();
+  } catch (jsonError) {
+    console.error("🔍 JSON parsing error in wallet status:", jsonError);
+    const responseText = await response.text();
+    console.error("🔍 Response text:", responseText);
+    throw new Error(`Invalid JSON response: ${jsonError instanceof Error ? jsonError.message : 'Unknown error'}`);
+  }
 };
 
 export const useWalletStatus = () => {

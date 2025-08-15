@@ -132,26 +132,47 @@ const Web3Provider = ({ children }: Web3ProviderProps) => {
     connectors: [
       // Family connector
       familyAccountsConnector(),
-      // WalletConnect connector (for browser wallets)
-      walletConnect({ 
-        projectId: WALLETCONNECT_PROJECT_ID,
+      // WalletConnect connector (for mobile wallets)
+      walletConnect({
         metadata: {
-          name: "Hey",
           description: "Hey Social Media Platform",
-          url: typeof window !== "undefined" ? window.location.origin : "https://hey.xyz",
-          icons: ["https://static.hey.xyz/images/placeholder.webp"]
-        }
+          icons: ["https://static.hey.xyz/images/placeholder.webp"],
+          name: "Hey",
+          url:
+            typeof window !== "undefined"
+              ? window.location.origin
+              : "https://hey.xyz"
+        },
+        projectId: WALLETCONNECT_PROJECT_ID
       }),
-      // Injected connector (MetaMask)
+      // Injected connector for MetaMask
       injected({
         shimDisconnect: true,
         target: "metaMask"
+      }),
+      // Injected connector for Brave Wallet
+      injected({
+        shimDisconnect: true,
+        target: "braveWallet"
+      }),
+      // Injected connector for Coinbase Wallet
+      injected({
+        shimDisconnect: true,
+        target: "coinbaseWallet"
+      }),
+      // Injected connector for other browser wallets (generic)
+      injected({
+        shimDisconnect: true
       })
     ],
     ssr: false,
     transports: {
       [CHAIN.id]: getRpcWithProxy(),
-      [arbitrum.id]: http("https://arb1.arbitrum.io/rpc")
+      [arbitrum.id]: http("https://arb1.arbitrum.io/rpc", {
+        retryCount: 3,
+        retryDelay: 1000,
+        timeout: 30000
+      })
     }
   });
 
