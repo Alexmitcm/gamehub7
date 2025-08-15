@@ -11,6 +11,7 @@ import adminRouter from "./routes/admin";
 import authRouter from "./routes/auth";
 import cronRouter from "./routes/cron";
 import gamesRouter from "./routes/games";
+import graphqlRouter from "./routes/graphql";
 import lensRouter from "./routes/lens";
 import liveRouter from "./routes/live";
 import metadataRouter from "./routes/metadata";
@@ -58,6 +59,7 @@ app.route("/referral", referralRouter);
 app.route("/rpc", rpcRouter);
 app.route("/sitemap", sitemapRouter);
 app.route("/og", ogRouter);
+app.route("/graphql", graphqlRouter);
 
 // Test endpoint for generating JWT tokens
 app.post("/test-jwt", generateTestJwt);

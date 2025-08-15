@@ -207,8 +207,8 @@ const OnChainProDashboard = () => {
                     </h3>
                   </div>
                   <div className="mb-2 font-bold text-2xl text-gray-900">
-                    {userState?.data
-                      ? formatEther(userState.data.referralRewardBalance)
+                    {userState
+                      ? formatEther(userState.referralRewardBalance)
                       : "0"}{" "}
                     USDT
                   </div>
@@ -240,8 +240,8 @@ const OnChainProDashboard = () => {
                     </h3>
                   </div>
                   <div className="mb-2 font-bold text-2xl text-gray-900">
-                    {gameRewards?.data
-                      ? formatEther(gameRewards.data.unbalanced)
+                    {gameRewards
+                      ? formatEther(gameRewards.unbalanced)
                       : "0"}{" "}
                     USDT
                   </div>
@@ -271,8 +271,8 @@ const OnChainProDashboard = () => {
                     <h3 className="font-semibold text-gray-900">Game Vault</h3>
                   </div>
                   <div className="mb-2 font-bold text-2xl text-gray-900">
-                    {gameRewards?.data
-                      ? formatEther(gameRewards.data.balanced)
+                    {gameRewards
+                      ? formatEther(gameRewards.balanced)
                       : "0"}{" "}
                     USDT
                   </div>
@@ -293,8 +293,8 @@ const OnChainProDashboard = () => {
                   className="rounded-lg bg-green-600 px-4 py-3 font-medium text-sm text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   disabled={
                     isClaimingReferral ||
-                    !userState?.data ||
-                    userState.data.referralRewardBalance === 0n
+                    !userState ||
+                    userState.referralRewardBalance === 0n
                   }
                   onClick={claimReferralReward}
                   type="button"
@@ -305,7 +305,7 @@ const OnChainProDashboard = () => {
                       Claiming...
                     </div>
                   ) : (
-                    `Claim Referral (${userState?.data ? formatEther(userState.data.referralRewardBalance) : "0"} USDT)`
+                    `Claim Referral (${userState ? formatEther(userState.referralRewardBalance) : "0"} USDT)`
                   )}
                 </button>
 
@@ -314,8 +314,8 @@ const OnChainProDashboard = () => {
                   className="rounded-lg bg-orange-600 px-4 py-3 font-medium text-sm text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   disabled={
                     isClaimingUnbalanced ||
-                    !gameRewards?.data ||
-                    gameRewards.data.unbalanced === 0n
+                    !gameRewards ||
+                    gameRewards.unbalanced === 0n
                   }
                   onClick={claimUnbalancedGameReward}
                   type="button"
@@ -326,7 +326,7 @@ const OnChainProDashboard = () => {
                       Claiming...
                     </div>
                   ) : (
-                    `Claim Unbalanced (${gameRewards?.data ? formatEther(gameRewards.data.unbalanced) : "0"} USDT)`
+                    `Claim Unbalanced (${gameRewards ? formatEther(gameRewards.unbalanced) : "0"} USDT)`
                   )}
                 </button>
 
@@ -335,8 +335,8 @@ const OnChainProDashboard = () => {
                   className="rounded-lg bg-blue-600 px-4 py-3 font-medium text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   disabled={
                     isClaimingBalanced ||
-                    !gameRewards?.data ||
-                    gameRewards.data.balanced === 0n
+                    !gameRewards ||
+                    gameRewards.balanced === 0n
                   }
                   onClick={claimBalancedGameReward}
                   type="button"
@@ -347,7 +347,7 @@ const OnChainProDashboard = () => {
                       Claiming...
                     </div>
                   ) : (
-                    `Claim Game (${gameRewards?.data ? formatEther(gameRewards.data.balanced) : "0"} USDT)`
+                    `Claim Game (${gameRewards ? formatEther(gameRewards.balanced) : "0"} USDT)`
                   )}
                 </button>
               </div>
@@ -371,7 +371,7 @@ const OnChainProDashboard = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Account Age</span>
                   <span className="font-medium text-gray-900">
-                    {userState?.data ? userState.data.accountAgeInDays : 0} days
+                    {userState ? userState.accountAgeInDays : 0} days
                   </span>
                 </div>
               </div>
@@ -386,13 +386,13 @@ const OnChainProDashboard = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Left Node</span>
                   <span className="font-medium text-gray-900">
-                    {userState?.data ? userState.data.leftNodeCount : 0}
+                    {userState ? userState.leftNodeCount : 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Right Node</span>
                   <span className="font-medium text-gray-900">
-                    {userState?.data ? userState.data.rightNodeCount : 0}
+                    {userState ? userState.rightNodeCount : 0}
                   </span>
                 </div>
                 <div className="border-gray-200 border-t pt-3">
@@ -402,21 +402,21 @@ const OnChainProDashboard = () => {
                   <div className="space-y-1">
                     <div className="font-mono text-gray-500 text-xs">
                       Left:{" "}
-                      {userState?.data
-                        ? userState.data.directReferrals.leftChild.slice(0, 6) +
+                      {userState
+                        ? userState.directReferrals.leftChild.slice(0, 6) +
                           "..." +
-                          userState.data.directReferrals.leftChild.slice(-4)
+                          userState.directReferrals.leftChild.slice(-4)
                         : "None"}
                     </div>
                     <div className="font-mono text-gray-500 text-xs">
                       Right:{" "}
-                      {userState?.data
-                        ? userState.data.directReferrals.rightChild.slice(
+                      {userState
+                        ? userState.directReferrals.rightChild.slice(
                             0,
                             6
                           ) +
                           "..." +
-                          userState.data.directReferrals.rightChild.slice(-4)
+                          userState.directReferrals.rightChild.slice(-4)
                         : "None"}
                     </div>
                   </div>

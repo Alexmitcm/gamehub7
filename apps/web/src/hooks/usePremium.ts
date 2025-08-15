@@ -9,7 +9,7 @@ import { usePremiumStore } from "@/store/premiumStore";
 export const useWalletStatus = (walletAddress: string | null) => {
   return useQuery({
     enabled: Boolean(walletAddress),
-    queryFn: () => hono.premium.checkWalletStatus(walletAddress!),
+    queryFn: () => hono.premium.getUserStatus(walletAddress!),
     queryKey: ["wallet-status", walletAddress],
     retry: 2
   });
@@ -19,7 +19,7 @@ export const useWalletStatus = (walletAddress: string | null) => {
 export const useUserProfiles = (walletAddress: string | null) => {
   return useQuery({
     enabled: Boolean(walletAddress),
-    queryFn: () => hono.premium.getProfiles(walletAddress!),
+    queryFn: () => hono.premium.profiles({ query: { walletAddress: walletAddress! } }),
     queryKey: ["user-profiles", walletAddress],
     retry: 2
   });
@@ -32,7 +32,7 @@ export const usePremiumStatus = () => {
 
   return useQuery({
     enabled: Boolean(currentAccount?.address && accessToken),
-    queryFn: () => hono.premium.getStatus(),
+    queryFn: () => hono.premium.status(),
     queryKey: ["premium-status", currentAccount?.address],
     retry: 2
   });
@@ -45,7 +45,7 @@ export const useLinkedProfile = () => {
 
   return useQuery({
     enabled: Boolean(currentAccount?.address && accessToken),
-    queryFn: () => hono.premium.getLinkedProfile(),
+    queryFn: () => hono.premium.linkedProfile(),
     queryKey: ["linked-profile", currentAccount?.address],
     retry: 2
   });
@@ -58,7 +58,7 @@ export const useProfileStats = () => {
 
   return useQuery({
     enabled: Boolean(currentAccount?.address && accessToken),
-    queryFn: () => hono.premium.getStats(),
+    queryFn: () => hono.premium.stats(),
     queryKey: ["profile-stats", currentAccount?.address],
     retry: 2
   });
@@ -68,9 +68,10 @@ export const useProfileStats = () => {
 export const useLinkProfile = () => {
   const queryClient = useQueryClient();
   const { setUserStatus, setError } = usePremiumStore();
+  const { currentAccount } = useAccountStore();
 
   return useMutation({
-    mutationFn: (profileId: string) => hono.premium.linkProfile(profileId),
+    mutationFn: (profileId: string) => hono.premium.linkProfile(currentAccount!.address, profileId),
     onError: (error: Error) => {
       toast.error(error.message || "Failed to link profile");
       setError(error.message);
