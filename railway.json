@@ -9,7 +9,7 @@
     "restartPolicyMaxRetries": 10,
     "restartPolicyType": "ON_FAILURE",
     "runtime": "V2",
-    "startCommand": "sleep 5 && npm run prisma:migrate:deploy && npm start",
+    "startCommand": "sleep 10 && npm run prisma:migrate:deploy && sleep 5 && npm start",
     "multiRegionConfig": {
       "europe-west4-drams3a": {
         "numReplicas": 1
