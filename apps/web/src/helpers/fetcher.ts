@@ -58,6 +58,20 @@ const fetchApi = async <T>(
       if (response.status === 401) {
         throw new Error("401 (Unauthorized)");
       }
+      
+      // Handle server errors specifically
+      if (response.status >= 500) {
+        if (response.status === 502) {
+          throw new Error("502 (Bad Gateway) - Server is experiencing issues. Please try again later.");
+        } else if (response.status === 503) {
+          throw new Error("503 (Service Unavailable) - Server is temporarily unavailable. Please try again later.");
+        } else if (response.status === 504) {
+          throw new Error("504 (Gateway Timeout) - Server is taking too long to respond. Please try again later.");
+        } else {
+          throw new Error(`Server Error (${response.status}) - Server is experiencing issues. Please try again later.`);
+        }
+      }
+      
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 

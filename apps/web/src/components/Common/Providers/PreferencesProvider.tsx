@@ -2,6 +2,7 @@ import type { Preferences } from "@hey/types/api";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { hono } from "@/helpers/fetcher";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { hydrateAuthTokens } from "@/store/persisted/useAuthStore";
@@ -16,7 +17,7 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
   const { setAppIcon, setIncludeLowScore } = usePreferencesStore();
   const { accessToken } = hydrateAuthTokens();
 
-  const { data: preferences, error } = useQuery<Preferences>({
+  const { data: preferences, error, refetch } = useQuery<Preferences>({
     // Enable the query even without authentication since preferences endpoint is public
     enabled: true,
     queryFn: () => hono.preferences.get(),
@@ -39,11 +40,39 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
         return false;
       }
       
+      // Don't retry server errors (5xx) after 2 attempts - these are usually persistent
+      if (error instanceof Error && (
+        error.message.includes("502") ||
+        error.message.includes("503") ||
+        error.message.includes("504") ||
+        error.message.includes("Server Error")
+      )) {
+        return failureCount < 2;
+      }
+      
       // Retry other errors up to 3 times
       return failureCount < 3;
     },
     throwOnError: false // Prevent React Query from logging errors to console
   });
+
+  // Background retry mechanism for server issues
+  useEffect(() => {
+    if (error && error instanceof Error && (
+      error.message.includes("502") ||
+      error.message.includes("503") ||
+      error.message.includes("504") ||
+      error.message.includes("Server Error")
+    )) {
+      // Retry every 30 seconds when server is down
+      const retryInterval = setInterval(() => {
+        console.log("🔍 Retrying preferences fetch after server error...");
+        refetch();
+      }, 30000);
+
+      return () => clearInterval(retryInterval);
+    }
+  }, [error, refetch]);
 
   // Handle errors gracefully
   useEffect(() => {
@@ -62,10 +91,31 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
         return;
       }
       
+      // Handle server errors gracefully - set default preferences
+      if (error instanceof Error && (
+        error.message.includes("502") ||
+        error.message.includes("503") ||
+        error.message.includes("504") ||
+        error.message.includes("Server Error")
+      )) {
+        console.warn("🔍 Server unavailable, using default preferences:", error.message);
+        
+        // Show user-friendly notification
+        toast.warning("Server temporarily unavailable. Using default preferences.", {
+          description: "Your preferences will be restored when the server is back online.",
+          duration: 5000
+        });
+        
+        // Set default preferences when server is down
+        setIncludeLowScore(false);
+        setAppIcon(0);
+        return;
+      }
+      
       // Only log other errors that might indicate real issues
       console.error("Preferences fetch error:", error);
     }
-  }, [error]);
+  }, [error, setIncludeLowScore, setAppIcon]);
 
   useEffect(() => {
     if (preferences) {
