@@ -74,7 +74,7 @@ export default defineConfig({
     tailwindcss(),
     EnvironmentPlugin({
       NEXT_PUBLIC_LENS_NETWORK: "mainnet",
-              VITE_API_URL: "https://game5-production.up.railway.app",
+      VITE_API_URL: "https://gamehub4-production.up.railway.app",
       VITE_IS_PRODUCTION: false
     })
   ],

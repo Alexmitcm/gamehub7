@@ -5,15 +5,9 @@
     "dockerfilePath": "apps/api/Dockerfile"
   },
   "deploy": {
-    "multiRegionConfig": {
-      "europe-west4-drams3a": {
-        "numReplicas": 1
-      }
-    },
     "numReplicas": 1,
     "restartPolicyMaxRetries": 10,
     "restartPolicyType": "ON_FAILURE",
-    "runtime": "V2",
-    "startCommand": "cd apps/api && sleep 5 && pnpm run prisma:migrate:deploy && sleep 3 && pnpm start"
+    "runtime": "V2"
   }
 }

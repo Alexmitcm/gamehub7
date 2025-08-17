@@ -40,9 +40,6 @@ app.use("/uploads/*", serveStatic({ root: "." }));
 
 // Routes
 app.get("/ping", ping);
-app.get("/health", (c) =>
-  c.json({ status: "healthy", timestamp: new Date().toISOString() })
-);
 app.route("/auth", authRouter);
 app.route("/admin", adminRouter);
 app.route("/lens", lensRouter);
@@ -71,23 +68,12 @@ app.notFound((ctx) =>
 
 const port = Number.parseInt(process.env.PORT || "8080", 10);
 
-logger.info(`Starting server on port ${port}`);
-logger.info(`Environment: ${process.env.NODE_ENV || "development"}`);
-logger.info(`Database URL: ${process.env.DATABASE_URL ? "Set" : "Not set"}`);
-
 // Start server with WebSocket support
-try {
-  serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {
-    logger.info(`✅ Server running on port ${info.port}`);
-    logger.info("✅ WebSocket service initialized");
-    logger.info("✅ Admin service initialized");
-    logger.info("✅ Health check available at /health");
-    logger.info("✅ Ping endpoint available at /ping");
-  });
-} catch (error) {
-  logger.error("❌ Failed to start server:", error);
-  process.exit(1);
-}
+serve({ fetch: app.fetch, hostname: "0.0.0.0", port }, (info) => {
+  logger.info(`Server running on port ${info.port}`);
+  logger.info("WebSocket service initialized");
+  logger.info("Admin service initialized");
+});
 
 // Handle server shutdown gracefully
 process.on("SIGTERM", () => {

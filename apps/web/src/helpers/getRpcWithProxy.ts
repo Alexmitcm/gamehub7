@@ -9,7 +9,7 @@ const getApiUrl = () => {
   }
   
   // For production, use the Railway URL
-  return "https://game5-production.up.railway.app";
+  return "https://gamehub4-production.up.railway.app";
 };
 
 const BATCH_SIZE = 10;
