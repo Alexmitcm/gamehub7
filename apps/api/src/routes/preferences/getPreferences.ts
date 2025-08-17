@@ -1,48 +1,28 @@
-import { Status } from "@hey/data/enums";
 import type { Context } from "hono";
-import handleApiError from "@/utils/handleApiError";
-import { getRedis, setRedis } from "@/utils/redis";
-import prisma from "../../prisma/client";
 
 const getPreferences = async (ctx: Context) => {
   try {
     const account = ctx.get("account");
 
-    // If user is not authenticated, return default preferences
-    if (!account) {
-      const data = {
-        appIcon: 0,
-        includeLowScore: false
-      };
-
-      return ctx.json({ data, status: Status.Success });
-    }
-
-    const cacheKey = `preferences:${account}`;
-    const cachedValue = await getRedis(cacheKey);
-
-    if (cachedValue) {
-      return ctx.json({
-        cached: true,
-        data: JSON.parse(cachedValue),
-        status: Status.Success
-      });
-    }
-
-    const preference = await prisma.preference.findUnique({
-      where: { accountAddress: account as string }
-    });
-
+    // For now, return default preferences without database
     const data = {
-      appIcon: preference?.appIcon || 0,
-      includeLowScore: Boolean(preference?.includeLowScore)
+      appIcon: 0,
+      includeLowScore: false
     };
 
-    await setRedis(cacheKey, data);
-
-    return ctx.json({ data, status: Status.Success });
+    return ctx.json({ 
+      data, 
+      status: "Success",
+      message: "Using default preferences (database not connected)"
+    });
   } catch (error) {
-    return handleApiError(ctx, error);
+    console.error("Preferences error:", error);
+    
+    return ctx.json({ 
+      error: "Failed to get preferences",
+      status: "Error",
+      message: error instanceof Error ? error.message : "Unknown error"
+    }, 500);
   }
 };
 
