@@ -1,5 +1,5 @@
 import logger from "@hey/helpers/logger";
-import { PrismaClient, UserStatus } from "../generated/prisma-client";
+import { PrismaClient, UserStatus } from "@prisma/client";
 import SmartContractService from "./SmartContractService";
 import LensProfileService from "./LensProfileService";
 
