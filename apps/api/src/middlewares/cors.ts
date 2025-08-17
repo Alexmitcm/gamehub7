@@ -4,6 +4,7 @@ const allowedOrigins = [
   "https://hey.xyz",
   "https://testnet.hey.xyz",
   "https://staging.hey.xyz",
+  "https://gamehub7-production.up.railway.app",
   "http://localhost:4783",
   "http://localhost:4784",
   "http://localhost:4785",
