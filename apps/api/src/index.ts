@@ -28,6 +28,7 @@ import referralRouter from "./routes/referral/tree";
 import rpcRouter from "./routes/rpc";
 import sitemapRouter from "./routes/sitemap";
 import generateTestJwt from "./routes/test-jwt";
+import dbTestRouter from "./routes/db-test";
 
 const app = new Hono();
 
@@ -65,6 +66,7 @@ app.route("/referral", referralRouter);
 app.route("/rpc", rpcRouter);
 app.route("/sitemap", sitemapRouter);
 app.route("/og", ogRouter);
+app.route("/db-test", dbTestRouter);
 
 // Test endpoint for generating JWT tokens
 app.post("/test-jwt", generateTestJwt);
