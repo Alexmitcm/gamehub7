@@ -117,7 +117,8 @@ const PremiumTestPage = () => {
           <ProfileSelectionModal
             isOpen={showProfileModal}
             onClose={() => setShowProfileModal(false)}
-            onSuccess={() => {
+            profiles={[]}
+            onProfileSelect={async () => {
               setShowProfileModal(false);
               console.log("Profile linked successfully!");
             }}

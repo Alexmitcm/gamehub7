@@ -5,6 +5,7 @@ const getPreferences = async (ctx: Context) => {
     const account = ctx.get("account");
 
     // For now, return default preferences without database
+    // Account can be null for unauthenticated users, which is fine
     const data = {
       appIcon: 0,
       includeLowScore: false

@@ -18,7 +18,7 @@ const MainNodeContractManager = () => {
   const [isSetReferralLoading, setIsSetReferralLoading] = useState(false);
 
   // State for access control
-  const [selectedRole, setSelectedRole] = useState(ROLES.DEFAULT_ADMIN_ROLE);
+  const [selectedRole, setSelectedRole] = useState<string>(ROLES.DEFAULT_ADMIN_ROLE);
   const [targetAddress, setTargetAddress] = useState("");
   const [isRoleActionLoading, setIsRoleActionLoading] = useState(false);
 

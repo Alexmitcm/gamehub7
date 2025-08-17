@@ -41,7 +41,7 @@ const ReferralContractManager = () => {
   const [showAccessControlModal, setShowAccessControlModal] = useState(false);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [pendingAction, setPendingAction] = useState<string>("");
-  const [selectedRole, setSelectedRole] = useState(ROLES.DEFAULT_ADMIN_ROLE);
+  const [selectedRole, setSelectedRole] = useState<string>(ROLES.DEFAULT_ADMIN_ROLE);
   const [targetAddress, setTargetAddress] = useState("");
   const [actionType, setActionType] = useState<"grant" | "revoke" | "renounce">(
     "grant"
@@ -311,7 +311,7 @@ const ReferralContractManager = () => {
               className={`border-2 ${colorClasses[section.color as keyof typeof colorClasses]}`}
               key={section.title}
             >
-              <CardHeader>
+              <CardHeader title={section.title}>
                 <div className="flex items-center space-x-3">
                   <Icon className="h-6 w-6 text-gray-600" />
                   <h3 className="font-semibold text-gray-900 text-lg">

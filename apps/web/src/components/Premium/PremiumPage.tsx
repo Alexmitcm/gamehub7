@@ -107,7 +107,8 @@ const PremiumPage = () => {
             <ProfileSelectionModal
               isOpen={showProfileModal}
               onClose={() => setShowProfileModal(false)}
-              onSuccess={() => {
+              profiles={[]}
+              onProfileSelect={async () => {
                 setShowProfileModal(false);
                 // The PremiumProvider will automatically update the status
               }}
