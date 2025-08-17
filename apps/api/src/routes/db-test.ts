@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@hey/prisma";
+import { PrismaClient } from "../../prisma/client";
 
 const dbTest = new Hono();
 const prisma = new PrismaClient();
