@@ -59,7 +59,7 @@ async function simpleWalletTest() {
     if (process.env.DATABASE_URL) {
       try {
         // Try to import Prisma client
-        const { PrismaClient } = await import("@prisma/client");
+        const { PrismaClient } = await import("./generated/prisma-client");
         const prisma = new PrismaClient();
 
         // Test connection

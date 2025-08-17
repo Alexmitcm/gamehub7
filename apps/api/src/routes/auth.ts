@@ -451,11 +451,7 @@ auth.post("/user-status", async (c) => {
       }, 400);
     }
 
-    // Import the controller dynamically to avoid circular dependencies
-    const { default: AuthController } = await import("../controllers/AuthController");
-    const controller = new AuthController();
-    
-    return controller.getUserStatus(c);
+    return AuthController.getUserStatus(c);
   } catch (error) {
     logger.error("Error getting user status:", error);
     return c.json({

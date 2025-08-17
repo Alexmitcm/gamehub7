@@ -47,7 +47,7 @@ async function testAuthBasic() {
     console.log("-".repeat(40));
     
     try {
-      const { PrismaClient } = await import("@prisma/client");
+      const { PrismaClient } = await import("./generated/prisma-client");
       const prisma = new PrismaClient();
       
       await prisma.$connect();
@@ -127,7 +127,7 @@ async function testAuthBasic() {
     console.log("-".repeat(40));
     
     try {
-      const { PrismaClient } = await import("@prisma/client");
+      const { PrismaClient } = await import("./generated/prisma-client");
       const prisma = new PrismaClient();
       
       // Test that we can access the new User table

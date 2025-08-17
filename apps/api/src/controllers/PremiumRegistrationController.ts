@@ -55,20 +55,20 @@ export class PremiumRegistrationController {
         lensProfileId
       );
 
-      return ctx.json({
+    return ctx.json({
         success: true,
         data: result
-      });
-    } catch (error) {
+    });
+  } catch (error) {
       logger.error("Error getting premium status:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
       }, 500);
-    }
   }
+}
 
-  /**
+/**
    * Handle premium registration request
    */
   async handlePremiumRegistration(ctx: Context): Promise<Response> {
@@ -114,7 +114,7 @@ export class PremiumRegistrationController {
         );
 
         if (completionResult.success) {
-          return ctx.json({
+    return ctx.json({
             success: true,
             message: "Premium registration completed successfully",
             userStatus: completionResult.userStatus.status,
@@ -168,22 +168,22 @@ export class PremiumRegistrationController {
           }, 400);
         }
       } else {
-        return ctx.json({
+    return ctx.json({
           success: false,
           message: "Lens profile ID required for linking",
           userStatus: currentStatus.status
-        });
+    });
       }
-    } catch (error) {
+  } catch (error) {
       logger.error("Error handling premium registration:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
       }, 500);
-    }
   }
+}
 
-  /**
+/**
    * Verify registration and link profile
    */
   async verifyRegistrationAndLinkProfile(ctx: Context): Promise<Response> {
@@ -199,12 +199,12 @@ export class PremiumRegistrationController {
 
       const result = await this.userStatusService.handlePremiumRegistrationCompletion(
         walletAddress,
-        transactionHash,
-        lensProfileId
-      );
+      transactionHash,
+      lensProfileId
+    );
 
       if (result.success) {
-        return ctx.json({
+    return ctx.json({
           success: true,
           message: "Registration verified and profile linked successfully",
           userStatus: result.userStatus.status,
@@ -219,18 +219,18 @@ export class PremiumRegistrationController {
           userStatus: result.userStatus.status
         }, 400);
       }
-    } catch (error) {
+  } catch (error) {
       logger.error("Error verifying registration:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
       }, 500);
-    }
   }
+}
 
-  /**
-   * Auto-link first available profile for a premium wallet
-   */
+/**
+ * Auto-link first available profile for a premium wallet
+ */
   async autoLinkFirstProfile(ctx: Context): Promise<Response> {
     try {
       const { walletAddress, lensProfileId } = await ctx.req.json();
@@ -245,7 +245,7 @@ export class PremiumRegistrationController {
       const result = await this.userStatusService.autoLinkFirstProfile(walletAddress, lensProfileId);
 
       if (result.success) {
-        return ctx.json({
+    return ctx.json({
           success: true,
           message: "Profile auto-linked successfully",
           userStatus: result.userStatus.status,
@@ -259,24 +259,24 @@ export class PremiumRegistrationController {
           userStatus: result.userStatus.status
         }, 400);
       }
-    } catch (error) {
+  } catch (error) {
       logger.error("Error auto-linking profile:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
       }, 500);
-    }
   }
+}
 
-  /**
+/**
    * Manually link profile to wallet
-   */
+ */
   async linkProfileToWallet(ctx: Context): Promise<Response> {
-    try {
+  try {
       const { walletAddress, profileId } = await ctx.req.json();
-      
+
       if (!walletAddress || !profileId) {
-        return ctx.json({
+    return ctx.json({
           success: false,
           message: "Wallet address and profile ID are required"
         }, 400);
@@ -285,7 +285,7 @@ export class PremiumRegistrationController {
       const result = await this.userStatusService.linkProfileToWallet(walletAddress, profileId);
 
       if (result.success) {
-        return ctx.json({
+    return ctx.json({
           success: true,
           message: "Profile linked successfully",
           userStatus: result.userStatus.status,
@@ -299,16 +299,16 @@ export class PremiumRegistrationController {
           userStatus: result.userStatus.status
         }, 400);
       }
-    } catch (error) {
+  } catch (error) {
       logger.error("Error linking profile:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
       }, 500);
-    }
   }
+}
 
-  /**
+/**
    * Check wallet connection status for MetaMask validation
    */
   async checkWalletConnectionStatus(ctx: Context): Promise<Response> {
@@ -327,7 +327,7 @@ export class PremiumRegistrationController {
       
       // For now, we'll return basic connection info
       // Frontend will handle actual wallet connection validation
-      return ctx.json({
+    return ctx.json({
         success: true,
         data: {
           walletAddress,
@@ -338,25 +338,25 @@ export class PremiumRegistrationController {
             ? "Wallet is premium and ready for profile linking"
             : "MetaMask connection required for premium registration"
         }
-      });
-    } catch (error) {
+    });
+  } catch (error) {
       logger.error("Error checking wallet connection status:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
       }, 500);
-    }
   }
+}
 
-  /**
+/**
    * Validate wallet for reward claiming
-   */
+ */
   async validateWalletForRewardClaiming(ctx: Context): Promise<Response> {
-    try {
+  try {
       const { walletAddress } = ctx.req.query();
-      
+
       if (!walletAddress) {
-        return ctx.json({
+    return ctx.json({
           success: false,
           message: "Wallet address is required"
         }, 400);
@@ -364,20 +364,20 @@ export class PremiumRegistrationController {
 
       const validation = await this.userStatusService.validateWalletForRewardClaiming(walletAddress);
 
-      return ctx.json({
+    return ctx.json({
         success: true,
         data: validation
-      });
-    } catch (error) {
+    });
+  } catch (error) {
       logger.error("Error validating wallet for reward claiming:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
       }, 500);
-    }
   }
+}
 
-  /**
+/**
    * Get comprehensive user status
    */
   async getComprehensiveUserStatus(ctx: Context): Promise<Response> {
@@ -396,11 +396,11 @@ export class PremiumRegistrationController {
         lensProfileId
       );
 
-      return ctx.json({
+    return ctx.json({
         success: true,
         data: result
-      });
-    } catch (error) {
+    });
+  } catch (error) {
       logger.error("Error getting comprehensive user status:", error);
       return ctx.json({
         success: false,
