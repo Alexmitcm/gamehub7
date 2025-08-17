@@ -17,7 +17,7 @@ COPY packages/types/package.json ./packages/types/
 COPY packages/config/package.json ./packages/config/
 
 # Install dependencies (ignore supabase warnings)
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 # Copy source code
 COPY . .
