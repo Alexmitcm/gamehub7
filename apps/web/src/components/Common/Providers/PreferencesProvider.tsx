@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { hono } from "@/helpers/fetcher";
+import { DEFAULT_PREFERENCES } from "@/helpers/defaultPreferences";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { hydrateAuthTokens } from "@/store/persisted/useAuthStore";
 import { usePreferencesStore } from "@/store/persisted/usePreferencesStore";
@@ -45,7 +46,10 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
         error.message.includes("502") ||
         error.message.includes("503") ||
         error.message.includes("504") ||
-        error.message.includes("Server Error")
+        error.message.includes("Server Error") ||
+        error.message.includes("HTML instead of JSON") ||
+        error.message.includes("non-JSON response") ||
+        error.message.includes("Service temporarily unavailable")
       )) {
         return failureCount < 2;
       }
@@ -62,7 +66,10 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
       error.message.includes("502") ||
       error.message.includes("503") ||
       error.message.includes("504") ||
-      error.message.includes("Server Error")
+      error.message.includes("Server Error") ||
+      error.message.includes("HTML instead of JSON") ||
+      error.message.includes("non-JSON response") ||
+      error.message.includes("Service temporarily unavailable")
     )) {
       // Retry every 30 seconds when server is down
       const retryInterval = setInterval(() => {
@@ -96,7 +103,10 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
         error.message.includes("502") ||
         error.message.includes("503") ||
         error.message.includes("504") ||
-        error.message.includes("Server Error")
+        error.message.includes("Server Error") ||
+        error.message.includes("HTML instead of JSON") ||
+        error.message.includes("non-JSON response") ||
+        error.message.includes("Service temporarily unavailable")
       )) {
         console.warn("🔍 Server unavailable, using default preferences:", error.message);
         
@@ -107,8 +117,8 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
         });
         
         // Set default preferences when server is down
-        setIncludeLowScore(false);
-        setAppIcon(0);
+        setIncludeLowScore(DEFAULT_PREFERENCES.includeLowScore);
+        setAppIcon(DEFAULT_PREFERENCES.appIcon);
         return;
       }
       
@@ -119,8 +129,16 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
 
   useEffect(() => {
     if (preferences) {
-      setIncludeLowScore(preferences.includeLowScore);
-      setAppIcon(preferences.appIcon);
+      // Validate preferences before using them
+      if (typeof preferences.appIcon === "number" && typeof preferences.includeLowScore === "boolean") {
+        setIncludeLowScore(preferences.includeLowScore);
+        setAppIcon(preferences.appIcon);
+      } else {
+        console.warn("🔍 Invalid preferences format received:", preferences);
+        // Use defaults if preferences are invalid
+        setIncludeLowScore(DEFAULT_PREFERENCES.includeLowScore);
+        setAppIcon(DEFAULT_PREFERENCES.appIcon);
+      }
     }
   }, [preferences, setIncludeLowScore, setAppIcon]);
 

@@ -9,6 +9,15 @@ interface ApiConfig {
   headers?: HeadersInit;
 }
 
+// Circuit breaker state
+let circuitBreakerState = {
+  isOpen: false,
+  failureCount: 0,
+  lastFailureTime: 0,
+  threshold: 3,
+  timeout: 30000 // 30 seconds
+};
+
 const config: ApiConfig = {
   baseUrl: HEY_API_URL,
   headers: {
@@ -16,16 +25,53 @@ const config: ApiConfig = {
   }
 };
 
+// Circuit breaker logic
+const shouldAllowRequest = () => {
+  if (!circuitBreakerState.isOpen) return true;
+  
+  const now = Date.now();
+  if (now - circuitBreakerState.lastFailureTime > circuitBreakerState.timeout) {
+    circuitBreakerState.isOpen = false;
+    circuitBreakerState.failureCount = 0;
+    return true;
+  }
+  
+  return false;
+};
+
+const recordFailure = () => {
+  circuitBreakerState.failureCount++;
+  circuitBreakerState.lastFailureTime = Date.now();
+  
+  if (circuitBreakerState.failureCount >= circuitBreakerState.threshold) {
+    circuitBreakerState.isOpen = true;
+    console.warn("🔍 Circuit breaker opened due to repeated failures");
+  }
+};
+
+const recordSuccess = () => {
+  circuitBreakerState.failureCount = 0;
+  if (circuitBreakerState.isOpen) {
+    circuitBreakerState.isOpen = false;
+    console.log("🔍 Circuit breaker closed after successful request");
+  }
+};
+
 const fetchApi = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
+  // Check circuit breaker first
+  if (!shouldAllowRequest()) {
+    throw new Error("Service temporarily unavailable due to repeated failures. Please try again later.");
+  }
+
   const { accessToken, refreshToken } = hydrateAuthTokens();
   let token = accessToken;
 
   if (token && refreshToken && isTokenExpiringSoon(token)) {
     try {
-      token = await refreshTokens(refreshToken);
+      token = await refreshTokens(token);
     } catch {}
   }
 
@@ -83,16 +129,22 @@ const fetchApi = async <T>(
       // Try to get the response text to see what we actually received
       const responseText = await response.text();
       if (responseText.trim().startsWith("<!DOCTYPE") || responseText.trim().startsWith("<html")) {
+        // Record this as a failure for circuit breaker
+        recordFailure();
         throw new Error("API returned HTML instead of JSON. The endpoint may be incorrect or the server may be down.");
       }
       
       // If it's not HTML but also not JSON, log the response for debugging
       console.warn("🔍 Non-JSON response content:", responseText.substring(0, 200));
+      recordFailure();
       throw new Error("API returned non-JSON response. Please check the endpoint configuration.");
     }
 
     const result = await response.json();
     console.log("🔍 Response data:", result);
+
+    // Record success for circuit breaker
+    recordSuccess();
 
     // Handle API responses with success/error format
     if (result.success === true) {
@@ -112,6 +164,12 @@ const fetchApi = async <T>(
     throw new Error(result.error || "Unknown error");
   } catch (error) {
     console.error(`🔍 API request failed for ${url}:`, error);
+    
+    // Record failure for circuit breaker (except for expected errors like 401)
+    if (error instanceof Error && !error.message.includes("401")) {
+      recordFailure();
+    }
+    
     throw error;
   }
 };
