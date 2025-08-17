@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { UserStatus } from "../generated/prisma-client";
+import { UserStatus } from "@prisma/client";
 import UserStatusService from "@/services/UserStatusService";
 import logger from "@hey/helpers/logger";
 
