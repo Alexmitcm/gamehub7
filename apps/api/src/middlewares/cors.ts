@@ -16,12 +16,36 @@ const allowedOrigins = [
   "https://developer.lens.xyz"
 ];
 
+// Enhanced CORS configuration for production
 const cors = corsMiddleware({
-  allowHeaders: ["Content-Type", "X-Access-Token", "Authorization", "Access-Control-Request-Method", "Access-Control-Request-Headers"],
+  allowHeaders: [
+    "Content-Type", 
+    "X-Access-Token", 
+    "Authorization", 
+    "Access-Control-Request-Method", 
+    "Access-Control-Request-Headers",
+    "Origin",
+    "Accept",
+    "X-Requested-With"
+  ],
   allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   credentials: true,
-  origin: allowedOrigins,
-  maxAge: 86400
+  origin: (origin) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return origin;
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) return origin;
+    
+    // Allow localhost for development
+    if (origin.startsWith('http://localhost:')) return origin;
+    
+    // Log blocked origins for debugging
+    console.log(`CORS blocked origin: ${origin}`);
+    return null;
+  },
+  maxAge: 86400,
+  exposeHeaders: ["Content-Length", "Content-Type"]
 });
 
 export default cors;

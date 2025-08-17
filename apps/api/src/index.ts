@@ -36,6 +36,11 @@ app.use(cors);
 app.use(authContext);
 app.use(infoLogger);
 
+// Handle preflight OPTIONS requests explicitly
+app.options('*', (c) => {
+  return c.text('', 204);
+});
+
 // Static file serving for uploads (serve from apps/api working dir)
 app.use("/uploads/*", serveStatic({ root: "." }));
 
