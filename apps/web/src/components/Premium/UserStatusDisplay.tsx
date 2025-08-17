@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAccount } from 'wagmi';
 import { usePremiumRegistration } from '../../hooks/usePremiumRegistration';
-import { formatAddress } from '@hey/helpers/formatAddress';
+import formatAddress from '@hey/helpers/formatAddress';
 
 interface UserStatusDisplayProps {
   className?: string;

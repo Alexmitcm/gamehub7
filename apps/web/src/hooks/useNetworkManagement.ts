@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useAccount, useNetwork, useSwitchNetwork } from 'wagmi';
+import { useAccount, useChainId, useSwitchChain } from 'wagmi';
 import { usePremiumRegistration } from './usePremiumRegistration';
 
 export function useNetworkManagement() {
   const { address } = useAccount();
-  const { chain } = useNetwork();
-  const { switchNetwork } = useSwitchNetwork();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
   
   const { useValidateNetwork, useArbitrumOneNetwork } = usePremiumRegistration();
   
@@ -13,7 +13,7 @@ export function useNetworkManagement() {
   const [switchError, setSwitchError] = useState<string | null>(null);
 
   // Get current chain ID
-  const currentChainId = chain?.id?.toString() || '';
+  const currentChainId = chainId?.toString() || '';
 
   // Validate current network
   const { data: networkValidation, isLoading: isValidatingNetwork } = useValidateNetwork(currentChainId);
@@ -36,7 +36,7 @@ export function useNetworkManagement() {
 
   // Switch to Arbitrum One
   const switchToArbitrumOne = useCallback(async () => {
-    if (!switchRequest?.chainId || !switchNetwork) {
+    if (!switchRequest?.chainId || !switchChain) {
       setSwitchError('Network switching not available');
       return false;
     }
@@ -46,9 +46,9 @@ export function useNetworkManagement() {
       setSwitchError(null);
       
       // Convert hex chain ID to number for wagmi
-      const chainId = parseInt(switchRequest.chainId, 16);
+      const targetChainId = parseInt(switchRequest.chainId, 16);
       
-      await switchNetwork(chainId);
+      await switchChain({ chainId: targetChainId });
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to switch network';
@@ -57,7 +57,7 @@ export function useNetworkManagement() {
     } finally {
       setIsSwitching(false);
     }
-  }, [switchRequest, switchNetwork]);
+  }, [switchRequest, switchChain]);
 
   // Add Arbitrum One to wallet (if not available)
   const addArbitrumOneToWallet = useCallback(async () => {

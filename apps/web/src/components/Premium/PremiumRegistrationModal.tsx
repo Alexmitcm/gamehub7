@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { InjectedConnector } from 'wagmi/connectors/injected';
+import { useAccount, useDisconnect } from 'wagmi';
 import { usePremiumRegistration } from '../../hooks/usePremiumRegistration';
 import { useNetworkManagement } from '../../hooks/useNetworkManagement';
-import { formatAddress } from '@hey/helpers/formatAddress';
+import formatAddress from '@hey/helpers/formatAddress';
 import { UserStatus, LensProfile, PremiumRegistrationRequest } from '../../hooks/usePremiumRegistration';
 
 interface PremiumRegistrationModalProps {
@@ -18,9 +17,6 @@ export default function PremiumRegistrationModal({
   referrerAddress = '0x0000000000000000000000000000000000000000' 
 }: PremiumRegistrationModalProps) {
   const { address, isConnected } = useAccount();
-  const { connect, isConnecting } = useConnect({
-    connector: new InjectedConnector()
-  });
   const { disconnect } = useDisconnect();
 
   const {
@@ -34,6 +30,7 @@ export default function PremiumRegistrationModal({
   } = usePremiumRegistration();
 
   const {
+    currentChainId,
     isArbitrumOne,
     needsNetworkSwitch,
     isSwitching,
@@ -74,11 +71,12 @@ export default function PremiumRegistrationModal({
   }, [isArbitrumOne, address]);
 
   // Handlers
-  const handleConnectWallet = async () => {
-    try {
-      await connect();
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
+  const handleConnectWallet = () => {
+    // In wagmi v2, wallet connection is handled by the browser wallet
+    // The user needs to click the MetaMask extension or approve the connection
+    if (typeof window !== 'undefined' && window.ethereum) {
+      // Trigger MetaMask connection request
+      window.ethereum.request({ method: 'eth_requestAccounts' });
     }
   };
 
@@ -206,13 +204,12 @@ export default function PremiumRegistrationModal({
                 </p>
               </div>
               
-              <button
-                onClick={handleConnectWallet}
-                disabled={isConnecting}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isConnecting ? 'Connecting...' : 'Connect MetaMask'}
-              </button>
+                             <button
+                 onClick={handleConnectWallet}
+                 className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+               >
+                 Connect MetaMask
+               </button>
             </div>
           )}
 
@@ -254,16 +251,16 @@ export default function PremiumRegistrationModal({
                   {networkStatus.message}
                 </p>
                 
-                {address && (
-                  <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                    <p className="text-sm text-gray-600">
-                      Connected Wallet: <span className="font-mono font-medium">{formatAddress(address)}</span>
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Current Network: <span className="font-medium">{getNetworkDisplayName(chain?.id || '')}</span>
-                    </p>
-                  </div>
-                )}
+                                 {address && (
+                   <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                     <p className="text-sm text-gray-600">
+                       Connected Wallet: <span className="font-mono font-medium">{formatAddress(address)}</span>
+                     </p>
+                     <p className="text-sm text-gray-600 mt-1">
+                       Current Network: <span className="font-medium">{getNetworkDisplayName(currentChainId || '')}</span>
+                     </p>
+                   </div>
+                 )}
               </div>
 
               {needsNetworkSwitch && (
