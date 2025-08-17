@@ -1,4 +1,4 @@
-import logger from "../../helpers/logger";
+import logger from "@hey/helpers/logger";
 import dotenv from "dotenv";
 import type { RedisClientType } from "redis";
 import { createClient } from "redis";
