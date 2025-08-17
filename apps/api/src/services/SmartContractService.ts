@@ -1,5 +1,5 @@
 import logger from "@hey/helpers/logger";
-import { createPublicClient, http, createWalletClient, parseAbiItem, type Address, type Hex } from "viem";
+import { createPublicClient, http, createWalletClient, parseAbiItem, encodeFunctionData, type Address, type Hex } from "viem";
 import { arbitrum } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -307,18 +307,40 @@ export class SmartContractService {
    * Encode registration data for contract call
    */
   private encodeRegistrationData(referrerAddress: Address): Hex {
-    // This would encode the function call data
-    // For now, return a mock encoded data
-    return `0x${Math.random().toString(16).substring(2)}` as Hex;
+    try {
+      // Encode the register function call with referrer address
+      const encodedData = encodeFunctionData({
+        abi: REFERRAL_ABI,
+        functionName: "register",
+        args: [referrerAddress]
+      });
+      
+      logger.info(`Encoded registration data for referrer ${referrerAddress}: ${encodedData}`);
+      return encodedData;
+    } catch (error) {
+      logger.error("Error encoding registration data:", error);
+      throw new Error(`Failed to encode registration data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**
    * Encode claim reward data for contract call
    */
   private encodeClaimRewardData(playerAddress: Address): Hex {
-    // This would encode the function call data
-    // For now, return a mock encoded data
-    return `0x${Math.random().toString(16).substring(2)}` as Hex;
+    try {
+      // Encode the claimReward function call with player address
+      const encodedData = encodeFunctionData({
+        abi: GAME_VAULT_ABI,
+        functionName: "claimReward",
+        args: [playerAddress]
+      });
+      
+      logger.info(`Encoded claim reward data for player ${playerAddress}: ${encodedData}`);
+      return encodedData;
+    } catch (error) {
+      logger.error("Error encoding claim reward data:", error);
+      throw new Error(`Failed to encode claim reward data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**

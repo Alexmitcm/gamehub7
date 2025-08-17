@@ -1,6 +1,7 @@
 import logger from "@hey/helpers/logger";
 import prisma from "../prisma/client";
 import SmartContractService from "./SmartContractService";
+import LensProfileService from "./LensProfileService";
 
 // Types
 export interface UserStatus {
@@ -37,9 +38,11 @@ export interface AutoLinkResult {
 
 export class UserStatusService {
   private readonly smartContractService: SmartContractService;
+  private readonly lensProfileService: LensProfileService;
 
   constructor() {
     this.smartContractService = new SmartContractService();
+    this.lensProfileService = new LensProfileService();
   }
 
   /**
@@ -159,15 +162,34 @@ export class UserStatusService {
         };
       }
 
-      // For now, we'll need to implement profile discovery logic
-      // This would typically involve checking Lens API for available profiles
-      // For now, return that it's not implemented
+      // Discover available profiles using Lens API
+      const bestProfile = await this.lensProfileService.findBestProfileForAutoLinking(normalizedAddress);
       
-      return {
-        success: false,
-        message: "Profile auto-linking not yet implemented",
-        userStatus: currentStatus
-      };
+      if (!bestProfile) {
+        return {
+          success: false,
+          message: "No available profiles found for auto-linking",
+          userStatus: currentStatus
+        };
+      }
+
+      // Auto-link the best profile
+      const linkResult = await this.linkProfileToWallet(normalizedAddress, bestProfile.id);
+      
+      if (linkResult.success) {
+        return {
+          success: true,
+          message: `Successfully auto-linked profile ${bestProfile.handle}`,
+          userStatus: linkResult.userStatus,
+          linkedProfileId: bestProfile.id
+        };
+      } else {
+        return {
+          success: false,
+          message: `Failed to auto-link profile: ${linkResult.message}`,
+          userStatus: linkResult.userStatus
+        };
+      }
     } catch (error) {
       logger.error("Error in auto-linking profile:", error);
       throw error;

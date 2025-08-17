@@ -10,7 +10,15 @@ import {
   checkWalletPremium,
   checkWalletPremiumPost,
   canLinkProfile,
-  canLinkProfilePost
+  canLinkProfilePost,
+  discoverProfiles,
+  discoverProfilesPost,
+  autoLinkProfile,
+  getProfileById,
+  validateNetwork,
+  validateNetworkPost,
+  getSupportedNetworks,
+  getArbitrumOneNetwork
 } from "@/controllers/NewPremiumRegistrationController";
 import rateLimiter from "@/middlewares/rateLimiter";
 
@@ -124,6 +132,91 @@ app.post(
 );
 
 /**
+ * GET /new-premium-registration/discover-profiles
+ * Discover available profiles for a wallet
+ */
+app.get(
+  "/discover-profiles",
+  rateLimiter({ requests: 50 }),
+  zValidator("query", walletAddressSchema),
+  discoverProfiles
+);
+
+/**
+ * POST /new-premium-registration/discover-profiles
+ * Discover available profiles for a wallet (POST)
+ */
+app.post(
+  "/discover-profiles",
+  rateLimiter({ requests: 50 }),
+  zValidator("json", walletAddressSchema),
+  discoverProfilesPost
+);
+
+/**
+ * POST /new-premium-registration/auto-link-profile
+ * Auto-link first available profile for a premium wallet
+ */
+app.post(
+  "/auto-link-profile",
+  rateLimiter({ requests: 10 }),
+  zValidator("json", walletAddressSchema),
+  autoLinkProfile
+);
+
+/**
+ * GET /new-premium-registration/profile/:profileId
+ * Get profile details by ID
+ */
+app.get(
+  "/profile/:profileId",
+  rateLimiter({ requests: 100 }),
+  getProfileById
+);
+
+/**
+ * GET /new-premium-registration/validate-network
+ * Validate network for premium registration
+ */
+app.get(
+  "/validate-network",
+  rateLimiter({ requests: 50 }),
+  zValidator("query", z.object({ chainId: z.string().min(1, "Chain ID is required") })),
+  validateNetwork
+);
+
+/**
+ * POST /new-premium-registration/validate-network
+ * Validate network for premium registration (POST)
+ */
+app.post(
+  "/validate-network",
+  rateLimiter({ requests: 50 }),
+  zValidator("json", z.object({ chainId: z.string().min(1, "Chain ID is required") })),
+  validateNetworkPost
+);
+
+/**
+ * GET /new-premium-registration/supported-networks
+ * Get supported networks
+ */
+app.get(
+  "/supported-networks",
+  rateLimiter({ requests: 100 }),
+  getSupportedNetworks
+);
+
+/**
+ * GET /new-premium-registration/arbitrum-one-network
+ * Get Arbitrum One network configuration
+ */
+app.get(
+  "/arbitrum-one-network",
+  rateLimiter({ requests: 100 }),
+  getArbitrumOneNetwork
+);
+
+/**
  * GET /new-premium-registration/health
  * Health check endpoint
  */
@@ -153,6 +246,14 @@ app.get("/", async (c) => {
       "POST /check-wallet-premium": "Check if a wallet is premium (POST)",
       "GET /can-link-profile": "Check if a profile can be linked to a wallet",
       "POST /can-link-profile": "Check if a profile can be linked to a wallet (POST)",
+      "GET /discover-profiles": "Discover available profiles for a wallet",
+      "POST /discover-profiles": "Discover available profiles for a wallet (POST)",
+      "POST /auto-link-profile": "Auto-link first available profile for a premium wallet",
+      "GET /profile/:profileId": "Get profile details by ID",
+      "GET /validate-network": "Validate network for premium registration",
+      "POST /validate-network": "Validate network for premium registration (POST)",
+      "GET /supported-networks": "Get supported networks",
+      "GET /arbitrum-one-network": "Get Arbitrum One network configuration",
       "GET /health": "Health check"
     },
     status: Status.Success
