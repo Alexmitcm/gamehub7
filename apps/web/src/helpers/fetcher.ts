@@ -41,8 +41,9 @@ const fetchApi = async <T>(
       ...options,
       credentials: "include",
       headers: {
-        ...{ "X-Access-Token": token || "" },
-        ...config.headers
+        ...config.headers,
+        ...(token ? { "X-Access-Token": token } : {}),
+        ...options.headers
       }
     });
 
@@ -86,6 +87,11 @@ const fetchApi = async <T>(
 
     // Handle legacy responses with status/data format
     if (result.status === Status.Success) {
+      return result.data;
+    }
+
+    // Handle new API format with data/status/message structure
+    if (result.data && result.status) {
       return result.data;
     }
 

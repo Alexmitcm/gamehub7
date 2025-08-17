@@ -17,9 +17,10 @@ const PreferencesProvider = ({ children }: PreferencesProviderProps) => {
   const { accessToken } = hydrateAuthTokens();
 
   const { data: preferences, error } = useQuery<Preferences>({
-    enabled: Boolean(currentAccount?.address && accessToken),
+    // Enable the query even without authentication since preferences endpoint is public
+    enabled: true,
     queryFn: () => hono.preferences.get(),
-    queryKey: ["preferences", currentAccount?.address],
+    queryKey: ["preferences", currentAccount?.address || "anonymous"],
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
