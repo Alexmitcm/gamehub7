@@ -5,6 +5,7 @@ import AuthService, {
   type LoginRequest,
   type SyncLensRequest
 } from "../services/AuthService";
+import AuthController from "../controllers/AuthController";
 
 const auth = new Hono();
 
@@ -431,6 +432,112 @@ auth.post("/debug-token", async (c) => {
       },
       500
     );
+  }
+});
+
+/**
+ * POST /api/auth/user-status
+ * Get comprehensive user status with new logic
+ */
+auth.post("/user-status", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { walletAddress, lensProfileId } = body;
+
+    if (!walletAddress) {
+      return c.json({
+        success: false,
+        message: "Wallet address is required"
+      }, 400);
+    }
+
+    // Import the controller dynamically to avoid circular dependencies
+    const { default: AuthController } = await import("../controllers/AuthController");
+    const controller = new AuthController();
+    
+    return controller.getUserStatus(c);
+  } catch (error) {
+    logger.error("Error getting user status:", error);
+    return c.json({
+      success: false,
+      message: "Internal server error"
+    }, 500);
+  }
+});
+
+/**
+ * POST /api/auth/login-enhanced
+ * Enhanced login with new user status logic
+ */
+auth.post("/login-enhanced", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { walletAddress, lensProfileId } = body;
+
+    if (!walletAddress) {
+      return c.json({
+        success: false,
+        message: "Wallet address is required"
+      }, 400);
+    }
+
+    return AuthController.handleUserLogin(c);
+  } catch (error) {
+    logger.error("Error in enhanced login:", error);
+    return c.json({
+      success: false,
+      message: "Internal server error"
+    }, 500);
+  }
+});
+
+/**
+ * GET /api/auth/premium-access
+ * Check if user can access premium features
+ */
+auth.get("/premium-access", async (c) => {
+  try {
+    const { walletAddress } = c.req.query();
+    
+    if (!walletAddress) {
+      return c.json({
+        success: false,
+        message: "Wallet address is required"
+      }, 400);
+    }
+
+    return AuthController.checkPremiumAccess(c);
+  } catch (error) {
+    logger.error("Error checking premium access:", error);
+    return c.json({
+      success: false,
+      message: "Internal server error"
+    }, 500);
+  }
+});
+
+/**
+ * GET /api/auth/premium-wallet
+ * Get user's premium wallet for reward claiming
+ */
+auth.get("/premium-wallet", async (c) => {
+  try {
+    const { lensProfileId } = c.req.query();
+    
+    if (!lensProfileId) {
+      return c.json({
+        success: false,
+        message: "Lens profile ID is required"
+      }, 400);
+    }
+
+    return AuthController.getPremiumWallet(c);
+  } catch (error) {
+    logger.error("Error getting premium wallet:", error);
+    return c.json({
+      success: false,
+      message: "Internal server error"
+    }, 500);
   }
 });
 

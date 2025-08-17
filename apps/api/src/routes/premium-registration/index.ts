@@ -1,188 +1,130 @@
-import { Status } from "@hey/data/enums";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import {
-  getPremiumStatus,
-  getPremiumStatusPost,
-  handlePremiumRegistration,
-  verifyRegistrationAndLinkProfile,
-  autoLinkFirstProfile,
-  linkProfileToWallet,
-  checkWalletConnectionStatus,
-  checkWalletConnectionStatusPost,
-  getRegistrationInstructions,
-  validateReferrer,
-  validateReferrerPost
-} from "@/controllers/PremiumRegistrationController";
-import rateLimiter from "@/middlewares/rateLimiter";
+import PremiumRegistrationController from "@/controllers/PremiumRegistrationController";
 
 const app = new Hono();
+const controller = PremiumRegistrationController;
 
 // Validation schemas
-const walletAddressSchema = z.object({
-  walletAddress: z.string().min(1, "Wallet address is required")
+const registrationRequestSchema = z.object({
+  userAddress: z.string().min(1, "User address is required"),
+  referrerAddress: z.string().min(1, "Referrer address is required"),
+  lensProfileId: z.string().optional(),
+  lensWalletAddress: z.string().optional(),
+  transactionHash: z.string().optional()
 });
 
-const referrerAddressSchema = z.object({
-  referrerAddress: z.string().min(1, "Referrer address is required")
+const verifyRegistrationSchema = z.object({
+  walletAddress: z.string().min(1, "Wallet address is required"),
+  lensProfileId: z.string().optional(),
+  transactionHash: z.string().min(1, "Transaction hash is required")
 });
 
-// Routes
+const linkProfileSchema = z.object({
+  walletAddress: z.string().min(1, "Wallet address is required"),
+  profileId: z.string().min(1, "Profile ID is required")
+});
+
+const autoLinkSchema = z.object({
+  walletAddress: z.string().min(1, "Wallet address is required"),
+  lensProfileId: z.string().min(1, "Lens profile ID is required")
+});
 
 /**
- * GET /premium-status
- * Get comprehensive premium status for a user
+ * GET /premium-registration/status
+ * Get user's premium status
  */
-app.get(
-  "/premium-status",
-  rateLimiter({ requests: 100 }),
-  zValidator("query", walletAddressSchema),
-  getPremiumStatus
-);
+app.get("/status", async (ctx) => {
+  return controller.getPremiumStatus(ctx);
+});
 
 /**
- * POST /premium-status
- * Get comprehensive premium status for a user (alternative to GET)
+ * POST /premium-registration/status
+ * Get user's premium status (POST version)
  */
-app.post(
-  "/premium-status",
-  rateLimiter({ requests: 100 }),
-  zValidator("json", walletAddressSchema),
-  getPremiumStatusPost
-);
+app.post("/status", async (ctx) => {
+  return controller.getPremiumStatus(ctx);
+});
 
 /**
- * POST /register
- * Handle premium registration process
+ * POST /premium-registration/register
+ * Handle premium registration request
  */
-app.post(
-  "/register",
-  rateLimiter({ requests: 10 }),
-  handlePremiumRegistration
-);
+app.post("/register", zValidator("json", registrationRequestSchema), async (ctx) => {
+  return controller.handlePremiumRegistration(ctx);
+});
 
 /**
- * POST /verify-registration
- * Verify a completed registration transaction and handle profile linking
+ * POST /premium-registration/verify
+ * Verify registration and link profile
  */
-app.post(
-  "/verify-registration",
-  rateLimiter({ requests: 10 }),
-  verifyRegistrationAndLinkProfile
-);
+app.post("/verify", zValidator("json", verifyRegistrationSchema), async (ctx) => {
+  return controller.verifyRegistrationAndLinkProfile(ctx);
+});
 
 /**
- * POST /auto-link-profile
+ * POST /premium-registration/auto-link
  * Auto-link first available profile for a premium wallet
  */
-app.post(
-  "/auto-link-profile",
-  rateLimiter({ requests: 10 }),
-  autoLinkFirstProfile
-);
-
-/**
- * POST /link-profile
- * Manually link a specific profile to a premium wallet
- */
-app.post(
-  "/link-profile",
-  rateLimiter({ requests: 10 }),
-  linkProfileToWallet
-);
-
-/**
- * GET /wallet-connection-status
- * Check wallet connection status
- */
-app.get(
-  "/wallet-connection-status",
-  rateLimiter({ requests: 50 }),
-  zValidator("query", walletAddressSchema),
-  checkWalletConnectionStatus
-);
-
-/**
- * POST /wallet-connection-status
- * Check wallet connection status (alternative to GET)
- */
-app.post(
-  "/wallet-connection-status",
-  rateLimiter({ requests: 50 }),
-  zValidator("json", walletAddressSchema),
-  checkWalletConnectionStatusPost
-);
-
-/**
- * GET /registration-instructions
- * Get registration instructions for the frontend
- */
-app.get(
-  "/registration-instructions",
-  rateLimiter({ requests: 20 }),
-  getRegistrationInstructions
-);
-
-/**
- * GET /validate-referrer
- * Validate referrer address
- */
-app.get(
-  "/validate-referrer",
-  rateLimiter({ requests: 50 }),
-  zValidator("query", referrerAddressSchema),
-  validateReferrer
-);
-
-/**
- * POST /validate-referrer
- * Validate referrer address (alternative to GET)
- */
-app.post(
-  "/validate-referrer",
-  rateLimiter({ requests: 50 }),
-  zValidator("json", referrerAddressSchema),
-  validateReferrerPost
-);
-
-/**
- * GET /health
- * Health check endpoint
- */
-app.get("/health", async (c) => {
-  return c.json({
-    status: "healthy",
-    service: "premium-registration",
-    timestamp: new Date().toISOString()
-  });
+app.post("/auto-link", zValidator("json", autoLinkSchema), async (ctx) => {
+  return controller.autoLinkFirstProfile(ctx);
 });
 
 /**
- * GET /
- * Root endpoint with service information
+ * POST /premium-registration/link
+ * Manually link profile to wallet
  */
-app.get("/", async (c) => {
-  return c.json({
-    service: "Premium Registration Service",
-    version: "1.0.0",
-    description: "Handles premium registration process, profile linking, and status checks",
-    endpoints: {
-      "GET /premium-status": "Get comprehensive premium status for a user",
-      "POST /premium-status": "Get comprehensive premium status for a user (POST)",
-      "POST /register": "Handle premium registration process",
-      "POST /verify-registration": "Verify registration transaction and link profile",
-      "POST /auto-link-profile": "Auto-link first available profile",
-      "POST /link-profile": "Manually link a specific profile",
-      "GET /wallet-connection-status": "Check wallet connection status",
-      "POST /wallet-connection-status": "Check wallet connection status (POST)",
-      "GET /registration-instructions": "Get registration instructions",
-      "GET /validate-referrer": "Validate referrer address",
-      "POST /validate-referrer": "Validate referrer address (POST)",
-      "GET /health": "Health check"
-    },
-    status: Status.Success
-  });
+app.post("/link", zValidator("json", linkProfileSchema), async (ctx) => {
+  return controller.linkProfileToWallet(ctx);
+});
+
+/**
+ * GET /premium-registration/connection-status
+ * Check wallet connection status for MetaMask validation
+ */
+app.get("/connection-status", async (ctx) => {
+  return controller.checkWalletConnectionStatus(ctx);
+});
+
+/**
+ * POST /premium-registration/connection-status
+ * Check wallet connection status (POST version)
+ */
+app.post("/connection-status", async (ctx) => {
+  return controller.checkWalletConnectionStatus(ctx);
+});
+
+/**
+ * GET /premium-registration/validate-reward-claiming
+ * Validate wallet for reward claiming
+ */
+app.get("/validate-reward-claiming", async (ctx) => {
+  return controller.validateWalletForRewardClaiming(ctx);
+});
+
+/**
+ * POST /premium-registration/validate-reward-claiming
+ * Validate wallet for reward claiming (POST version)
+ */
+app.post("/validate-reward-claiming", async (ctx) => {
+  return controller.validateWalletForRewardClaiming(ctx);
+});
+
+/**
+ * GET /premium-registration/comprehensive-status
+ * Get comprehensive user status
+ */
+app.get("/comprehensive-status", async (ctx) => {
+  return controller.getComprehensiveUserStatus(ctx);
+});
+
+/**
+ * POST /premium-registration/comprehensive-status
+ * Get comprehensive user status (POST version)
+ */
+app.post("/comprehensive-status", async (ctx) => {
+  return controller.getComprehensiveUserStatus(ctx);
 });
 
 export default app;

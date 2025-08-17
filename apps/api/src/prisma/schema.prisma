@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma-client"
 }
 
 datasource db {
@@ -46,6 +47,8 @@ model User {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   status             UserStatus         @default(Standard)
+  adminNotes         AdminNote[]
+  featureAccesses    FeatureAccess[]
   premiumProfile     PremiumProfile?
   userCoins          UserCoin[]
   userNotifications  UserNotification[]
@@ -53,8 +56,6 @@ model User {
   userQuests         UserQuest[]
   userRewards        UserReward[]
   userStats          UserStats?
-  adminNotes         AdminNote[]
-  featureAccesses    FeatureAccess[]
 
   @@index([walletAddress])
   @@index([email])
@@ -177,21 +178,20 @@ model UserNotification {
   @@index([createdAt])
 }
 
-// Admin and RBAC Models
 model AdminUser {
-  id            String       @id @default(cuid())
-  walletAddress String       @unique
-  email         String       @unique
-  username      String       @unique
+  id            String            @id @default(cuid())
+  walletAddress String            @unique
+  email         String            @unique
+  username      String            @unique
   displayName   String?
-  role          AdminRole    @default(SupportAgent)
-  permissions   AdminPermission[]
-  isActive      Boolean      @default(true)
+  role          AdminRole         @default(SupportAgent)
+  isActive      Boolean           @default(true)
   lastLoginAt   DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   adminActions  AdminAction[]
   adminNotes    AdminNote[]
+  permissions   AdminPermission[]
 
   @@index([walletAddress])
   @@index([role])
@@ -199,11 +199,11 @@ model AdminUser {
 }
 
 model AdminPermission {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   adminUserId String
-  permission  String   // e.g., "user.force_unlink", "user.grant_premium", "feature.manage"
-  grantedAt   DateTime @default(now())
-  grantedBy   String   // wallet address of admin who granted this permission
+  permission  String
+  grantedAt   DateTime  @default(now())
+  grantedBy   String
   adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 
   @@index([adminUserId])
@@ -211,7 +211,7 @@ model AdminPermission {
 }
 
 model AdminAction {
-  id              String        @id @default(cuid())
+  id              String            @id @default(cuid())
   adminUserId     String
   actionType      AdminActionType
   targetWallet    String
@@ -221,9 +221,9 @@ model AdminAction {
   status          AdminActionStatus @default(Pending)
   result          Json?
   errorMessage    String?
-  createdAt       DateTime      @default(now())
+  createdAt       DateTime          @default(now())
   completedAt     DateTime?
-  adminUser       AdminUser     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  adminUser       AdminUser         @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 
   @@index([adminUserId])
   @@index([actionType])
@@ -233,15 +233,15 @@ model AdminAction {
 }
 
 model AdminNote {
-  id          String   @id @default(cuid())
-  adminUserId String
+  id            String    @id @default(cuid())
+  adminUserId   String
   walletAddress String
-  note        String
-  isPrivate   Boolean  @default(false) // Private notes only visible to admins
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  note          String
+  isPrivate     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  adminUser     AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
 
   @@index([adminUserId])
   @@index([walletAddress])
@@ -249,17 +249,17 @@ model AdminNote {
 }
 
 model Feature {
-  id              String   @id @default(cuid())
-  featureId       String   @unique // e.g., "premium_chat", "advanced_analytics"
+  id              String          @id @default(cuid())
+  featureId       String          @unique
   name            String
   description     String
-  category        String   // e.g., "communication", "analytics", "gaming"
-  standardAccess  Boolean  @default(false)
-  premiumAccess   Boolean  @default(true)
-  adminOverride   Boolean  @default(true)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  category        String
+  standardAccess  Boolean         @default(false)
+  premiumAccess   Boolean         @default(true)
+  adminOverride   Boolean         @default(true)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   featureAccesses FeatureAccess[]
 
   @@index([featureId])
@@ -268,15 +268,15 @@ model Feature {
 }
 
 model FeatureAccess {
-  id           String   @id @default(cuid())
-  featureId    String
+  id            String    @id @default(cuid())
+  featureId     String
   walletAddress String
-  grantedBy    String?  // admin wallet address
-  grantedAt    DateTime @default(now())
-  expiresAt    DateTime?
-  isActive     Boolean  @default(true)
-  feature      Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
-  user         User     @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  grantedBy     String?
+  grantedAt     DateTime  @default(now())
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  feature       Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
 
   @@index([featureId])
   @@index([walletAddress])
@@ -311,16 +311,16 @@ model Game {
 }
 
 model GameCategory {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String?  @unique
-  description String?
+  id              String   @id @default(cuid())
+  name            String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  color           String?
+  description     String?
+  icon            String?
   metaDescription String?
-  icon      String?
-  color     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  games     Game[]   @relation("GameToGameCategory")
+  slug            String?  @unique
+  games           Game[]   @relation("GameToGameCategory")
 
   @@index([name])
   @@index([slug])
@@ -350,6 +350,7 @@ model GameTag {
 enum UserStatus {
   Standard
   Premium
+  OnChainUnlinked
 }
 
 enum PrivacyLevel {

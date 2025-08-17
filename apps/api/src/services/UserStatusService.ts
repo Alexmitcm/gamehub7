@@ -1,11 +1,13 @@
 import logger from "@hey/helpers/logger";
-import prisma from "../prisma/client";
+import { PrismaClient, UserStatus } from "../generated/prisma-client";
 import SmartContractService from "./SmartContractService";
 import LensProfileService from "./LensProfileService";
 
+const prisma = new PrismaClient();
+
 // Types
-export interface UserStatus {
-  status: "Standard" | "Premium" | "OnChainUnlinked";
+export interface UserStatusData {
+  status: UserStatus;
   walletAddress: string;
   lensProfileId?: string;
   linkedProfile?: {
@@ -20,20 +22,30 @@ export interface UserStatus {
   referrerAddress?: string;
   canLinkProfile: boolean;
   rejectionReason?: string;
+  premiumWalletAddress?: string;
+  lensWalletAddress?: string;
 }
 
 export interface ProfileLinkingResult {
   success: boolean;
   message: string;
-  userStatus: UserStatus;
+  userStatus: UserStatusData;
   rejectionReason?: string;
 }
 
 export interface AutoLinkResult {
   success: boolean;
   message: string;
-  userStatus: UserStatus;
+  userStatus: UserStatusData;
   linkedProfileId?: string;
+}
+
+export interface LoginResult {
+  success: boolean;
+  userStatus: UserStatusData;
+  message: string;
+  requiresMetaMaskConnection?: boolean;
+  requiresNetworkSwitch?: boolean;
 }
 
 export class UserStatusService {
@@ -46,13 +58,13 @@ export class UserStatusService {
   }
 
   /**
-   * Get comprehensive user status
+   * Get comprehensive user status based on the new logic
    */
-  async getUserStatus(walletAddress: string): Promise<UserStatus> {
+  async getUserStatus(walletAddress: string, lensProfileId?: string): Promise<UserStatusData> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
       
-      // Check if wallet is premium on-chain
+      // Check if wallet is premium on-chain via NodeSet API
       const isPremiumOnChain = await this.smartContractService.isWalletPremium(normalizedAddress);
       
       // Get user from database
@@ -71,29 +83,49 @@ export class UserStatusService {
         linkedAt: user.premiumProfile.linkedAt
       } : undefined;
 
-      // Determine user status
-      let status: "Standard" | "Premium" | "OnChainUnlinked" = "Standard";
+      // Determine user status based on the new logic
+      let status: UserStatus = UserStatus.Standard;
       
       if (isPremiumOnChain && linkedProfile) {
-        status = "Premium";
+        status = UserStatus.Premium;
       } else if (isPremiumOnChain && !linkedProfile) {
-        status = "OnChainUnlinked";
+        status = UserStatus.OnChainUnlinked;
       }
 
       // Check if profile can be linked
-      const canLinkProfile = await this.canLinkProfile(normalizedAddress);
+      const canLinkProfile = await this.canLinkProfile(normalizedAddress, lensProfileId);
+
+      // Get premium wallet address if this is a lens profile
+      let premiumWalletAddress: string | undefined;
+      let lensWalletAddress: string | undefined;
+
+      if (lensProfileId) {
+        // This is a lens profile, so the current wallet is the lens wallet
+        lensWalletAddress = normalizedAddress;
+        
+        // Find the premium wallet for this profile
+        const premiumProfile = await prisma.premiumProfile.findUnique({
+          where: { profileId: lensProfileId }
+        });
+        premiumWalletAddress = premiumProfile?.walletAddress;
+      } else if (isPremiumOnChain) {
+        // This is a premium wallet
+        premiumWalletAddress = normalizedAddress;
+      }
 
       return {
         status,
         walletAddress: normalizedAddress,
-        lensProfileId: user?.premiumProfile?.profileId,
+        lensProfileId,
         linkedProfile,
         isPremiumOnChain,
         hasLinkedProfile: !!linkedProfile,
         registrationTxHash: user?.registrationTxHash || undefined,
         premiumUpgradedAt: user?.premiumUpgradedAt || undefined,
         referrerAddress: user?.referrerAddress || undefined,
-        canLinkProfile
+        canLinkProfile,
+        premiumWalletAddress,
+        lensWalletAddress
       };
     } catch (error) {
       logger.error(`Error getting user status for ${walletAddress}:`, error);
@@ -136,9 +168,9 @@ export class UserStatusService {
   }
 
   /**
-   * Auto-link first available profile for a premium wallet
+   * Auto-link first available profile for a premium wallet (permanent linking)
    */
-  async autoLinkFirstProfile(walletAddress: string): Promise<AutoLinkResult> {
+  async autoLinkFirstProfile(walletAddress: string, lensProfileId: string): Promise<AutoLinkResult> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
       
@@ -162,34 +194,46 @@ export class UserStatusService {
         };
       }
 
-      // Discover available profiles using Lens API
-      const bestProfile = await this.lensProfileService.findBestProfileForAutoLinking(normalizedAddress);
-      
-      if (!bestProfile) {
+      // Check if this profile is already linked to another wallet
+      const existingProfileLink = await prisma.premiumProfile.findUnique({
+        where: { profileId: lensProfileId }
+      });
+
+      if (existingProfileLink) {
         return {
           success: false,
-          message: "No available profiles found for auto-linking",
+          message: "Profile is already linked to another wallet",
           userStatus: currentStatus
         };
       }
 
-      // Auto-link the best profile
-      const linkResult = await this.linkProfileToWallet(normalizedAddress, bestProfile.id);
+      // Create the permanent link
+      await prisma.premiumProfile.create({
+        data: {
+          walletAddress: normalizedAddress,
+          profileId: lensProfileId,
+          isActive: true,
+          linkedAt: new Date()
+        }
+      });
+
+      // Update user status to Premium
+      await prisma.user.update({
+        where: { walletAddress: normalizedAddress },
+        data: { 
+          status: UserStatus.Premium,
+          premiumUpgradedAt: new Date()
+        }
+      });
+
+      const updatedStatus = await this.getUserStatus(normalizedAddress, lensProfileId);
       
-      if (linkResult.success) {
-        return {
-          success: true,
-          message: `Successfully auto-linked profile ${bestProfile.handle}`,
-          userStatus: linkResult.userStatus,
-          linkedProfileId: bestProfile.id
-        };
-      } else {
-        return {
-          success: false,
-          message: `Failed to auto-link profile: ${linkResult.message}`,
-          userStatus: linkResult.userStatus
-        };
-      }
+      return {
+        success: true,
+        message: `Successfully permanently linked profile ${lensProfileId}`,
+        userStatus: updatedStatus,
+        linkedProfileId: lensProfileId
+      };
     } catch (error) {
       logger.error("Error in auto-linking profile:", error);
       throw error;
@@ -197,7 +241,7 @@ export class UserStatusService {
   }
 
   /**
-   * Manually link a profile to a premium wallet
+   * Manually link a profile to a premium wallet (permanent linking)
    */
   async linkProfileToWallet(walletAddress: string, profileId: string): Promise<ProfileLinkingResult> {
     try {
@@ -214,11 +258,11 @@ export class UserStatusService {
       }
 
       // Check if profile is already linked to another wallet
-      const existingLink = await prisma.premiumProfile.findUnique({
+      const existingProfileLink = await prisma.premiumProfile.findUnique({
         where: { profileId }
       });
 
-      if (existingLink) {
+      if (existingProfileLink) {
         return {
           success: false,
           message: "Profile is already linked to another wallet",
@@ -227,7 +271,7 @@ export class UserStatusService {
         };
       }
 
-      // Check if wallet already has a linked profile
+      // Check if wallet already has a linked profile (permanent rule)
       const walletHasLinkedProfile = await prisma.premiumProfile.findFirst({
         where: { walletAddress: normalizedAddress }
       });
@@ -235,13 +279,13 @@ export class UserStatusService {
       if (walletHasLinkedProfile) {
         return {
           success: false,
-          message: "Wallet already has a linked profile",
+          message: "Wallet already has a permanently linked profile",
           userStatus: await this.getUserStatus(normalizedAddress),
           rejectionReason: "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium."
         };
       }
 
-      // Create the link
+      // Create the permanent link
       await prisma.premiumProfile.create({
         data: {
           walletAddress: normalizedAddress,
@@ -251,17 +295,20 @@ export class UserStatusService {
         }
       });
 
-      // Update user status
+      // Update user status to Premium
       await prisma.user.update({
         where: { walletAddress: normalizedAddress },
-        data: { status: "Premium" }
+        data: { 
+          status: UserStatus.Premium,
+          premiumUpgradedAt: new Date()
+        }
       });
 
-      const updatedStatus = await this.getUserStatus(normalizedAddress);
+      const updatedStatus = await this.getUserStatus(normalizedAddress, profileId);
       
       return {
         success: true,
-        message: "Profile linked successfully",
+        message: "Profile permanently linked successfully",
         userStatus: updatedStatus
       };
     } catch (error) {
@@ -271,9 +318,9 @@ export class UserStatusService {
   }
 
   /**
-   * Handle user login/registration flow
+   * Handle user login/registration flow with the new logic
    */
-  async handleUserLogin(walletAddress: string, lensProfileId?: string): Promise<UserStatus> {
+  async handleUserLogin(walletAddress: string, lensProfileId?: string): Promise<LoginResult> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
       
@@ -287,15 +334,82 @@ export class UserStatusService {
         });
 
         if (!existingLink && lensProfileId) {
-          // Auto-link the first profile
-          await this.linkProfileToWallet(normalizedAddress, lensProfileId);
+          // Auto-link the first profile permanently
+          const autoLinkResult = await this.autoLinkFirstProfile(normalizedAddress, lensProfileId);
+          if (autoLinkResult.success) {
+            return {
+              success: true,
+              userStatus: autoLinkResult.userStatus,
+              message: "Profile automatically linked to premium wallet"
+            };
+          }
         }
       }
 
       // Get final user status
-      return await this.getUserStatus(normalizedAddress);
+      const userStatus = await this.getUserStatus(normalizedAddress, lensProfileId);
+      
+      // Determine if MetaMask connection is required
+      const requiresMetaMaskConnection = !isPremium && userStatus.status === UserStatus.Standard;
+      
+      return {
+        success: true,
+        userStatus,
+        message: "Login successful",
+        requiresMetaMaskConnection
+      };
     } catch (error) {
       logger.error("Error handling user login:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Handle premium registration completion
+   */
+  async handlePremiumRegistrationCompletion(
+    walletAddress: string, 
+    transactionHash: string,
+    lensProfileId?: string
+  ): Promise<ProfileLinkingResult> {
+    try {
+      const normalizedAddress = walletAddress.toLowerCase();
+      
+      // Verify the wallet is now premium
+      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
+      if (!isPremium) {
+        return {
+          success: false,
+          message: "Wallet is not premium after registration",
+          userStatus: await this.getUserStatus(normalizedAddress, lensProfileId)
+        };
+      }
+
+      // Update user with transaction hash
+      await prisma.user.update({
+        where: { walletAddress: normalizedAddress },
+        data: { 
+          registrationTxHash: transactionHash,
+          premiumUpgradedAt: new Date()
+        }
+      });
+
+      // If lensProfileId is provided, link it permanently
+      if (lensProfileId) {
+        const linkResult = await this.linkProfileToWallet(normalizedAddress, lensProfileId);
+        return linkResult;
+      }
+
+      // Get updated status
+      const updatedStatus = await this.getUserStatus(normalizedAddress, lensProfileId);
+      
+      return {
+        success: true,
+        message: "Premium registration completed successfully",
+        userStatus: updatedStatus
+      };
+    } catch (error) {
+      logger.error("Error handling premium registration completion:", error);
       throw error;
     }
   }
@@ -306,7 +420,7 @@ export class UserStatusService {
   async canAccessPremiumFeatures(walletAddress: string): Promise<boolean> {
     try {
       const userStatus = await this.getUserStatus(walletAddress);
-      return userStatus.status === "Premium";
+      return userStatus.status === UserStatus.Premium;
     } catch (error) {
       logger.error("Error checking premium feature access:", error);
       return false;
@@ -336,6 +450,7 @@ export class UserStatusService {
     isValid: boolean;
     message: string;
     isPremiumWallet: boolean;
+    requiresNetworkSwitch: boolean;
   }> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
@@ -347,7 +462,8 @@ export class UserStatusService {
         return {
           isValid: false,
           message: "To claim rewards, you must use your premium wallet, which is MetaMask.",
-          isPremiumWallet: false
+          isPremiumWallet: false,
+          requiresNetworkSwitch: false
         };
       }
 
@@ -360,22 +476,57 @@ export class UserStatusService {
         return {
           isValid: false,
           message: "This wallet is not associated with any user account.",
-          isPremiumWallet: false
+          isPremiumWallet: false,
+          requiresNetworkSwitch: false
         };
       }
 
       return {
         isValid: true,
         message: "Wallet validated for reward claiming",
-        isPremiumWallet: true
+        isPremiumWallet: true,
+        requiresNetworkSwitch: false
       };
     } catch (error) {
       logger.error("Error validating wallet for reward claiming:", error);
       return {
         isValid: false,
         message: "Error validating wallet",
-        isPremiumWallet: false
+        isPremiumWallet: false,
+        requiresNetworkSwitch: false
       };
+    }
+  }
+
+  /**
+   * Get comprehensive user status for frontend
+   */
+  async getComprehensiveUserStatus(walletAddress: string, lensProfileId?: string): Promise<{
+    userStatus: UserStatusData;
+    requiresMetaMaskConnection: boolean;
+    requiresNetworkSwitch: boolean;
+    canAccessPremiumFeatures: boolean;
+    canClaimRewards: boolean;
+  }> {
+    try {
+      const userStatus = await this.getUserStatus(walletAddress, lensProfileId);
+      const canAccessPremiumFeatures = await this.canAccessPremiumFeatures(walletAddress);
+      const canClaimRewards = userStatus.status === UserStatus.Premium;
+      
+      // Determine requirements
+      const requiresMetaMaskConnection = !userStatus.isPremiumOnChain && userStatus.status === UserStatus.Standard;
+      const requiresNetworkSwitch = false; // This will be handled by frontend wallet connection
+
+      return {
+        userStatus,
+        requiresMetaMaskConnection,
+        requiresNetworkSwitch,
+        canAccessPremiumFeatures,
+        canClaimRewards
+      };
+    } catch (error) {
+      logger.error("Error getting comprehensive user status:", error);
+      throw error;
     }
   }
 }

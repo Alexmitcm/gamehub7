@@ -1,0 +1,467 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Preference {
+  accountAddress  String   @id
+  appIcon         Int?     @default(0)
+  includeLowScore Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model PremiumProfile {
+  id            String    @id @default(cuid())
+  walletAddress String    @unique
+  profileId     String    @unique
+  isActive      Boolean   @default(true)
+  linkedAt      DateTime  @default(now())
+  deactivatedAt DateTime?
+  user          User      @relation(fields: [walletAddress], references: [walletAddress])
+
+  @@index([walletAddress])
+  @@index([profileId])
+}
+
+model User {
+  walletAddress      String             @id
+  email              String?            @unique
+  username           String?            @unique
+  displayName        String?
+  avatarUrl          String?
+  bio                String?
+  location           String?
+  website            String?
+  twitterHandle      String?
+  registrationDate   DateTime           @default(now())
+  referrerAddress    String?
+  registrationTxHash String?
+  premiumUpgradedAt  DateTime?
+  lastActiveAt       DateTime           @default(now())
+  totalLogins        Int                @default(0)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  status             UserStatus         @default(Standard)
+  adminNotes         AdminNote[]
+  featureAccesses    FeatureAccess[]
+  premiumProfile     PremiumProfile?
+  userCoins          UserCoin[]
+  userNotifications  UserNotification[]
+  preferences        UserPreferences?
+  userQuests         UserQuest[]
+  userRewards        UserReward[]
+  userStats          UserStats?
+
+  @@index([walletAddress])
+  @@index([email])
+  @@index([username])
+  @@index([status])
+  @@index([registrationDate])
+}
+
+model UserPreferences {
+  walletAddress      String       @id
+  emailNotifications Boolean      @default(true)
+  pushNotifications  Boolean      @default(true)
+  marketingEmails    Boolean      @default(false)
+  privacyLevel       PrivacyLevel @default(Public)
+  language           String       @default("en")
+  timezone           String       @default("UTC")
+  autoLinkProfile    Boolean      @default(true)
+  showPremiumBadge   Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  user               User         @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+}
+
+model UserStats {
+  walletAddress    String   @id
+  totalPosts       Int      @default(0)
+  totalComments    Int      @default(0)
+  totalLikes       Int      @default(0)
+  totalFollowers   Int      @default(0)
+  totalFollowing   Int      @default(0)
+  daysAsPremium    Int      @default(0)
+  referralCount    Int      @default(0)
+  totalEarnings    Decimal  @default(0) @db.Decimal(20, 8)
+  questsCompleted  Int      @default(0)
+  questsInProgress Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+}
+
+model UserReward {
+  id             String           @id @default(cuid())
+  walletAddress  String
+  type           RewardType
+  amount         Decimal          @db.Decimal(20, 8)
+  currency       String           @default("USDT")
+  status         RewardStatus     @default(Pending)
+  sourceType     RewardSourceType
+  sourceId       String?
+  sourceMetadata Json?
+  txHash         String?
+  claimedAt      DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  user           User             @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([walletAddress])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserQuest {
+  id              String      @id @default(cuid())
+  walletAddress   String
+  questId         String
+  title           String
+  description     String
+  type            QuestType
+  status          QuestStatus @default(Active)
+  currentProgress Int         @default(0)
+  targetProgress  Int
+  rewardAmount    Decimal?    @db.Decimal(20, 8)
+  rewardCurrency  String      @default("USDT")
+  completedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([walletAddress])
+  @@index([questId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model UserCoin {
+  id             String         @id @default(cuid())
+  walletAddress  String
+  coinType       CoinType
+  amount         Int            @default(0)
+  earnedAt       DateTime       @default(now())
+  sourceType     CoinSourceType
+  sourceId       String?
+  sourceMetadata Json?
+  createdAt      DateTime       @default(now())
+  user           User           @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([walletAddress])
+  @@index([coinType])
+  @@index([earnedAt])
+}
+
+model UserNotification {
+  id             String               @id @default(cuid())
+  walletAddress  String
+  type           NotificationType
+  title          String
+  message        String
+  priority       NotificationPriority @default(Normal)
+  isRead         Boolean              @default(false)
+  readAt         DateTime?
+  actionUrl      String?
+  actionMetadata Json?
+  createdAt      DateTime             @default(now())
+  user           User                 @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([walletAddress])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model AdminUser {
+  id            String            @id @default(cuid())
+  walletAddress String            @unique
+  email         String            @unique
+  username      String            @unique
+  displayName   String?
+  role          AdminRole         @default(SupportAgent)
+  isActive      Boolean           @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  adminActions  AdminAction[]
+  adminNotes    AdminNote[]
+  permissions   AdminPermission[]
+
+  @@index([walletAddress])
+  @@index([role])
+  @@index([isActive])
+}
+
+model AdminPermission {
+  id          String    @id @default(cuid())
+  adminUserId String
+  permission  String
+  grantedAt   DateTime  @default(now())
+  grantedBy   String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([permission])
+}
+
+model AdminAction {
+  id              String            @id @default(cuid())
+  adminUserId     String
+  actionType      AdminActionType
+  targetWallet    String
+  targetProfileId String?
+  reason          String
+  metadata        Json?
+  status          AdminActionStatus @default(Pending)
+  result          Json?
+  errorMessage    String?
+  createdAt       DateTime          @default(now())
+  completedAt     DateTime?
+  adminUser       AdminUser         @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([actionType])
+  @@index([targetWallet])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AdminNote {
+  id            String    @id @default(cuid())
+  adminUserId   String
+  walletAddress String
+  note          String
+  isPrivate     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  adminUser     AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([walletAddress])
+  @@index([createdAt])
+}
+
+model Feature {
+  id              String          @id @default(cuid())
+  featureId       String          @unique
+  name            String
+  description     String
+  category        String
+  standardAccess  Boolean         @default(false)
+  premiumAccess   Boolean         @default(true)
+  adminOverride   Boolean         @default(true)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  featureAccesses FeatureAccess[]
+
+  @@index([featureId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model FeatureAccess {
+  id            String    @id @default(cuid())
+  featureId     String
+  walletAddress String
+  grantedBy     String?
+  grantedAt     DateTime  @default(now())
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  feature       Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+
+  @@index([featureId])
+  @@index([walletAddress])
+  @@index([isActive])
+}
+
+model Game {
+  id             String           @id @default(cuid())
+  title          String
+  slug           String           @unique
+  description    String
+  instructions   String?
+  packageUrl     String
+  entryFilePath  String           @default("index.html")
+  iconUrl        String
+  coverImageUrl  String
+  width          Int              @default(1280)
+  height         Int              @default(720)
+  orientation    GameOrientation  @default(Landscape)
+  developerName  String?
+  version        String?
+  status         GameStatus       @default(Draft)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  GameScreenshot GameScreenshot[]
+  categories     GameCategory[]   @relation("GameToGameCategory")
+  GameTag        GameTag[]        @relation("GameToGameTag")
+
+  @@index([slug])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model GameCategory {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  color           String?
+  description     String?
+  icon            String?
+  metaDescription String?
+  slug            String?  @unique
+  games           Game[]   @relation("GameToGameCategory")
+
+  @@index([name])
+  @@index([slug])
+}
+
+model GameScreenshot {
+  id        String   @id
+  gameId    String
+  imageUrl  String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  Game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
+  @@index([order])
+}
+
+model GameTag {
+  id        String   @id
+  name      String   @unique
+  createdAt DateTime @default(now())
+  Game      Game[]   @relation("GameToGameTag")
+
+  @@index([name])
+}
+
+enum UserStatus {
+  Standard
+  Premium
+  OnChainUnlinked
+}
+
+enum PrivacyLevel {
+  Public
+  Private
+  FriendsOnly
+}
+
+enum RewardType {
+  Referral
+  Quest
+  Activity
+  Bonus
+  Welcome
+}
+
+enum RewardStatus {
+  Pending
+  Claimed
+  Failed
+  Expired
+}
+
+enum RewardSourceType {
+  Registration
+  Referral
+  Quest
+  Activity
+  Admin
+}
+
+enum QuestType {
+  Welcome
+  Referral
+  Activity
+  Social
+  Premium
+}
+
+enum QuestStatus {
+  Active
+  Completed
+  Expired
+  Failed
+}
+
+enum CoinType {
+  Experience
+  Achievement
+  Social
+  Premium
+}
+
+enum CoinSourceType {
+  Registration
+  Referral
+  Quest
+  Activity
+  Social
+}
+
+enum NotificationType {
+  Welcome
+  Premium
+  Quest
+  Reward
+  Referral
+  System
+  Marketing
+}
+
+enum NotificationPriority {
+  Low
+  Normal
+  High
+  Urgent
+}
+
+enum GameStatus {
+  Draft
+  Published
+}
+
+enum GameOrientation {
+  Landscape
+  Portrait
+  Both
+}
+
+enum AdminRole {
+  SuperAdmin
+  SupportAgent
+  Auditor
+  Moderator
+}
+
+enum AdminActionType {
+  ForceUnlinkProfile
+  ForceLinkProfile
+  GrantPremium
+  RevokePremium
+  UpdateFeatureAccess
+  AddAdminNote
+  UpdateUserStatus
+  BlockUser
+  UnblockUser
+}
+
+enum AdminActionStatus {
+  Pending
+  Completed
+  Failed
+  Cancelled
+}

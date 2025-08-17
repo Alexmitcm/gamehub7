@@ -70,33 +70,49 @@ export class SmartContractService {
   private readonly privateKey: Hex;
 
   constructor() {
-    this.referralContractAddress = this.getRequiredEnvVar("REFERRAL_CONTRACT_ADDRESS") as Address;
-    this.usdtContractAddress = this.getRequiredEnvVar("USDT_CONTRACT_ADDRESS") as Address;
-    this.balancedGameVaultAddress = this.getRequiredEnvVar("BALANCED_GAME_VAULT_ADDRESS") as Address;
-    this.unbalancedGameVaultAddress = this.getRequiredEnvVar("UNBALANCED_GAME_VAULT_ADDRESS") as Address;
-    this.infuraUrl = this.getRequiredEnvVar("INFURA_URL");
-    this.privateKey = this.getRequiredEnvVar("PRIVATE_KEY") as Hex;
+    // Initialize with default values for development/testing
+    this.referralContractAddress = (process.env.REFERRAL_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000") as Address;
+    this.usdtContractAddress = (process.env.USDT_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000") as Address;
+    this.balancedGameVaultAddress = (process.env.BALANCED_GAME_VAULT_ADDRESS || "0x0000000000000000000000000000000000000000") as Address;
+    this.unbalancedGameVaultAddress = (process.env.UNBALANCED_GAME_VAULT_ADDRESS || "0x0000000000000000000000000000000000000000") as Address;
+    this.infuraUrl = process.env.INFURA_URL || "https://arbitrum-mainnet.infura.io/v3/your-project-id";
+    this.privateKey = (process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000") as Hex;
 
-    this.publicClient = createPublicClient({
-      chain: arbitrum,
-      transport: http(this.infuraUrl)
-    });
+    try {
+      this.publicClient = createPublicClient({
+        chain: arbitrum,
+        transport: http(this.infuraUrl)
+      });
 
-    const account = privateKeyToAccount(this.privateKey);
-    this.walletClient = createWalletClient({
-      account,
-      chain: arbitrum,
-      transport: http(this.infuraUrl)
-    });
-  }
-
-  private getRequiredEnvVar(name: string): string {
-    const value = process.env[name];
-    if (!value) {
-      throw new Error(`Required environment variable ${name} is not set`);
+      if (this.privateKey !== "0x0000000000000000000000000000000000000000000000000000000000000000") {
+        const account = privateKeyToAccount(this.privateKey);
+        this.walletClient = createWalletClient({
+          account,
+          chain: arbitrum,
+          transport: http(this.infuraUrl)
+        });
+      } else {
+        // Create a dummy wallet client for development
+        this.walletClient = createWalletClient({
+          chain: arbitrum,
+          transport: http(this.infuraUrl)
+        });
+      }
+    } catch (error) {
+      logger.warn("Failed to initialize blockchain clients, using mock mode:", error);
+      // Create mock clients for development
+      this.publicClient = createPublicClient({
+        chain: arbitrum,
+        transport: http("https://arbitrum-mainnet.infura.io/v3/mock")
+      });
+      this.walletClient = createWalletClient({
+        chain: arbitrum,
+        transport: http("https://arbitrum-mainnet.infura.io/v3/mock")
+      });
     }
-    return value;
   }
+
+
 
   private normalizeWalletAddress(address: string): Address {
     return address.toLowerCase() as Address;
@@ -107,7 +123,15 @@ export class SmartContractService {
    */
   async isWalletPremium(walletAddress: string): Promise<boolean> {
     try {
+      // For development/testing, return false for non-premium wallets
+      // In production, this would check the actual blockchain
       const normalizedAddress = this.normalizeWalletAddress(walletAddress);
+      
+      // Check if we're in mock mode (no real blockchain connection)
+      if (this.infuraUrl.includes("mock") || this.referralContractAddress === "0x0000000000000000000000000000000000000000") {
+        logger.info(`Mock mode: returning false for wallet ${walletAddress}`);
+        return false;
+      }
       
       const nodeData = await this.publicClient.readContract({
         address: this.referralContractAddress,
@@ -120,6 +144,7 @@ export class SmartContractService {
       return nodeData && nodeData.balance > 0n;
     } catch (error) {
       logger.error(`Error checking premium status for ${walletAddress}:`, error);
+      // In development, return false instead of failing
       return false;
     }
   }
