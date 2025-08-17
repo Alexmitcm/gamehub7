@@ -6,6 +6,11 @@ import { createConfig, WagmiProvider } from "wagmi";
 import { arbitrum } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
 import getRpcWithProxy from "@/helpers/getRpcWithProxy";
+import { 
+  isMetaMaskAvailable, 
+  isBraveWalletAvailable, 
+  isCoinbaseWalletAvailable 
+} from "@/helpers/walletDetection";
 
 // Comprehensive warning suppression for Wagmi history restoration
 const suppressWagmiWarnings = () => {
@@ -113,58 +118,73 @@ const suppressWagmiWarnings = () => {
 // Apply warning suppression
 suppressWagmiWarnings();
 
-// Note: MetaMask availability check and WalletConnect connectivity testing are available but not used in this simplified version
-
-// Note: Advanced connector initialization with connectivity testing is available but not used in this simplified version
-
-// Note: Async connector initialization is available but not used in this simplified version
-
 interface Web3ProviderProps {
   children: ReactNode;
 }
 
 const Web3Provider = ({ children }: Web3ProviderProps) => {
+  // Build connectors array conditionally based on available wallets
+  const connectors = [
+    // Family connector (always available)
+    familyAccountsConnector(),
+    // WalletConnect connector (for mobile wallets)
+    walletConnect({
+      metadata: {
+        description: "Hey Social Media Platform",
+        icons: ["https://static.hey.xyz/images/placeholder.webp"],
+        name: "Hey",
+        url:
+          typeof window !== "undefined"
+            ? window.location.origin
+            : "https://hey.xyz"
+      },
+      projectId: WALLETCONNECT_PROJECT_ID
+    })
+  ];
+
+  // Add MetaMask connector only if available
+  if (isMetaMaskAvailable()) {
+    connectors.push(
+      injected({
+        shimDisconnect: true,
+        target: "metaMask"
+      })
+    );
+  }
+
+  // Add Brave Wallet connector only if available
+  if (isBraveWalletAvailable()) {
+    connectors.push(
+      injected({
+        shimDisconnect: true,
+        target: "braveWallet"
+      })
+    );
+  }
+
+  // Add Coinbase Wallet connector only if available
+  if (isCoinbaseWalletAvailable()) {
+    connectors.push(
+      injected({
+        shimDisconnect: true,
+        target: "coinbaseWallet"
+      })
+    );
+  }
+
+  // Add generic injected connector for other browser wallets
+  connectors.push(
+    injected({
+      shimDisconnect: true
+    })
+  );
+
   const config = createConfig({
     batch: {
       multicall: true
     },
     chains: [CHAIN, arbitrum],
-    connectors: [
-      // Family connector
-      familyAccountsConnector(),
-      // WalletConnect connector (for mobile wallets)
-      walletConnect({
-        metadata: {
-          description: "Hey Social Media Platform",
-          icons: ["https://static.hey.xyz/images/placeholder.webp"],
-          name: "Hey",
-          url:
-            typeof window !== "undefined"
-              ? window.location.origin
-              : "https://hey.xyz"
-        },
-        projectId: WALLETCONNECT_PROJECT_ID
-      }),
-      // Injected connector for MetaMask
-      injected({
-        shimDisconnect: true,
-        target: "metaMask"
-      }),
-      // Injected connector for Brave Wallet
-      injected({
-        shimDisconnect: true,
-        target: "braveWallet"
-      }),
-      // Injected connector for Coinbase Wallet
-      injected({
-        shimDisconnect: true,
-        target: "coinbaseWallet"
-      }),
-      // Injected connector for other browser wallets (generic)
-      injected({
-        shimDisconnect: true
-      })
-    ],
+    connectors,
     ssr: false,
     transports: {
       [CHAIN.id]: getRpcWithProxy(),

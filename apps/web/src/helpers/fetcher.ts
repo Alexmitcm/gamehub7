@@ -60,6 +60,22 @@ const fetchApi = async <T>(
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
+    // Check content type to ensure we're getting JSON
+    const contentType = response.headers.get("content-type");
+    if (contentType && !contentType.includes("application/json")) {
+      console.warn("🔍 Warning: Response is not JSON, content-type:", contentType);
+      
+      // Try to get the response text to see what we actually received
+      const responseText = await response.text();
+      if (responseText.trim().startsWith("<!DOCTYPE") || responseText.trim().startsWith("<html")) {
+        throw new Error("API returned HTML instead of JSON. The endpoint may be incorrect or the server may be down.");
+      }
+      
+      // If it's not HTML but also not JSON, log the response for debugging
+      console.warn("🔍 Non-JSON response content:", responseText.substring(0, 200));
+      throw new Error("API returned non-JSON response. Please check the endpoint configuration.");
+    }
+
     const result = await response.json();
     console.log("🔍 Response data:", result);
 
