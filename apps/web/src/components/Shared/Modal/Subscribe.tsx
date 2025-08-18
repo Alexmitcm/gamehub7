@@ -45,7 +45,7 @@ const Subscribe = () => {
     );
   }
 
-  // Check if user is Premium (from backend or legacy)
+  // Check if user is Premium (from backend or simple premium check)
   const isPremium =
     backendUser?.status === "Premium" ||
     premiumStatus?.userStatus === "ProLinked";
@@ -187,7 +187,8 @@ const Subscribe = () => {
   // Standard users - show premium registration form
   if (
     premiumStatus?.userStatus === "Standard" ||
-    backendUser?.status === "Standard"
+    backendUser?.status === "Standard" ||
+    !premiumStatus // Fallback for when status is not loaded
   ) {
     return (
       <div className="mx-5 my-10 flex flex-col items-center gap-y-8">
