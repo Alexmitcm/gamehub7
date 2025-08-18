@@ -40,7 +40,10 @@ export const useLensAuthSync = () => {
 
       // Try to decode and validate token payload
       try {
-        const payload = JSON.parse(atob(tokenParts[1]));
+        // Fix base64url to base64 conversion for proper decoding
+        const base64 = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const payload = JSON.parse(atob(padded));
         const currentTime = Math.floor(Date.now() / 1000);
         
         if (payload.exp && payload.exp < currentTime) {
