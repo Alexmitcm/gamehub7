@@ -330,10 +330,14 @@ export class PremiumService {
     try {
       const { SignJWT } = await import("jose");
 
-      const jwtSecret = process.env.JWT_SECRET;
-      if (!jwtSecret) {
-        throw new Error(
-          "JWT_SECRET environment variable is required but not set"
+      const jwtSecret =
+        process.env.JWT_SECRET || "fallback-jwt-secret-for-development-only";
+      if (
+        !jwtSecret ||
+        jwtSecret === "fallback-jwt-secret-for-development-only"
+      ) {
+        logger.warn(
+          "JWT_SECRET environment variable is not set, using fallback value"
         );
       }
 
