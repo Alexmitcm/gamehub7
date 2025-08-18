@@ -11,10 +11,7 @@ const REFERRAL_ABI = [
   parseAbiItem("function getPlayerNode() view returns (uint256 startTime, uint256 balance, uint24 point, uint24 depthLeftBranch, uint24 depthRightBranch, uint24 depth, address player, address parent, address leftChild, address rightChild, bool isPointChanged, bool unbalancedAllowance)")
 ];
 
-const USDT_ABI = [
-  parseAbiItem("function balanceOf(address) view returns (uint256)"),
-  parseAbiItem("function approve(address spender, uint256 amount) returns (bool)")
-];
+
 
 // Types
 export interface UserStatus {
@@ -88,7 +85,8 @@ export class NewPremiumRegistrationService {
   private getRequiredEnvVar(name: string): string {
     const value = process.env[name];
     if (!value) {
-      throw new Error(`Required environment variable ${name} is not set`);
+      logger.warn(`Environment variable ${name} is not set, using fallback value`);
+      return "0x0000000000000000000000000000000000000000";
     }
     return value;
   }

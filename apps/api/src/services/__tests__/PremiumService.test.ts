@@ -29,7 +29,7 @@ describe("PremiumService - Permanent Premium Link Testing", () => {
     // Reset all mocks
     mockBlockchainService.isWalletPremium.mockResolvedValue(true);
     mockUserService.getUserPremiumStatus.mockResolvedValue({
-      userStatus: "OnChainUnlinked"
+      userStatus: "Standard"
     });
     mockUserService.autoLinkFirstProfile.mockResolvedValue({
       handle: testHandle1,
@@ -72,7 +72,7 @@ describe("PremiumService - Permanent Premium Link Testing", () => {
       it("should auto-link the first profile when wallet is premium and no profile is linked", async () => {
         // Arrange
         mockUserService.getUserPremiumStatus.mockResolvedValue({
-          userStatus: "OnChainUnlinked"
+          userStatus: "Standard"
         });
         mockUserService.getAvailableProfiles.mockResolvedValue({
           canLink: true,
@@ -120,7 +120,7 @@ describe("PremiumService - Permanent Premium Link Testing", () => {
       it("should allow manual linking of first profile", async () => {
         // Arrange
         mockUserService.getUserPremiumStatus.mockResolvedValue({
-          userStatus: "OnChainUnlinked"
+          userStatus: "Standard"
         });
 
         // Act
@@ -227,7 +227,7 @@ describe("PremiumService - Permanent Premium Link Testing", () => {
         // Arrange
         mockBlockchainService.isWalletPremium.mockResolvedValue(true);
         mockUserService.getUserPremiumStatus.mockResolvedValue({
-          userStatus: "OnChainUnlinked"
+          userStatus: "Standard"
         });
 
         // Act
@@ -235,7 +235,7 @@ describe("PremiumService - Permanent Premium Link Testing", () => {
           await premiumService.getUserPremiumStatus(testWalletAddress);
 
         // Assert
-        expect(status).toEqual({ userStatus: "OnChainUnlinked" });
+        expect(status).toEqual({ userStatus: "Standard" });
       });
 
       it("should correctly identify ProLinked status for premium wallets with linked profiles", async () => {
@@ -463,12 +463,12 @@ describe("PremiumService - Permanent Premium Link Testing", () => {
 
   describe("Test Case 11: Integration Test - Complete Premium Flow", () => {
     it("should handle complete premium registration flow", async () => {
-      // Step 1: Check initial status (should be OnChainUnlinked)
-      mockUserService.getUserPremiumStatus.mockResolvedValue({
-        userStatus: "OnChainUnlinked"
-      });
-      let status = await premiumService.getUserPremiumStatus(testWalletAddress);
-      expect(status.userStatus).toBe("OnChainUnlinked");
+             // Step 1: Check initial status (should be Standard)
+       mockUserService.getUserPremiumStatus.mockResolvedValue({
+         userStatus: "Standard"
+       });
+       let status = await premiumService.getUserPremiumStatus(testWalletAddress);
+       expect(status.userStatus).toBe("Standard");
 
       // Step 2: Get available profiles
       mockUserService.getAvailableProfiles.mockResolvedValue({

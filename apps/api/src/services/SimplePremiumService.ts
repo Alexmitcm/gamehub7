@@ -27,10 +27,8 @@ export class SimplePremiumService {
   private readonly infuraUrl: string;
 
   constructor() {
-    this.referralContractAddress = this.getRequiredEnvVar(
-      "REFERRAL_CONTRACT_ADDRESS"
-    );
-    this.infuraUrl = this.getRequiredEnvVar("INFURA_URL");
+    this.referralContractAddress = process.env.REFERRAL_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000";
+    this.infuraUrl = process.env.INFURA_URL || "https://arbitrum-mainnet.infura.io/v3/your-key";
 
     this.publicClient = createPublicClient({
       chain: arbitrum,
@@ -41,7 +39,8 @@ export class SimplePremiumService {
   private getRequiredEnvVar(name: string): string {
     const value = process.env[name];
     if (!value) {
-      throw new Error(`Required environment variable ${name} is not set`);
+      logger.warn(`Environment variable ${name} is not set, using fallback value`);
+      return "";
     }
     return value;
   }

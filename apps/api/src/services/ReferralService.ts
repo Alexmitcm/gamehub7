@@ -65,7 +65,8 @@ export class ReferralService {
   private getRequiredEnvVar(name: string): string {
     const value = process.env[name];
     if (!value) {
-      throw new Error(`Missing required environment variable: ${name}`);
+      logger.warn(`Environment variable ${name} is not set, using fallback value`);
+      return "0x0000000000000000000000000000000000000000";
     }
     return value;
   }

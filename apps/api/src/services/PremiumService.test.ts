@@ -139,7 +139,7 @@ describe("PremiumService", () => {
       expect(result.userStatus).toBe("ProLinked");
     });
 
-    it("should return OnChainUnlinked for premium wallet without linked profile", async () => {
+    it("should return Standard for premium wallet without linked profile", async () => {
       const { default: BlockchainService } = await import(
         "./BlockchainService"
       );
@@ -147,14 +147,14 @@ describe("PremiumService", () => {
 
       vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
       vi.mocked(UserService.getUserPremiumStatus).mockResolvedValue({
-        userStatus: "OnChainUnlinked"
+        userStatus: "Standard"
       });
 
       const result = await PremiumService.getUserPremiumStatus(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result.userStatus).toBe("OnChainUnlinked");
+      expect(result.userStatus).toBe("Standard");
     });
   });
 

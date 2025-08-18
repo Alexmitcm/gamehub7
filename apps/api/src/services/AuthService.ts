@@ -574,13 +574,18 @@ export class AuthService {
       let selectedProfileId = profileId;
       if (!selectedProfileId) {
         logger.info("No profile ID in token, getting available profiles");
-        const availableProfiles =
-          await this.getAvailableProfiles(normalizedAddress);
-        if (availableProfiles.profiles.length > 0) {
-          selectedProfileId = availableProfiles.profiles[0].id;
-          logger.info(`Selected first available profile: ${selectedProfileId}`);
-        } else {
-          throw new Error("No profiles found for this wallet");
+        try {
+          const availableProfiles =
+            await this.getAvailableProfiles(normalizedAddress);
+          if (availableProfiles.profiles.length > 0) {
+            selectedProfileId = availableProfiles.profiles[0].id;
+            logger.info(`Selected first available profile: ${selectedProfileId}`);
+          } else {
+            throw new Error("No profiles found for this wallet");
+          }
+        } catch (profileError) {
+          logger.error("Error getting available profiles:", profileError);
+          throw new Error("Failed to get user profiles");
         }
       }
 

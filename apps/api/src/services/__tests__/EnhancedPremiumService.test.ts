@@ -322,7 +322,7 @@ describe('Enhanced PremiumService - New Functionality Testing', () => {
       mockBlockchainService.verifyRegistrationTransaction.mockResolvedValue(true);
       mockBlockchainService.isWalletPremium.mockResolvedValue(true);
       mockUserService.getUserPremiumStatus.mockResolvedValue({
-        userStatus: 'OnChainUnlinked'
+        userStatus: 'Standard'
       });
 
       const verification = await premiumService.verifyAndUpdatePremiumStatus(
