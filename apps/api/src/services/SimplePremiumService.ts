@@ -101,9 +101,15 @@ export class SimplePremiumService {
       }
 
       // Step 2: Check if wallet already has a linked profile
-      const existingLink = await prisma.premiumProfile.findUnique({
-        where: { walletAddress: normalizedAddress }
-      });
+      let existingLink = null;
+      try {
+        existingLink = await prisma.premiumProfile.findUnique({
+          where: { walletAddress: normalizedAddress }
+        });
+      } catch (dbError) {
+        logger.warn(`Database operation failed for ${normalizedAddress}, assuming no linked profile:`, dbError);
+        // Continue without database access
+      }
 
       if (existingLink) {
         // Profile is already linked
@@ -151,23 +157,34 @@ export class SimplePremiumService {
       }
 
       // Check if already linked
-      const existingLink = await prisma.premiumProfile.findUnique({
-        where: { walletAddress: normalizedAddress }
-      });
+      let existingLink = null;
+      try {
+        existingLink = await prisma.premiumProfile.findUnique({
+          where: { walletAddress: normalizedAddress }
+        });
+      } catch (dbError) {
+        logger.warn(`Database operation failed for ${normalizedAddress}, assuming no linked profile:`, dbError);
+        // Continue without database access
+      }
 
       if (existingLink) {
         throw new Error("Wallet already has a linked premium profile");
       }
 
       // Create the permanent link
-      await prisma.premiumProfile.create({
-        data: {
-          isActive: true,
-          linkedAt: new Date(),
-          profileId,
-          walletAddress: normalizedAddress
-        }
-      });
+      try {
+        await prisma.premiumProfile.create({
+          data: {
+            isActive: true,
+            linkedAt: new Date(),
+            profileId,
+            walletAddress: normalizedAddress
+          }
+        });
+      } catch (dbError) {
+        logger.error(`Failed to create premium profile link for ${normalizedAddress}:`, dbError);
+        throw new Error("Database operation failed - unable to link profile");
+      }
 
       logger.info(
         `Successfully linked profile ${profileId} to wallet ${normalizedAddress}`
