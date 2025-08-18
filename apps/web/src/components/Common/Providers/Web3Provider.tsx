@@ -6,10 +6,10 @@ import { createConfig, WagmiProvider } from "wagmi";
 import { arbitrum } from "wagmi/chains";
 import { injected, walletConnect } from "wagmi/connectors";
 import getRpcWithProxy from "@/helpers/getRpcWithProxy";
-import { 
-  isMetaMaskAvailable, 
-  isBraveWalletAvailable, 
-  isCoinbaseWalletAvailable 
+import {
+  isBraveWalletAvailable,
+  isCoinbaseWalletAvailable,
+  isMetaMaskAvailable
 } from "@/helpers/walletDetection";
 
 // Comprehensive warning suppression for Wagmi history restoration
@@ -39,9 +39,8 @@ const suppressWagmiWarnings = () => {
       typeof message === "object" &&
       message &&
       "context" in message &&
-      "msg" in message &&
       message.context === "core/history" &&
-      message.msg === "Restore will override. history"
+      (message.msg === "Restore will override. history" || message.level === 50)
     ) {
       return;
     }
@@ -54,6 +53,16 @@ const suppressWagmiWarnings = () => {
     if (
       typeof message === "string" &&
       message.includes("history restoration")
+    ) {
+      return;
+    }
+    // Handle object-based errors from Wagmi
+    if (
+      typeof message === "object" &&
+      message &&
+      "context" in message &&
+      message.context === "core/history" &&
+      (message.msg === "Restore will override. history" || message.level === 50)
     ) {
       return;
     }
@@ -71,7 +80,8 @@ const suppressWagmiWarnings = () => {
           logData &&
           typeof logData === "object" &&
           logData.context === "core/history" &&
-          logData.msg === "Restore will override. history"
+          (logData.msg === "Restore will override. history" ||
+            logData.level === 50)
         ) {
           return;
         }
@@ -88,7 +98,8 @@ const suppressWagmiWarnings = () => {
           logData &&
           typeof logData === "object" &&
           logData.context === "core/history" &&
-          logData.msg === "Restore will override. history"
+          (logData.msg === "Restore will override. history" ||
+            logData.level === 50)
         ) {
           return;
         }
@@ -105,7 +116,8 @@ const suppressWagmiWarnings = () => {
           logData &&
           typeof logData === "object" &&
           logData.context === "core/history" &&
-          logData.msg === "Restore will override. history"
+          (logData.msg === "Restore will override. history" ||
+            logData.level === 50)
         ) {
           return;
         }

@@ -109,13 +109,14 @@ const PremiumRegistration = () => {
   const isButtonDisabled =
     isLoading ||
     (isMetaMaskWallet && isWrongNetwork) ||
-    !referrerStatus.isValid ||
+    !referrerStatus?.isValid ||
     Number.parseFloat(usdtBalance) < 200 ||
     !isConnected ||
     !referrerAddress.trim();
 
   // Get border color based on validation status
   const getBorderColor = () => {
+    if (!referrerStatus) return "border-gray-300";
     if (referrerStatus.isLoading) return "border-gray-300";
     if (referrerStatus.isValid) return "border-green-500";
     if (referrerStatus.message && !referrerStatus.isValid)
@@ -334,7 +335,7 @@ const PremiumRegistration = () => {
           />
 
           {/* Validation Status */}
-          {referrerStatus.message && (
+          {referrerStatus?.message && (
             <div className="mt-2 flex items-center gap-2">
               {referrerStatus.isLoading && <Spinner className="size-4" />}
               <span

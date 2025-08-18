@@ -1,11 +1,11 @@
 import logger from "@hey/helpers/logger";
 import { Hono } from "hono";
 import { z } from "zod";
+import AuthController from "../controllers/AuthController";
 import AuthService, {
   type LoginRequest,
   type SyncLensRequest
 } from "../services/AuthService";
-import AuthController from "../controllers/AuthController";
 
 const auth = new Hono();
 
@@ -445,19 +445,25 @@ auth.post("/user-status", async (c) => {
     const { walletAddress, lensProfileId } = body;
 
     if (!walletAddress) {
-      return c.json({
-        success: false,
-        message: "Wallet address is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address is required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.getEnhancedUserStatus(c);
   } catch (error) {
     logger.error("Error getting user status:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -471,19 +477,25 @@ auth.post("/login-enhanced", async (c) => {
     const { walletAddress, lensProfileId } = body;
 
     if (!walletAddress) {
-      return c.json({
-        success: false,
-        message: "Wallet address is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address is required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.handleEnhancedUserLogin(c);
   } catch (error) {
     logger.error("Error in enhanced login:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -497,19 +509,25 @@ auth.post("/enhanced-user-status", async (c) => {
     const { walletAddress, lensProfileId, walletProvider, networkId } = body;
 
     if (!walletAddress) {
-      return c.json({
-        success: false,
-        message: "Wallet address is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address is required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.getEnhancedUserStatus(c);
   } catch (error) {
     logger.error("Error getting enhanced user status:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -523,21 +541,31 @@ auth.post("/validate-premium-requirements", async (c) => {
     const { walletAddress, walletProvider, networkId, lensProfileId } = body;
 
     if (!walletAddress) {
-      return c.json({
-        success: false,
-        message: "Wallet address is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address is required",
+          success: false
+        },
+        400
+      );
     }
 
     // Use the premium registration controller for validation
-    const PremiumRegistrationController = (await import("../controllers/PremiumRegistrationController")).default;
-    return PremiumRegistrationController.validatePremiumRegistrationRequirements(c);
+    const PremiumRegistrationController = (
+      await import("../controllers/PremiumRegistrationController")
+    ).default;
+    return PremiumRegistrationController.validatePremiumRegistrationRequirements(
+      c
+    );
   } catch (error) {
     logger.error("Error validating premium requirements:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -548,21 +576,27 @@ auth.post("/validate-premium-requirements", async (c) => {
 auth.get("/premium-access", async (c) => {
   try {
     const { walletAddress } = c.req.query();
-    
+
     if (!walletAddress) {
-      return c.json({
-        success: false,
-        message: "Wallet address is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address is required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.checkPremiumAccess(c);
   } catch (error) {
     logger.error("Error checking premium access:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -573,21 +607,27 @@ auth.get("/premium-access", async (c) => {
 auth.get("/premium-wallet", async (c) => {
   try {
     const { lensProfileId } = c.req.query();
-    
+
     if (!lensProfileId) {
-      return c.json({
-        success: false,
-        message: "Lens profile ID is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Lens profile ID is required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.getPremiumWallet(c);
   } catch (error) {
     logger.error("Error getting premium wallet:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -598,21 +638,27 @@ auth.get("/premium-wallet", async (c) => {
 auth.get("/account-verification-status", async (c) => {
   try {
     const { walletAddress, profileId } = c.req.query();
-    
+
     if (!walletAddress || !profileId) {
-      return c.json({
-        success: false,
-        message: "Wallet address and profile ID are required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address and profile ID are required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.getAccountVerificationStatus(c);
   } catch (error) {
     logger.error("Error getting account verification status:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -623,21 +669,27 @@ auth.get("/account-verification-status", async (c) => {
 auth.get("/check-wallet-premium-eligibility", async (c) => {
   try {
     const { walletAddress } = c.req.query();
-    
+
     if (!walletAddress) {
-      return c.json({
-        success: false,
-        message: "Wallet address is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address is required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.checkWalletPremiumRegistrationEligibility(c);
   } catch (error) {
     logger.error("Error checking wallet premium eligibility:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -648,21 +700,27 @@ auth.get("/check-wallet-premium-eligibility", async (c) => {
 auth.get("/check-profile-premium-eligibility", async (c) => {
   try {
     const { walletAddress, profileId } = c.req.query();
-    
+
     if (!walletAddress || !profileId) {
-      return c.json({
-        success: false,
-        message: "Wallet address and profile ID are required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address and profile ID are required",
+          success: false
+        },
+        400
+      );
     }
 
     return AuthController.checkProfilePremiumRegistrationEligibility(c);
   } catch (error) {
     logger.error("Error checking profile premium eligibility:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
@@ -673,63 +731,99 @@ auth.get("/check-profile-premium-eligibility", async (c) => {
 auth.post("/test-enhanced-system", async (c) => {
   try {
     const body = await c.req.json();
-    const { walletAddress, lensProfileId, walletProvider, networkId, testType } = body;
+    const {
+      walletAddress,
+      lensProfileId,
+      walletProvider,
+      networkId,
+      testType
+    } = body;
 
     if (!walletAddress) {
-      return c.json({
-        success: false,
-        message: "Wallet address is required"
-      }, 400);
+      return c.json(
+        {
+          message: "Wallet address is required",
+          success: false
+        },
+        400
+      );
     }
 
     // Test different aspects of the enhanced system
     switch (testType) {
       case "user-status":
         return AuthController.getEnhancedUserStatus(c);
-      
-      case "premium-requirements":
+
+      case "premium-requirements": {
         // Use the premium registration controller for validation
-        const PremiumRegistrationController = (await import("../controllers/PremiumRegistrationController")).default;
-        return PremiumRegistrationController.validatePremiumRegistrationRequirements(c);
-      
-      case "reward-claiming":
-        const UserStatusService = (await import("../services/UserStatusService")).default;
+        const PremiumRegistrationController = (
+          await import("../controllers/PremiumRegistrationController")
+        ).default;
+        return PremiumRegistrationController.validatePremiumRegistrationRequirements(
+          c
+        );
+      }
+
+      case "reward-claiming": {
+        const UserStatusService = (
+          await import("../services/UserStatusService")
+        ).default;
         const userStatusService = new UserStatusService();
-        const rewardValidation = await userStatusService.validateWalletForRewardClaiming(walletAddress, lensProfileId);
-        
+        const rewardValidation =
+          await userStatusService.validateWalletForRewardClaiming(
+            walletAddress,
+            lensProfileId
+          );
+
         return c.json({
-          success: true,
           data: {
-            rewardValidation,
-            message: "Reward claiming validation completed"
-          }
+            message: "Reward claiming validation completed",
+            rewardValidation
+          },
+          success: true
         });
-      
-      case "wallet-separation":
-        const UserStatusService2 = (await import("../services/UserStatusService")).default;
+      }
+
+      case "wallet-separation": {
+        const UserStatusService2 = (
+          await import("../services/UserStatusService")
+        ).default;
         const userStatusService2 = new UserStatusService2();
-        const enhancedStatus = await userStatusService2.getEnhancedUserStatus(walletAddress, lensProfileId, walletProvider, networkId);
-        
+        const enhancedStatus = await userStatusService2.getEnhancedUserStatus(
+          walletAddress,
+          lensProfileId,
+          walletProvider,
+          networkId
+        );
+
         return c.json({
-          success: true,
           data: {
             enhancedStatus,
             message: "Wallet separation analysis completed"
-          }
+          },
+          success: true
         });
-      
+      }
+
       default:
-        return c.json({
-          success: false,
-          message: "Invalid test type. Use: user-status, premium-requirements, reward-claiming, or wallet-separation"
-        }, 400);
+        return c.json(
+          {
+            message:
+              "Invalid test type. Use: user-status, premium-requirements, reward-claiming, or wallet-separation",
+            success: false
+          },
+          400
+        );
     }
   } catch (error) {
     logger.error("Error in enhanced system testing:", error);
-    return c.json({
-      success: false,
-      message: "Internal server error"
-    }, 500);
+    return c.json(
+      {
+        message: "Internal server error",
+        success: false
+      },
+      500
+    );
   }
 });
 
