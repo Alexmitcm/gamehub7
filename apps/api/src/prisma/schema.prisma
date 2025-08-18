@@ -15,16 +15,20 @@ model Preference {
 }
 
 model PremiumProfile {
-  id            String    @id @default(cuid())
-  walletAddress String    @unique
-  profileId     String    @unique
-  isActive      Boolean   @default(true)
-  linkedAt      DateTime  @default(now())
-  deactivatedAt DateTime?
-  user          User      @relation(fields: [walletAddress], references: [walletAddress])
+  id                 String    @id @default(cuid())
+  walletAddress      String    @unique
+  profileId          String    @unique
+  walletType         String    @default("MetaMask") // MetaMask, Lens, Other
+  lensWalletAddress  String?   // For storing Lens wallet address separately
+  registrationTxHash String?   // Store transaction hash for verification
+  isActive           Boolean   @default(true)
+  linkedAt           DateTime  @default(now())
+  deactivatedAt      DateTime?
+  user               User      @relation(fields: [walletAddress], references: [walletAddress])
 
   @@index([walletAddress])
   @@index([profileId])
+  @@index([walletType])
 }
 
 model User {

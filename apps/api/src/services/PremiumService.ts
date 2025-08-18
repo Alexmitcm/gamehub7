@@ -37,7 +37,7 @@ export class PremiumService {
 
   /**
    * Get user's premium status with enhanced linking logic
-   * Returns: 'Standard' | 'OnChainUnlinked' | 'ProLinked'
+   * Returns: 'Standard' | 'ProLinked'
    */
   async getUserPremiumStatus(
     walletAddress: string
@@ -113,7 +113,7 @@ export class PremiumService {
    */
   async linkProfile(walletAddress: string, profileId: string): Promise<void> {
     try {
-      // Step 1: Verify wallet is premium on-chain
+      // Step 1: Verify wallet is premium on-chain using NodeSet
       const isPremium =
         await this.blockchainService.isWalletPremium(walletAddress);
       if (!isPremium) {
@@ -214,6 +214,86 @@ export class PremiumService {
     }
 
     return isValid;
+  }
+
+  /**
+   * Verify premium status using NodeSet data
+   * This addresses the requirement for immediate premium confirmation using NodeSet
+   */
+  async verifyAndUpdatePremiumStatus(walletAddress: string): Promise<{
+    success: boolean;
+    message: string;
+    userStatus?: UserPremiumStatus;
+  }> {
+    try {
+      logger.info(
+        `Verifying premium status for ${walletAddress} using NodeSet`
+      );
+
+      // Check if wallet is premium on-chain using NodeSet
+      const isPremium =
+        await this.blockchainService.isWalletPremium(walletAddress);
+      if (!isPremium) {
+        return {
+          message:
+            "Wallet is not premium on-chain. Please register on-chain first.",
+          success: false
+        };
+      }
+
+      // Get updated user status
+      const userStatus = await this.getUserPremiumStatus(walletAddress);
+
+      logger.info(
+        `Successfully verified premium status for ${walletAddress}. Status: ${userStatus.userStatus}`
+      );
+
+      return {
+        message: "Premium status verified successfully!",
+        success: true,
+        userStatus
+      };
+    } catch (error) {
+      logger.error(
+        `Error verifying premium status for ${walletAddress}:`,
+        error
+      );
+      return {
+        message:
+          "Failed to verify premium status. Please try again or contact support.",
+        success: false
+      };
+    }
+  }
+
+  /**
+   * Get premium rejection message for already linked wallets
+   * This provides user-friendly error message for Scenario 3
+   */
+  async getPremiumRejectionMessage(
+    walletAddress: string
+  ): Promise<string | null> {
+    return this.userService.getPremiumRejectionMessage(walletAddress);
+  }
+
+  /**
+   * Validate wallet requirements for premium registration
+   * Enforces MetaMask wallet and Arbitrum One network
+   */
+  async validateWalletRequirements(
+    walletAddress: string,
+    chainId?: number,
+    provider?: string
+  ): Promise<{
+    isValid: boolean;
+    errors: string[];
+    walletInfo: any;
+  }> {
+    return this.userService.validateWalletRequirements(
+      walletAddress,
+      chainId,
+      provider
+    );
   }
 
   async registerUser(
