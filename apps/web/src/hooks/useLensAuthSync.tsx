@@ -47,7 +47,9 @@ export const useLensAuthSync = () => {
         const currentTime = Math.floor(Date.now() / 1000);
         
         if (payload.exp && payload.exp < currentTime) {
-          throw new Error("Lens token is expired");
+          console.log("🔍 Lens token is expired, clearing authentication state");
+          signOut(); // Clear the expired token
+          throw new Error("Lens token is expired. Please reconnect your wallet to get a fresh token.");
         }
         
         if (!payload.sub) {
@@ -105,6 +107,12 @@ export const useLensAuthSync = () => {
       ) {
         console.log("🔍 Clearing invalid/expired Lens token due to sync failure");
         signOut();
+        
+        // Show user-friendly message for expired tokens
+        if (error.message.includes("expired")) {
+          console.log("🔍 Token expired - user should reconnect wallet");
+          // You could add a toast notification here if you have a toast system
+        }
       }
     },
     onSuccess: (data) => {
@@ -126,6 +134,25 @@ export const useLensAuthSync = () => {
     // Early return if conditions are not met (but hooks are still called)
     if (!accessToken || backendToken || isPending || isInitialized) {
       return;
+    }
+
+    // Check if token is expired before attempting sync
+    try {
+      const tokenParts = accessToken.split(".");
+      if (tokenParts.length === 3) {
+        const base64 = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const payload = JSON.parse(atob(padded));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (payload.exp && payload.exp < currentTime) {
+          console.log("🔍 Auto-sync skipped - token is expired");
+          signOut(); // Clear the expired token
+          return;
+        }
+      }
+    } catch (error) {
+      console.warn("🔍 Could not check token expiration, proceeding with sync:", error);
     }
 
     // Mark as initialized to prevent multiple calls
