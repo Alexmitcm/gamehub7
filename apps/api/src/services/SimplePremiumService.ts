@@ -117,20 +117,19 @@ export class SimplePremiumService {
         };
       }
 
-      // Step 3: Auto-link current profile if provided
-      if (currentProfileId) {
-        await this.linkProfile(normalizedAddress, currentProfileId);
-
+      // Step 3: Check if current profile is the linked one
+      if (currentProfileId && existingLink && existingLink.profileId === currentProfileId) {
+        // This profile is the exclusive premium account
         return {
           linkedProfile: {
-            linkedAt: new Date().toISOString(),
-            profileId: currentProfileId
+            linkedAt: existingLink.linkedAt.toISOString(),
+            profileId: existingLink.profileId
           },
           userStatus: "ProLinked"
         };
       }
 
-      // Step 4: Premium wallet but no profile to link
+      // Step 4: Premium wallet but current profile is not the linked one (or no profile provided)
       return { userStatus: "Standard" };
     } catch (error) {
       logger.error(`Error getting premium status for ${walletAddress}:`, error);

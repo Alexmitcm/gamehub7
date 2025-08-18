@@ -137,33 +137,34 @@ export class UserStatusService {
           }
         | undefined;
 
-      if (user?.premiumProfile) {
-        // Only show linked profile if it's the current profile being checked
-        if (lensProfileId && user.premiumProfile.profileId === lensProfileId) {
-          linkedProfile = {
-            handle: user.premiumProfile.profileId, // You might want to store handle separately
-            linkedAt: user.premiumProfile.linkedAt.toISOString(), // Convert Date to ISO string
-            profileId: user.premiumProfile.profileId
-          };
-        }
+      // Only show linked profile if this specific profile is the exclusive premium account
+      if (
+        user?.premiumProfile &&
+        lensProfileId &&
+        user.premiumProfile.profileId === lensProfileId
+      ) {
+        linkedProfile = {
+          handle: user.premiumProfile.profileId, // You might want to store handle separately
+          linkedAt: user.premiumProfile.linkedAt.toISOString(), // Convert Date to ISO string
+          profileId: user.premiumProfile.profileId
+        };
       }
 
       // Determine user status based on the new logic
       let status: UserStatus = UserStatus.Standard;
 
       if (isPremiumOnChain) {
-        if (linkedProfile) {
-          // Check if this specific profile is the exclusive premium account
-          if (lensProfileId && linkedProfile.profileId === lensProfileId) {
-            // This profile is the exclusive premium account
-            status = UserStatus.Premium;
-          } else {
-            // This profile is NOT the exclusive premium account - should be Standard
-            status = UserStatus.Standard;
-          }
+        // Check if this specific profile is the exclusive premium account
+        if (
+          lensProfileId &&
+          user?.premiumProfile?.profileId === lensProfileId
+        ) {
+          // This profile is the exclusive premium account
+          status = UserStatus.Premium;
         } else {
-          // Premium wallet but no profile linked yet
-          status = UserStatus.OnChainUnlinked;
+          // This profile is NOT the exclusive premium account - should be Standard
+          // Even if the wallet is premium, this profile is not the linked one
+          status = UserStatus.Standard;
         }
       }
 
