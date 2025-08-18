@@ -8,6 +8,8 @@ export interface LoginRequest {
   lensProfileId?: string;
   signature?: string;
   message?: string;
+  walletProvider?: string;
+  networkId?: number;
 }
 
 export interface LoginResponse {
@@ -23,6 +25,11 @@ export interface LoginResponse {
   };
   premiumWalletAddress?: string;
   lensWalletAddress?: string;
+  walletSeparation?: {
+    premiumWalletAddress?: string;
+    lensWalletAddress?: string;
+    isWalletSeparated: boolean;
+  };
 }
 
 export class AuthController {
@@ -33,9 +40,9 @@ export class AuthController {
   }
 
   /**
-   * Handle user login/registration flow
+   * Handle enhanced user login/registration flow
    */
-  async handleUserLogin(ctx: Context): Promise<Response> {
+  async handleEnhancedUserLogin(ctx: Context): Promise<Response> {
     try {
       const request: LoginRequest = await ctx.req.json();
       
@@ -46,22 +53,31 @@ export class AuthController {
         }, 400);
       }
 
-      // Handle the login flow with the new logic
+      // Handle the login flow with enhanced logic
       const loginResult = await this.userStatusService.handleUserLogin(
         request.walletAddress,
         request.lensProfileId
       );
 
       if (loginResult.success) {
+        // Get enhanced user status with wallet separation
+        const enhancedStatus = await this.userStatusService.getEnhancedUserStatus(
+          request.walletAddress,
+          request.lensProfileId,
+          request.walletProvider,
+          request.networkId
+        );
+
         return ctx.json({
           success: true,
           message: loginResult.message,
           userStatus: loginResult.userStatus.status,
-          requiresMetaMaskConnection: loginResult.requiresMetaMaskConnection,
-          requiresNetworkSwitch: loginResult.requiresNetworkSwitch,
-          linkedProfile: loginResult.userStatus.linkedProfile,
-          premiumWalletAddress: loginResult.userStatus.premiumWalletAddress,
-          lensWalletAddress: loginResult.userStatus.lensWalletAddress
+          requiresMetaMaskConnection: enhancedStatus.walletRequirements.requiresMetaMaskConnection,
+          requiresNetworkSwitch: enhancedStatus.walletRequirements.requiresNetworkSwitch,
+          linkedProfile: enhancedStatus.linkedProfile,
+          premiumWalletAddress: enhancedStatus.walletSeparation.premiumWalletAddress,
+          lensWalletAddress: enhancedStatus.walletSeparation.lensWalletAddress,
+          walletSeparation: enhancedStatus.walletSeparation
         });
       } else {
         return ctx.json({
@@ -71,7 +87,7 @@ export class AuthController {
         }, 400);
       }
     } catch (error) {
-      logger.error("Error handling user login:", error);
+      logger.error("Error handling enhanced user login:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
@@ -80,11 +96,11 @@ export class AuthController {
   }
 
   /**
-   * Get user's current status
+   * Get enhanced user status with wallet separation
    */
-  async getUserStatus(ctx: Context): Promise<Response> {
+  async getEnhancedUserStatus(ctx: Context): Promise<Response> {
     try {
-      const { walletAddress, lensProfileId } = ctx.req.query();
+      const { walletAddress, lensProfileId, walletProvider, networkId } = ctx.req.query();
       
       if (!walletAddress) {
         return ctx.json({
@@ -93,9 +109,11 @@ export class AuthController {
         }, 400);
       }
 
-      const result = await this.userStatusService.getComprehensiveUserStatus(
+      const result = await this.userStatusService.getEnhancedUserStatus(
         walletAddress,
-        lensProfileId
+        lensProfileId,
+        walletProvider,
+        networkId
       );
 
       return ctx.json({
@@ -103,7 +121,7 @@ export class AuthController {
         data: result
       });
     } catch (error) {
-      logger.error("Error getting user status:", error);
+      logger.error("Error getting enhanced user status:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
@@ -172,6 +190,99 @@ export class AuthController {
       });
     } catch (error) {
       logger.error("Error getting premium wallet:", error);
+      return ctx.json({
+        success: false,
+        message: "Internal server error"
+      }, 500);
+    }
+  }
+
+  /**
+   * Get account verification status for display in account selection
+   */
+  async getAccountVerificationStatus(ctx: Context): Promise<Response> {
+    try {
+      const { walletAddress, profileId } = ctx.req.query();
+      
+      if (!walletAddress || !profileId) {
+        return ctx.json({
+          success: false,
+          message: "Wallet address and profile ID are required"
+        }, 400);
+      }
+
+      const verificationStatus = await this.userStatusService.getAccountVerificationStatus(
+        walletAddress,
+        profileId
+      );
+
+      return ctx.json({
+        success: true,
+        data: verificationStatus
+      });
+    } catch (error) {
+      logger.error("Error getting account verification status:", error);
+      return ctx.json({
+        success: false,
+        message: "Internal server error"
+      }, 500);
+    }
+  }
+
+  /**
+   * Check if wallet can register for premium (strict rule enforcement)
+   */
+  async checkWalletPremiumRegistrationEligibility(ctx: Context): Promise<Response> {
+    try {
+      const { walletAddress } = ctx.req.query();
+      
+      if (!walletAddress) {
+        return ctx.json({
+          success: false,
+          message: "Wallet address is required"
+        }, 400);
+      }
+
+      const eligibility = await this.userStatusService.canWalletRegisterForPremium(walletAddress);
+
+      return ctx.json({
+        success: true,
+        data: eligibility
+      });
+    } catch (error) {
+      logger.error("Error checking wallet premium registration eligibility:", error);
+      return ctx.json({
+        success: false,
+        message: "Internal server error"
+      }, 500);
+    }
+  }
+
+  /**
+   * Check if profile can attempt premium registration
+   */
+  async checkProfilePremiumRegistrationEligibility(ctx: Context): Promise<Response> {
+    try {
+      const { walletAddress, profileId } = ctx.req.query();
+      
+      if (!walletAddress || !profileId) {
+        return ctx.json({
+          success: false,
+          message: "Wallet address and profile ID are required"
+        }, 400);
+      }
+
+      const eligibility = await this.userStatusService.canProfileAttemptPremiumRegistration(
+        walletAddress,
+        profileId
+      );
+
+      return ctx.json({
+        success: true,
+        data: eligibility
+      });
+    } catch (error) {
+      logger.error("Error checking profile premium registration eligibility:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"

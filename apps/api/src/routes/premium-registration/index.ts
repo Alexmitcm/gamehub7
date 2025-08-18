@@ -127,4 +127,36 @@ app.post("/comprehensive-status", async (ctx) => {
   return controller.getComprehensiveUserStatus(ctx);
 });
 
+/**
+ * POST /premium-registration/validate-requirements
+ * Validate MetaMask wallet and network requirements for premium registration
+ */
+app.post("/validate-requirements", async (ctx) => {
+  return controller.validatePremiumRegistrationRequirements(ctx);
+});
+
+/**
+ * POST /premium-registration/enhanced-register
+ * Enhanced premium registration with MetaMask and network validation
+ */
+app.post("/enhanced-register", zValidator("json", registrationRequestSchema), async (ctx) => {
+  return controller.handleEnhancedPremiumRegistration(ctx);
+});
+
+/**
+ * POST /premium-registration/strict-register
+ * Strict premium registration with one-wallet-one-premium-account rule enforcement
+ */
+app.post("/strict-register", zValidator("json", registrationRequestSchema), async (ctx) => {
+  return controller.handleStrictPremiumRegistration(ctx);
+});
+
+/**
+ * GET /premium-registration/wallet-requirements
+ * Get wallet requirements for premium registration
+ */
+app.get("/wallet-requirements", async (ctx) => {
+  return controller.getWalletRequirements(ctx);
+});
+
 export default app;

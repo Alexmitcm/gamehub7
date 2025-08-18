@@ -10,6 +10,8 @@ export interface PremiumRegistrationRequest {
   lensProfileId?: string;
   lensWalletAddress?: string;
   transactionHash?: string;
+  walletProvider?: string;
+  networkId?: number;
 }
 
 export interface PremiumRegistrationResponse {
@@ -402,6 +404,214 @@ export class PremiumRegistrationController {
     });
   } catch (error) {
       logger.error("Error getting comprehensive user status:", error);
+      return ctx.json({
+        success: false,
+        message: "Internal server error"
+      }, 500);
+    }
+  }
+
+  /**
+   * Validate premium registration requirements
+   */
+  async validatePremiumRegistrationRequirements(ctx: Context): Promise<Response> {
+    try {
+      const { walletAddress, walletProvider, networkId, lensProfileId } = await ctx.req.json();
+      
+      if (!walletAddress) {
+        return ctx.json({
+          success: false,
+          message: "Wallet address is required"
+        }, 400);
+      }
+
+      // Validate MetaMask wallet and network
+      const validationResult = await this.userStatusService.validateMetaMaskWallet(
+        walletAddress,
+        walletProvider,
+        networkId
+      );
+
+      if (!validationResult.isValid) {
+        return ctx.json({
+          success: false,
+          message: validationResult.message,
+          requiresMetaMaskConnection: !validationResult.isMetaMaskWallet,
+          requiresNetworkSwitch: validationResult.requiresNetworkSwitch,
+          networkId: validationResult.networkId
+        }, 400);
+      }
+
+      // Get enhanced user status
+      const userStatus = await this.userStatusService.getEnhancedUserStatus(
+        walletAddress,
+        lensProfileId,
+        walletProvider,
+        networkId
+      );
+
+      return ctx.json({
+        success: true,
+        message: "Premium registration requirements validated",
+        data: {
+          userStatus,
+          walletValidation: validationResult,
+          canProceed: validationResult.isValid
+        }
+      });
+    } catch (error) {
+      logger.error("Error validating premium registration requirements:", error);
+      return ctx.json({
+        success: false,
+        message: "Internal server error"
+      }, 500);
+    }
+  }
+
+  /**
+   * Enhanced premium registration with strict rule validation
+   */
+  async handleStrictPremiumRegistration(ctx: Context): Promise<Response> {
+    try {
+      const request: PremiumRegistrationRequest = await ctx.req.json();
+      
+      if (!request.userAddress || !request.referrerAddress) {
+        return ctx.json({
+          success: false,
+          message: "User address and referrer address are required"
+        }, 400);
+      }
+
+      // STRICT RULE ENFORCEMENT: Check if wallet can register for premium
+      const walletEligibility = await this.userStatusService.canWalletRegisterForPremium(request.userAddress);
+      
+      if (!walletEligibility.canRegister) {
+        return ctx.json({
+          success: false,
+          message: walletEligibility.reason,
+          existingPremiumAccount: walletEligibility.existingPremiumAccount,
+          requiresProfileLinking: true
+        }, 400);
+      }
+
+      // If lensProfileId is provided, check if this profile can attempt registration
+      if (request.lensProfileId) {
+        const profileEligibility = await this.userStatusService.canProfileAttemptPremiumRegistration(
+          request.userAddress,
+          request.lensProfileId
+        );
+        
+        if (!profileEligibility.canAttempt) {
+          return ctx.json({
+            success: false,
+            message: profileEligibility.reason,
+            existingPremiumAccount: profileEligibility.existingPremiumAccount,
+            isExclusivePremium: profileEligibility.isExclusivePremium,
+            requiresProfileLinking: true
+          }, 400);
+        }
+      }
+
+      // Validate MetaMask wallet and network first
+      const validationResult = await this.userStatusService.validateMetaMaskWallet(
+        request.userAddress,
+        request.walletProvider,
+        request.networkId
+      );
+
+      if (!validationResult.isValid) {
+        return ctx.json({
+          success: false,
+          message: validationResult.message,
+          requiresMetaMaskConnection: !validationResult.isMetaMaskWallet,
+          requiresNetworkSwitch: validationResult.requiresNetworkSwitch,
+          networkId: validationResult.networkId
+        }, 400);
+      }
+
+      // Check if user is already premium
+      const currentStatus = await this.userStatusService.getUserStatus(
+        request.userAddress,
+        request.lensProfileId
+      );
+
+      if (currentStatus.status === UserStatus.Premium) {
+        return ctx.json({
+          success: false,
+          message: "User is already premium",
+          userStatus: currentStatus.status
+        });
+      }
+
+      // Check if referrer is valid
+      const isReferrerValid = await this.smartContractService.isWalletPremium(request.referrerAddress);
+      if (!isReferrerValid) {
+        return ctx.json({
+          success: false,
+          message: "Invalid referrer address",
+          userStatus: currentStatus.status
+        });
+      }
+
+      // Proceed with registration
+      const result = await this.userStatusService.handlePremiumRegistrationCompletion(
+        request.userAddress,
+        request.transactionHash || "",
+        request.lensProfileId
+      );
+
+      return ctx.json({
+        success: result.success,
+        message: result.message,
+        userStatus: result.userStatus.status,
+        linkedProfile: result.userStatus.linkedProfile,
+        rejectionReason: result.rejectionReason
+      });
+    } catch (error) {
+      logger.error("Error in strict premium registration:", error);
+      return ctx.json({
+        success: false,
+        message: "Internal server error"
+      }, 500);
+    }
+  }
+
+  /**
+   * Get wallet requirements for premium registration
+   */
+  async getWalletRequirements(ctx: Context): Promise<Response> {
+    try {
+      const { walletAddress, lensProfileId } = ctx.req.query();
+      
+      if (!walletAddress) {
+        return ctx.json({
+          success: false,
+          message: "Wallet address is required"
+        }, 400);
+      }
+
+      // Get enhanced user status without wallet validation
+      const userStatus = await this.userStatusService.getEnhancedUserStatus(
+        walletAddress,
+        lensProfileId
+      );
+
+      return ctx.json({
+        success: true,
+        message: "Wallet requirements retrieved",
+        data: {
+          userStatus,
+          requirements: {
+            requiresMetaMaskConnection: userStatus.walletRequirements.requiresMetaMaskConnection,
+            requiresNetworkSwitch: userStatus.walletRequirements.requiresNetworkSwitch,
+            isMetaMaskWallet: userStatus.walletRequirements.isMetaMaskWallet,
+            networkId: userStatus.walletRequirements.networkId
+          },
+          walletSeparation: userStatus.walletSeparation
+        }
+      });
+    } catch (error) {
+      logger.error("Error getting wallet requirements:", error);
       return ctx.json({
         success: false,
         message: "Internal server error"
