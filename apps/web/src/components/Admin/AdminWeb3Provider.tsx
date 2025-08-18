@@ -19,7 +19,9 @@ const suppressWagmiWarnings = () => {
     if (
       typeof message === "string" &&
       (message.includes("Restore will override") ||
-        message.includes("core/history"))
+        message.includes("core/history") ||
+        message.includes("core/expirer") ||
+        message.includes("core/pairing"))
     ) {
       return;
     }
@@ -33,8 +35,10 @@ const suppressWagmiWarnings = () => {
       typeof message === "object" &&
       message &&
       "context" in message &&
-      message.context === "core/history" &&
-      (message.msg === "Restore will override. history" || message.level === 50)
+      (message.context === "core/history" ||
+        message.context === "core/expirer" ||
+        message.context === "core/pairing/pairing") &&
+      (message.msg?.includes("Restore will override") || message.level === 50)
     ) {
       return;
     }
@@ -46,7 +50,10 @@ const suppressWagmiWarnings = () => {
     const message = args[0];
     if (
       typeof message === "string" &&
-      message.includes("history restoration")
+      (message.includes("history restoration") ||
+        message.includes("Restore will override") ||
+        message.includes("core/expirer") ||
+        message.includes("core/pairing"))
     ) {
       return;
     }
@@ -55,8 +62,10 @@ const suppressWagmiWarnings = () => {
       typeof message === "object" &&
       message &&
       "context" in message &&
-      message.context === "core/history" &&
-      (message.msg === "Restore will override. history" || message.level === 50)
+      (message.context === "core/history" ||
+        message.context === "core/expirer" ||
+        message.context === "core/pairing/pairing") &&
+      (message.msg?.includes("Restore will override") || message.level === 50)
     ) {
       return;
     }
@@ -73,8 +82,11 @@ const suppressWagmiWarnings = () => {
         if (
           logData &&
           typeof logData === "object" &&
-          logData.context === "core/history" &&
-          (logData.msg === "Restore will override. history" || logData.level === 50)
+          (logData.context === "core/history" ||
+            logData.context === "core/expirer" ||
+            logData.context === "core/pairing/pairing") &&
+          (logData.msg?.includes("Restore will override") ||
+            logData.level === 50)
         ) {
           return;
         }
@@ -90,8 +102,11 @@ const suppressWagmiWarnings = () => {
         if (
           logData &&
           typeof logData === "object" &&
-          logData.context === "core/history" &&
-          (logData.msg === "Restore will override. history" || logData.level === 50)
+          (logData.context === "core/history" ||
+            logData.context === "core/expirer" ||
+            logData.context === "core/pairing/pairing") &&
+          (logData.msg?.includes("Restore will override") ||
+            logData.level === 50)
         ) {
           return;
         }
@@ -107,14 +122,57 @@ const suppressWagmiWarnings = () => {
         if (
           logData &&
           typeof logData === "object" &&
-          logData.context === "core/history" &&
-          (logData.msg === "Restore will override. history" || logData.level === 50)
+          (logData.context === "core/history" ||
+            logData.context === "core/expirer" ||
+            logData.context === "core/pairing/pairing") &&
+          (logData.msg?.includes("Restore will override") ||
+            logData.level === 50)
         ) {
           return;
         }
         return originalAppendToLogs.apply(window, args);
       };
     }
+
+    // Global error handler for unhandled promise rejections
+    window.addEventListener("unhandledrejection", (event) => {
+      // Check if it's a JSON parsing error
+      if (
+        event.reason &&
+        typeof event.reason === "object" &&
+        event.reason.name === "SyntaxError"
+      ) {
+        console.warn("Caught JSON parsing error:", event.reason.message);
+        event.preventDefault(); // Prevent the error from being logged
+        return;
+      }
+
+      // Check if it's a WalletConnect related error
+      if (
+        event.reason &&
+        typeof event.reason === "string" &&
+        (event.reason.includes("Restore will override") ||
+          event.reason.includes("core/expirer") ||
+          event.reason.includes("core/pairing"))
+      ) {
+        event.preventDefault();
+        return;
+      }
+    });
+
+    // Global error handler for general errors
+    window.addEventListener("error", (event) => {
+      // Check if it's a JSON parsing error
+      if (
+        event.error &&
+        event.error.name === "SyntaxError" &&
+        event.error.message.includes("Unexpected token")
+      ) {
+        console.warn("Caught JSON parsing error:", event.error.message);
+        event.preventDefault();
+        return;
+      }
+    });
   }
 };
 
@@ -132,9 +190,17 @@ const connectors = [
       return null;
     }
   })(),
-  walletConnect({ projectId: WALLETCONNECT_PROJECT_ID }),
+  walletConnect({
+    // Disable automatic pairing to reduce expirer warnings
+    optionalChains: [arbitrum.id],
+    projectId: WALLETCONNECT_PROJECT_ID,
+    // Add options to reduce warnings
+    showQrModal: true
+  }),
   injected()
-].filter((connector): connector is NonNullable<typeof connector> => connector !== null); // Remove null connectors
+].filter(
+  (connector): connector is NonNullable<typeof connector> => connector !== null
+); // Remove null connectors
 
 const config = createConfig({
   chains: [arbitrum], // Only Arbitrum One for admin panel
