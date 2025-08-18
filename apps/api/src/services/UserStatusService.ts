@@ -129,11 +129,13 @@ export class UserStatusService {
       });
 
       // Check if user has a linked profile
-      let linkedProfile: {
-        handle: string;
-        linkedAt: string;
-        profileId: string;
-      } | undefined;
+      let linkedProfile:
+        | {
+            handle: string;
+            linkedAt: string;
+            profileId: string;
+          }
+        | undefined;
 
       if (user?.premiumProfile) {
         // Only show linked profile if it's the current profile being checked
