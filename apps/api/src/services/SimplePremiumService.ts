@@ -107,29 +107,22 @@ export class SimplePremiumService {
       });
 
       if (existingLink) {
-        // Profile is already linked
-        return {
-          linkedProfile: {
-            linkedAt: existingLink.linkedAt.toISOString(),
-            profileId: existingLink.profileId
-          },
-          userStatus: "ProLinked"
-        };
+        // Check if current profile is the linked one
+        if (currentProfileId && existingLink.profileId === currentProfileId) {
+          // This profile is the exclusive premium account
+          return {
+            linkedProfile: {
+              linkedAt: existingLink.linkedAt.toISOString(),
+              profileId: existingLink.profileId
+            },
+            userStatus: "ProLinked"
+          };
+        }
+        // This profile is NOT the linked one - should be Standard
+        return { userStatus: "Standard" };
       }
 
-      // Step 3: Check if current profile is the linked one
-      if (currentProfileId && existingLink && existingLink.profileId === currentProfileId) {
-        // This profile is the exclusive premium account
-        return {
-          linkedProfile: {
-            linkedAt: existingLink.linkedAt.toISOString(),
-            profileId: existingLink.profileId
-          },
-          userStatus: "ProLinked"
-        };
-      }
-
-      // Step 4: Premium wallet but current profile is not the linked one (or no profile provided)
+      // Step 3: Premium wallet but no profile linked yet
       return { userStatus: "Standard" };
     } catch (error) {
       logger.error(`Error getting premium status for ${walletAddress}:`, error);
