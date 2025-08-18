@@ -89,6 +89,30 @@ auth.post("/login", async (c) => {
 });
 
 /**
+ * GET /api/auth/sync-lens/health
+ * Health check for sync-lens endpoint
+ */
+auth.get("/sync-lens/health", async (c) => {
+  try {
+    return c.json({
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      service: "Lens Sync Service"
+    });
+  } catch (error) {
+    logger.error("Health check failed:", error);
+    return c.json(
+      {
+        status: "unhealthy",
+        error: "Service is experiencing issues",
+        timestamp: new Date().toISOString()
+      },
+      500
+    );
+  }
+});
+
+/**
  * POST /api/auth/sync-lens
  * Sync Lens authentication with our backend system
  * Validates Lens access token and creates our own JWT
@@ -100,6 +124,7 @@ auth.post("/sync-lens", async (c) => {
     // Validate request body
     const validationResult = syncLensSchema.safeParse(body);
     if (!validationResult.success) {
+      logger.error("Sync-lens validation failed:", validationResult.error.errors);
       return c.json(
         {
           details: validationResult.error.errors,
@@ -123,13 +148,24 @@ auth.post("/sync-lens", async (c) => {
   } catch (error) {
     logger.error("Error in sync-lens endpoint:", error);
 
+    // Log the full error details for debugging
+    if (error instanceof Error) {
+      logger.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+
     const errorMessage =
       error instanceof Error ? error.message : "Lens sync failed";
 
     // Check if this is a client error (invalid token, etc.)
     if (
       errorMessage.includes("Invalid Lens access token") ||
-      errorMessage.includes("Invalid request data")
+      errorMessage.includes("Invalid request data") ||
+      errorMessage.includes("No profiles found") ||
+      errorMessage.includes("Authentication failed")
     ) {
       return c.json(
         {
@@ -143,7 +179,7 @@ auth.post("/sync-lens", async (c) => {
     // Server errors get 500
     return c.json(
       {
-        error: errorMessage,
+        error: "Server is experiencing issues. Please try again later.",
         success: false
       },
       500

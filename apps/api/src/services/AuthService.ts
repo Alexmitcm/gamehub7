@@ -628,79 +628,87 @@ export class AuthService {
         return null;
       }
 
-      // Decode the payload (second part of JWT)
-      const payload = JSON.parse(
-        Buffer.from(tokenParts[1], "base64").toString()
+      // Decode the payload (second part of JWT) with proper base64url handling
+      let payload;
+      try {
+        // Convert base64url to base64 by replacing URL-safe characters
+        const base64 = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+        // Add padding if needed
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const decoded = Buffer.from(padded, "base64").toString();
+        payload = JSON.parse(decoded);
+      } catch (decodeError) {
+        logger.error("Error decoding JWT payload:", decodeError);
+        // Continue to API verification fallback
+        payload = null;
+      }
+
+      if (payload) {
+        // Extract wallet address and profile ID from the JWT payload
+        const walletAddress = payload.sub; // 'sub' field contains the wallet address
+        const profileId = payload.profileId || payload.id; // Profile ID might be in different fields
+
+        if (!walletAddress) {
+          logger.error("No wallet address found in Lens JWT token");
+          return null;
+        }
+
+        // If we don't have a profile ID in the JWT, we'll need to get it from the user's profiles
+        if (!profileId) {
+          logger.info(
+            "No profile ID in JWT, will need to get from user profiles"
+          );
+          // For now, we'll return just the wallet address and let the calling code handle profile selection
+          return { profileId: "", walletAddress };
+        }
+
+        return { profileId, walletAddress };
+      }
+
+      // Fallback: try the Lens API verification (for non-JWT tokens or when JWT decoding fails)
+      logger.info("Attempting Lens API verification as fallback");
+      const response = await fetch("https://api.lens.xyz/verify", {
+        headers: {
+          Authorization: `Bearer ${lensAccessToken}`,
+          "Content-Type": "application/json"
+        },
+        method: "POST"
+      });
+
+      logger.info(
+        `Lens API verification response status: ${response.status}`
       );
 
-      // Extract wallet address and profile ID from the JWT payload
-      const walletAddress = payload.sub; // 'sub' field contains the wallet address
-      const profileId = payload.profileId || payload.id; // Profile ID might be in different fields
-
-      if (!walletAddress) {
-        logger.error("No wallet address found in Lens JWT token");
+      if (!response.ok) {
+        logger.error(
+          `Lens API verification failed: ${response.status} ${response.statusText}`
+        );
         return null;
       }
 
-      // If we don't have a profile ID in the JWT, we'll need to get it from the user's profiles
-      if (!profileId) {
-        logger.info(
-          "No profile ID in JWT, will need to get from user profiles"
-        );
-        // For now, we'll return just the wallet address and let the calling code handle profile selection
-        return { profileId: "", walletAddress };
+      const result = await response.json();
+      logger.info("Lens API verification result:", result);
+
+      if (!result.success || !result.data) {
+        logger.error("Lens API verification returned invalid response");
+        return null;
       }
 
+      // Extract wallet address and profile ID from the verification result
+      const { walletAddress, profileId } = result.data;
+
+      if (!walletAddress || !profileId) {
+        logger.error("Lens API verification missing required data");
+        return null;
+      }
+
+      logger.info(
+        `Lens API verification successful for wallet: ${walletAddress}, profile: ${profileId}`
+      );
       return { profileId, walletAddress };
     } catch (error) {
-      logger.error("Error decoding Lens JWT token:", error);
-
-      // Fallback: try the Lens API verification (for non-JWT tokens)
-      try {
-        logger.info("Attempting Lens API verification as fallback");
-        const response = await fetch("https://api.lens.xyz/verify", {
-          headers: {
-            Authorization: `Bearer ${lensAccessToken}`,
-            "Content-Type": "application/json"
-          },
-          method: "POST"
-        });
-
-        logger.info(
-          `Lens API verification response status: ${response.status}`
-        );
-
-        if (!response.ok) {
-          logger.error(
-            `Lens API verification failed: ${response.status} ${response.statusText}`
-          );
-          return null;
-        }
-
-        const result = await response.json();
-        logger.info("Lens API verification result:", result);
-
-        if (!result.success || !result.data) {
-          logger.error("Lens API verification returned invalid response");
-          return null;
-        }
-
-        // Extract wallet address and profile ID from the verification result
-        const { walletAddress, profileId } = result.data;
-
-        if (!walletAddress || !profileId) {
-          logger.error("Lens API verification missing required data");
-          return null;
-        }
-
-        logger.info(
-          `Lens API verification successful for wallet: ${walletAddress}, profile: ${profileId}`
-        );
-        return { profileId, walletAddress };
-      } catch (apiError) {
-        logger.error("Error validating Lens token with API:", apiError);
-        return null;
-      }
+      logger.error("Error validating Lens token:", error);
+      return null;
     }
   }
 }
