@@ -425,10 +425,28 @@ auth.post("/debug-token", async (c) => {
         );
       }
 
-      // Decode the payload (second part of JWT)
-      const payload = JSON.parse(
-        Buffer.from(tokenParts[1], "base64").toString()
-      );
+      // Decode the payload (second part of JWT) with proper base64url handling
+      let payload;
+      try {
+        // Convert base64url to base64 by replacing URL-safe characters
+        const base64 = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+        // Add padding if needed
+        const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+        const decoded = Buffer.from(padded, "base64").toString();
+        payload = JSON.parse(decoded);
+      } catch (decodeError) {
+        return c.json(
+          {
+            decodeError:
+              decodeError instanceof Error
+                ? decodeError.message
+                : "Unknown error",
+            error: "Failed to decode JWT token",
+            success: false
+          },
+          400
+        );
+      }
 
       return c.json({
         success: true,
