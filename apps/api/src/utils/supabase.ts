@@ -1,10 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_KEY!;
+const supabaseUrl = process.env.SUPABASE_URL || "https://your-project.supabase.co";
+const supabaseKey = process.env.SUPABASE_KEY || "your-anon-key";
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Missing Supabase environment variables");
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+  console.warn("Missing Supabase environment variables, using fallback values");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
