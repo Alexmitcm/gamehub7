@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import PremiumService from '../PremiumService';
-import UserService from '../UserService';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BlockchainService from '../BlockchainService';
 import EventService from '../EventService';
+import PremiumService from '../PremiumService';
+import UserService from '../UserService';
 
 // Mock dependencies
 vi.mock('../UserService');
@@ -27,7 +27,7 @@ describe('Enhanced PremiumService - New Functionality Testing', () => {
     
     // Reset all mocks
     mockBlockchainService.isWalletPremium.mockResolvedValue(true);
-    mockUserService.getUserPremiumStatus.mockResolvedValue({ userStatus: 'OnChainUnlinked' });
+    mockUserService.getUserPremiumStatus.mockResolvedValue({ userStatus: 'Standard' });
     mockUserService.linkProfileToWallet.mockResolvedValue({
       profileId: testProfileId,
       handle: testHandle,
@@ -145,40 +145,37 @@ describe('Enhanced PremiumService - New Functionality Testing', () => {
 
       // Act
       const result = await premiumService.verifyAndUpdatePremiumStatus(
-        testWalletAddress,
-        testTransactionHash
+        testWalletAddress
       );
 
       // Assert
       expect(result.success).toBe(true);
       expect(result.message).toBe('Premium status verified successfully!');
       expect(result.userStatus?.userStatus).toBe('ProLinked');
-      expect(mockBlockchainService.verifyRegistrationTransaction).toHaveBeenCalledWith(
-        testWalletAddress,
-        '0x0000000000000000000000000000000000000000',
-        testTransactionHash
-      );
-      expect(mockEventService.emitRegistrationVerified).toHaveBeenCalledWith(
-        testWalletAddress,
-        '0x0000000000000000000000000000000000000000',
-        testTransactionHash
-      );
+      // No transaction verification anymore; using NodeSet only
+      expect(mockBlockchainService.verifyRegistrationTransaction).not.toHaveBeenCalled();
+      expect(mockEventService.emitRegistrationVerified).not.toHaveBeenCalled();
     });
 
     it('should fail when transaction verification fails', async () => {
-      // Arrange
-      mockBlockchainService.verifyRegistrationTransaction.mockResolvedValue(false);
+      // Arrange - in new logic, failure comes from NodeSet check error
+      mockBlockchainService.isWalletPremium.mockRejectedValue(
+        new Error('Blockchain error')
+      );
 
       // Act
       const result = await premiumService.verifyAndUpdatePremiumStatus(
-        testWalletAddress,
-        testTransactionHash
+        testWalletAddress
       );
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Transaction verification failed. Please ensure the transaction is valid and confirmed.');
-      expect(mockBlockchainService.verifyRegistrationTransaction).toHaveBeenCalled();
+      expect(result.message).toBe(
+        'Failed to verify premium status. Please try again or contact support.'
+      );
+      expect(
+        mockBlockchainService.verifyRegistrationTransaction
+      ).not.toHaveBeenCalled();
     });
 
     it('should fail when wallet is not premium after transaction', async () => {
@@ -188,28 +185,30 @@ describe('Enhanced PremiumService - New Functionality Testing', () => {
 
       // Act
       const result = await premiumService.verifyAndUpdatePremiumStatus(
-        testWalletAddress,
-        testTransactionHash
+        testWalletAddress
       );
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Wallet is not premium on-chain. Please wait for transaction confirmation or contact support.');
+      expect(result.message).toBe('Wallet is not premium on-chain. Please register on-chain first.');
     });
 
     it('should handle errors gracefully', async () => {
-      // Arrange
-      mockBlockchainService.verifyRegistrationTransaction.mockRejectedValue(new Error('Blockchain error'));
+      // Arrange - trigger error path via NodeSet check
+      mockBlockchainService.isWalletPremium.mockRejectedValue(
+        new Error('Blockchain error')
+      );
 
       // Act
       const result = await premiumService.verifyAndUpdatePremiumStatus(
-        testWalletAddress,
-        testTransactionHash
+        testWalletAddress
       );
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Failed to verify premium status. Please try again or contact support.');
+      expect(result.message).toBe(
+        'Failed to verify premium status. Please try again or contact support.'
+      );
     });
   });
 
@@ -248,32 +247,8 @@ describe('Enhanced PremiumService - New Functionality Testing', () => {
     });
   });
 
-  describe('Enhanced Profile Linking with Transaction Hash', () => {
-    it('should link profile with transaction hash successfully', async () => {
-      // Arrange
-      mockBlockchainService.isWalletPremium.mockResolvedValue(true);
-      mockUserService.linkProfileToWallet.mockResolvedValue({
-        profileId: testProfileId,
-        handle: testHandle,
-        linkedAt: new Date()
-      });
-
-      // Act
-      await premiumService.linkProfile(testWalletAddress, testProfileId, testTransactionHash);
-
-      // Assert
-      expect(mockUserService.linkProfileToWallet).toHaveBeenCalledWith(
-        testWalletAddress,
-        testProfileId,
-        testTransactionHash
-      );
-      expect(mockEventService.emitProfileLinked).toHaveBeenCalledWith(
-        testWalletAddress,
-        testProfileId
-      );
-    });
-
-    it('should link profile without transaction hash', async () => {
+  describe('Enhanced Profile Linking without Transaction Hash', () => {
+    it('should link profile successfully (no transaction hash)', async () => {
       // Arrange
       mockBlockchainService.isWalletPremium.mockResolvedValue(true);
       mockUserService.linkProfileToWallet.mockResolvedValue({
@@ -288,8 +263,30 @@ describe('Enhanced PremiumService - New Functionality Testing', () => {
       // Assert
       expect(mockUserService.linkProfileToWallet).toHaveBeenCalledWith(
         testWalletAddress,
-        testProfileId,
-        undefined
+        testProfileId
+      );
+      expect(mockEventService.emitProfileLinked).toHaveBeenCalledWith(
+        testWalletAddress,
+        testProfileId
+      );
+    });
+
+    it('should link profile (explicit no transaction hash)', async () => {
+      // Arrange
+      mockBlockchainService.isWalletPremium.mockResolvedValue(true);
+      mockUserService.linkProfileToWallet.mockResolvedValue({
+        profileId: testProfileId,
+        handle: testHandle,
+        linkedAt: new Date()
+      });
+
+      // Act
+      await premiumService.linkProfile(testWalletAddress, testProfileId);
+
+      // Assert
+      expect(mockUserService.linkProfileToWallet).toHaveBeenCalledWith(
+        testWalletAddress,
+        testProfileId
       );
     });
 
@@ -298,7 +295,7 @@ describe('Enhanced PremiumService - New Functionality Testing', () => {
       mockBlockchainService.isWalletPremium.mockResolvedValue(false);
 
       // Act & Assert
-      await expect(premiumService.linkProfile(testWalletAddress, testProfileId, testTransactionHash))
+      await expect(premiumService.linkProfile(testWalletAddress, testProfileId))
         .rejects.toThrow('Wallet is not premium (not in NodeSet)');
     });
   });

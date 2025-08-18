@@ -238,8 +238,7 @@ describe("PremiumService", () => {
 
       expect(UserService.linkProfileToWallet).toHaveBeenCalledWith(
         "0x1234567890123456789012345678901234567890",
-        "profile123",
-        undefined
+        "profile123"
       );
       expect(EventService.emitProfileLinked).toHaveBeenCalledWith(
         "0x1234567890123456789012345678901234567890",
