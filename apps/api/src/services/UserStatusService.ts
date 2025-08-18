@@ -129,21 +129,40 @@ export class UserStatusService {
       });
 
       // Check if user has a linked profile
-      const linkedProfile = user?.premiumProfile
-        ? {
+      let linkedProfile: {
+        handle: string;
+        linkedAt: string;
+        profileId: string;
+      } | undefined;
+
+      if (user?.premiumProfile) {
+        // Only show linked profile if it's the current profile being checked
+        if (lensProfileId && user.premiumProfile.profileId === lensProfileId) {
+          linkedProfile = {
             handle: user.premiumProfile.profileId, // You might want to store handle separately
             linkedAt: user.premiumProfile.linkedAt.toISOString(), // Convert Date to ISO string
             profileId: user.premiumProfile.profileId
-          }
-        : undefined;
+          };
+        }
+      }
 
       // Determine user status based on the new logic
       let status: UserStatus = UserStatus.Standard;
 
-      if (isPremiumOnChain && linkedProfile) {
-        status = UserStatus.Premium;
-      } else if (isPremiumOnChain && !linkedProfile) {
-        status = UserStatus.OnChainUnlinked;
+      if (isPremiumOnChain) {
+        if (linkedProfile) {
+          // Check if this specific profile is the exclusive premium account
+          if (lensProfileId && linkedProfile.profileId === lensProfileId) {
+            // This profile is the exclusive premium account
+            status = UserStatus.Premium;
+          } else {
+            // This profile is NOT the exclusive premium account - should be Standard
+            status = UserStatus.Standard;
+          }
+        } else {
+          // Premium wallet but no profile linked yet
+          status = UserStatus.OnChainUnlinked;
+        }
       }
 
       // Check if profile can be linked
@@ -172,7 +191,7 @@ export class UserStatusService {
 
       return {
         canLinkProfile,
-        hasLinkedProfile: !!linkedProfile,
+        hasLinkedProfile: !!linkedProfile, // This will be true only if current profile is linked
         isPremiumOnChain,
         lensProfileId,
         lensWalletAddress,
