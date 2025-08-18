@@ -134,7 +134,7 @@ const connectors = [
   })(),
   walletConnect({ projectId: WALLETCONNECT_PROJECT_ID }),
   injected()
-].filter(Boolean); // Remove null connectors
+].filter((connector): connector is NonNullable<typeof connector> => connector !== null); // Remove null connectors
 
 const config = createConfig({
   chains: [arbitrum], // Only Arbitrum One for admin panel

@@ -1,7 +1,7 @@
 import logger from "@hey/helpers/logger";
 import { PrismaClient, UserStatus } from "@prisma/client";
-import SmartContractService from "./SmartContractService";
 import LensProfileService from "./LensProfileService";
+import SmartContractService from "./SmartContractService";
 
 const prisma = new PrismaClient();
 
@@ -108,32 +108,38 @@ export class UserStatusService {
   /**
    * Get comprehensive user status based on the new logic
    */
-  async getUserStatus(walletAddress: string, lensProfileId?: string): Promise<UserStatusData> {
+  async getUserStatus(
+    walletAddress: string,
+    lensProfileId?: string
+  ): Promise<UserStatusData> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium on-chain via NodeSet API
-      const isPremiumOnChain = await this.smartContractService.isWalletPremium(normalizedAddress);
-      
+      const isPremiumOnChain =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
       // Get user from database
       const user = await prisma.user.findUnique({
-        where: { walletAddress: normalizedAddress },
         include: {
-          premiumProfile: true,
-          preferences: true
-        }
+          preferences: true,
+          premiumProfile: true
+        },
+        where: { walletAddress: normalizedAddress }
       });
 
       // Check if user has a linked profile
-      const linkedProfile = user?.premiumProfile ? {
-        profileId: user.premiumProfile.profileId,
-        handle: user.premiumProfile.profileId, // You might want to store handle separately
-        linkedAt: user.premiumProfile.linkedAt.toISOString() // Convert Date to ISO string
-      } : undefined;
+      const linkedProfile = user?.premiumProfile
+        ? {
+            handle: user.premiumProfile.profileId, // You might want to store handle separately
+            linkedAt: user.premiumProfile.linkedAt.toISOString(), // Convert Date to ISO string
+            profileId: user.premiumProfile.profileId
+          }
+        : undefined;
 
       // Determine user status based on the new logic
       let status: UserStatus = UserStatus.Standard;
-      
+
       if (isPremiumOnChain && linkedProfile) {
         status = UserStatus.Premium;
       } else if (isPremiumOnChain && !linkedProfile) {
@@ -141,7 +147,10 @@ export class UserStatusService {
       }
 
       // Check if profile can be linked
-      const canLinkProfile = await this.canLinkProfile(normalizedAddress, lensProfileId);
+      const canLinkProfile = await this.canLinkProfile(
+        normalizedAddress,
+        lensProfileId
+      );
 
       // Get premium wallet address if this is a lens profile
       let premiumWalletAddress: string | undefined;
@@ -150,7 +159,7 @@ export class UserStatusService {
       if (lensProfileId) {
         // This is a lens profile, so the current wallet is the lens wallet
         lensWalletAddress = normalizedAddress;
-        
+
         // Find the premium wallet for this profile
         const premiumProfile = await prisma.premiumProfile.findUnique({
           where: { profileId: lensProfileId }
@@ -162,18 +171,18 @@ export class UserStatusService {
       }
 
       return {
-        status,
-        walletAddress: normalizedAddress,
-        lensProfileId,
-        linkedProfile,
-        isPremiumOnChain,
-        hasLinkedProfile: !!linkedProfile,
-        registrationTxHash: user?.registrationTxHash || undefined,
-        premiumUpgradedAt: user?.premiumUpgradedAt || undefined,
-        referrerAddress: user?.referrerAddress || undefined,
         canLinkProfile,
+        hasLinkedProfile: !!linkedProfile,
+        isPremiumOnChain,
+        lensProfileId,
+        lensWalletAddress,
+        linkedProfile,
+        premiumUpgradedAt: user?.premiumUpgradedAt || undefined,
         premiumWalletAddress,
-        lensWalletAddress
+        referrerAddress: user?.referrerAddress || undefined,
+        registrationTxHash: user?.registrationTxHash || undefined,
+        status,
+        walletAddress: normalizedAddress
       };
     } catch (error) {
       logger.error(`Error getting user status for ${walletAddress}:`, error);
@@ -184,12 +193,16 @@ export class UserStatusService {
   /**
    * Check if a profile can be linked to a wallet
    */
-  async canLinkProfile(walletAddress: string, profileId?: string): Promise<boolean> {
+  async canLinkProfile(
+    walletAddress: string,
+    profileId?: string
+  ): Promise<boolean> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
       if (!isPremium) {
         return false;
       }
@@ -229,10 +242,11 @@ export class UserStatusService {
   }> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is already premium
-      const isAlreadyPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
-      
+      const isAlreadyPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
       if (isAlreadyPremium) {
         // Get the existing premium account
         const existingPremiumProfile = await prisma.premiumProfile.findFirst({
@@ -243,34 +257,39 @@ export class UserStatusService {
           // Wallet already has a premium account - cannot register again
           return {
             canRegister: false,
-            reason: "This wallet is already registered as premium and linked to another account. Only one account per wallet can be premium.",
             existingPremiumAccount: {
-              profileId: existingPremiumProfile.profileId,
-              linkedAt: existingPremiumProfile.linkedAt
-            }
-          };
-        } else {
-          // Wallet is premium but no profile linked yet - can link first profile
-          return {
-            canRegister: false,
-            reason: "This wallet is already premium. Please link it to a profile instead of registering again.",
-            existingPremiumAccount: undefined
+              linkedAt: existingPremiumProfile.linkedAt,
+              profileId: existingPremiumProfile.profileId
+            },
+            reason:
+              "This wallet is already registered as premium and linked to another account. Only one account per wallet can be premium."
           };
         }
+
+        // Wallet is premium but no profile linked yet - can link first profile
+        return {
+          canRegister: false,
+          existingPremiumAccount: undefined,
+          reason:
+            "This wallet is already premium. Please link it to a profile instead of registering again."
+        };
       }
 
       // Wallet is not premium - can register
       return {
         canRegister: true,
-        reason: "Wallet can register for premium",
-        existingPremiumAccount: undefined
+        existingPremiumAccount: undefined,
+        reason: "Wallet can register for premium"
       };
     } catch (error) {
-      logger.error("Error checking wallet premium registration eligibility:", error);
+      logger.error(
+        "Error checking wallet premium registration eligibility:",
+        error
+      );
       return {
         canRegister: false,
-        reason: "Error checking wallet status",
-        existingPremiumAccount: undefined
+        existingPremiumAccount: undefined,
+        reason: "Error checking wallet status"
       };
     }
   }
@@ -279,7 +298,7 @@ export class UserStatusService {
    * Check if profile can attempt premium registration
    */
   async canProfileAttemptPremiumRegistration(
-    walletAddress: string, 
+    walletAddress: string,
     profileId: string
   ): Promise<{
     canAttempt: boolean;
@@ -293,10 +312,11 @@ export class UserStatusService {
   }> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is already premium
-      const isWalletPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
-      
+      const isWalletPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
       if (isWalletPremium) {
         // Get the existing premium account
         const existingPremiumProfile = await prisma.premiumProfile.findFirst({
@@ -305,55 +325,61 @@ export class UserStatusService {
 
         if (existingPremiumProfile) {
           // Check if this profile is the exclusive premium account
-          const isExclusivePremium = existingPremiumProfile.profileId === profileId;
-          
+          const isExclusivePremium =
+            existingPremiumProfile.profileId === profileId;
+
           if (isExclusivePremium) {
             return {
               canAttempt: false,
-              reason: "This account is already premium and cannot register again.",
+              existingPremiumAccount: {
+                linkedAt: existingPremiumProfile.linkedAt,
+                profileId: existingPremiumProfile.profileId
+              },
               isExclusivePremium: true,
-              existingPremiumAccount: {
-                profileId: existingPremiumProfile.profileId,
-                linkedAt: existingPremiumProfile.linkedAt
-              }
-            };
-          } else {
-            // This profile cannot be premium because wallet is already linked to another profile
-            return {
-              canAttempt: false,
-              reason: "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium.",
-              isExclusivePremium: false,
-              existingPremiumAccount: {
-                profileId: existingPremiumProfile.profileId,
-                linkedAt: existingPremiumProfile.linkedAt
-              }
+              reason:
+                "This account is already premium and cannot register again."
             };
           }
-        } else {
-          // Wallet is premium but no profile linked - this profile can be linked
+
+          // This profile cannot be premium because wallet is already linked to another profile
           return {
             canAttempt: false,
-            reason: "This wallet is already premium. Please link it to this profile instead of registering.",
+            existingPremiumAccount: {
+              linkedAt: existingPremiumProfile.linkedAt,
+              profileId: existingPremiumProfile.profileId
+            },
             isExclusivePremium: false,
-            existingPremiumAccount: undefined
+            reason:
+              "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium."
           };
         }
+        // Wallet is premium but no profile linked - this profile can be linked
+        return {
+          canAttempt: false,
+          existingPremiumAccount: undefined,
+          isExclusivePremium: false,
+          reason:
+            "This wallet is already premium. Please link it to this profile instead of registering."
+        };
       }
 
       // Wallet is not premium - profile can attempt registration
       return {
         canAttempt: true,
-        reason: "Profile can attempt premium registration",
+        existingPremiumAccount: undefined,
         isExclusivePremium: false,
-        existingPremiumAccount: undefined
+        reason: "Profile can attempt premium registration"
       };
     } catch (error) {
-      logger.error("Error checking profile premium registration eligibility:", error);
+      logger.error(
+        "Error checking profile premium registration eligibility:",
+        error
+      );
       return {
         canAttempt: false,
-        reason: "Error checking profile status",
+        existingPremiumAccount: undefined,
         isExclusivePremium: false,
-        existingPremiumAccount: undefined
+        reason: "Error checking profile status"
       };
     }
   }
@@ -361,16 +387,20 @@ export class UserStatusService {
   /**
    * Auto-link first available profile for a premium wallet (permanent linking)
    */
-  async autoLinkFirstProfile(walletAddress: string, lensProfileId: string): Promise<AutoLinkResult> {
+  async autoLinkFirstProfile(
+    walletAddress: string,
+    lensProfileId: string
+  ): Promise<AutoLinkResult> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
       if (!isPremium) {
         return {
-          success: false,
           message: "Wallet is not premium",
+          success: false,
           userStatus: await this.getUserStatus(normalizedAddress)
         };
       }
@@ -379,8 +409,8 @@ export class UserStatusService {
       const currentStatus = await this.getUserStatus(normalizedAddress);
       if (currentStatus.hasLinkedProfile) {
         return {
-          success: false,
           message: "Profile already linked",
+          success: false,
           userStatus: currentStatus
         };
       }
@@ -392,8 +422,8 @@ export class UserStatusService {
 
       if (existingProfileLink) {
         return {
-          success: false,
           message: "Profile is already linked to another wallet",
+          success: false,
           userStatus: currentStatus
         };
       }
@@ -401,29 +431,32 @@ export class UserStatusService {
       // Create the permanent link
       await prisma.premiumProfile.create({
         data: {
-          walletAddress: normalizedAddress,
-          profileId: lensProfileId,
           isActive: true,
-          linkedAt: new Date()
+          linkedAt: new Date(),
+          profileId: lensProfileId,
+          walletAddress: normalizedAddress
         }
       });
 
       // Update user status to Premium
       await prisma.user.update({
-        where: { walletAddress: normalizedAddress },
-        data: { 
-          status: UserStatus.Premium,
-          premiumUpgradedAt: new Date()
-        }
+        data: {
+          premiumUpgradedAt: new Date(),
+          status: UserStatus.Premium
+        },
+        where: { walletAddress: normalizedAddress }
       });
 
-      const updatedStatus = await this.getUserStatus(normalizedAddress, lensProfileId);
-      
+      const updatedStatus = await this.getUserStatus(
+        normalizedAddress,
+        lensProfileId
+      );
+
       return {
-        success: true,
+        linkedProfileId: lensProfileId,
         message: `Successfully permanently linked profile ${lensProfileId}`,
-        userStatus: updatedStatus,
-        linkedProfileId: lensProfileId
+        success: true,
+        userStatus: updatedStatus
       };
     } catch (error) {
       logger.error("Error in auto-linking profile:", error);
@@ -434,16 +467,20 @@ export class UserStatusService {
   /**
    * Manually link a profile to a premium wallet (permanent linking)
    */
-  async linkProfileToWallet(walletAddress: string, profileId: string): Promise<ProfileLinkingResult> {
+  async linkProfileToWallet(
+    walletAddress: string,
+    profileId: string
+  ): Promise<ProfileLinkingResult> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
       if (!isPremium) {
         return {
-          success: false,
           message: "Wallet is not premium",
+          success: false,
           userStatus: await this.getUserStatus(normalizedAddress)
         };
       }
@@ -455,10 +492,11 @@ export class UserStatusService {
 
       if (existingProfileLink) {
         return {
-          success: false,
           message: "Profile is already linked to another wallet",
-          userStatus: await this.getUserStatus(normalizedAddress),
-          rejectionReason: "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium."
+          rejectionReason:
+            "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium.",
+          success: false,
+          userStatus: await this.getUserStatus(normalizedAddress)
         };
       }
 
@@ -469,37 +507,41 @@ export class UserStatusService {
 
       if (walletHasLinkedProfile) {
         return {
-          success: false,
           message: "Wallet already has a permanently linked profile",
-          userStatus: await this.getUserStatus(normalizedAddress),
-          rejectionReason: "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium."
+          rejectionReason:
+            "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium.",
+          success: false,
+          userStatus: await this.getUserStatus(normalizedAddress)
         };
       }
 
       // Create the permanent link
       await prisma.premiumProfile.create({
         data: {
-          walletAddress: normalizedAddress,
-          profileId,
           isActive: true,
-          linkedAt: new Date()
+          linkedAt: new Date(),
+          profileId,
+          walletAddress: normalizedAddress
         }
       });
 
       // Update user status to Premium
       await prisma.user.update({
-        where: { walletAddress: normalizedAddress },
-        data: { 
-          status: UserStatus.Premium,
-          premiumUpgradedAt: new Date()
-        }
+        data: {
+          premiumUpgradedAt: new Date(),
+          status: UserStatus.Premium
+        },
+        where: { walletAddress: normalizedAddress }
       });
 
-      const updatedStatus = await this.getUserStatus(normalizedAddress, profileId);
-      
+      const updatedStatus = await this.getUserStatus(
+        normalizedAddress,
+        profileId
+      );
+
       return {
-        success: true,
         message: "Profile permanently linked successfully",
+        success: true,
         userStatus: updatedStatus
       };
     } catch (error) {
@@ -511,13 +553,17 @@ export class UserStatusService {
   /**
    * Handle user login/registration flow with the new logic
    */
-  async handleUserLogin(walletAddress: string, lensProfileId?: string): Promise<LoginResult> {
+  async handleUserLogin(
+    walletAddress: string,
+    lensProfileId?: string
+  ): Promise<LoginResult> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium via NodeSet API
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
-      
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
       if (isPremium) {
         // Check if this is the first time linking a profile
         const existingLink = await prisma.premiumProfile.findFirst({
@@ -526,28 +572,35 @@ export class UserStatusService {
 
         if (!existingLink && lensProfileId) {
           // Auto-link the first profile permanently
-          const autoLinkResult = await this.autoLinkFirstProfile(normalizedAddress, lensProfileId);
+          const autoLinkResult = await this.autoLinkFirstProfile(
+            normalizedAddress,
+            lensProfileId
+          );
           if (autoLinkResult.success) {
             return {
+              message: "Profile automatically linked to premium wallet",
               success: true,
-              userStatus: autoLinkResult.userStatus,
-              message: "Profile automatically linked to premium wallet"
+              userStatus: autoLinkResult.userStatus
             };
           }
         }
       }
 
       // Get final user status
-      const userStatus = await this.getUserStatus(normalizedAddress, lensProfileId);
-      
+      const userStatus = await this.getUserStatus(
+        normalizedAddress,
+        lensProfileId
+      );
+
       // Determine if MetaMask connection is required
-      const requiresMetaMaskConnection = !isPremium && userStatus.status === UserStatus.Standard;
-      
+      const requiresMetaMaskConnection =
+        !isPremium && userStatus.status === UserStatus.Standard;
+
       return {
-        success: true,
-        userStatus,
         message: "Login successful",
-        requiresMetaMaskConnection
+        requiresMetaMaskConnection,
+        success: true,
+        userStatus
       };
     } catch (error) {
       logger.error("Error handling user login:", error);
@@ -559,44 +612,51 @@ export class UserStatusService {
    * Handle premium registration completion
    */
   async handlePremiumRegistrationCompletion(
-    walletAddress: string, 
+    walletAddress: string,
     transactionHash: string,
     lensProfileId?: string
   ): Promise<ProfileLinkingResult> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Verify the wallet is now premium
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
       if (!isPremium) {
         return {
-          success: false,
           message: "Wallet is not premium after registration",
+          success: false,
           userStatus: await this.getUserStatus(normalizedAddress, lensProfileId)
         };
       }
 
       // Update user with transaction hash
       await prisma.user.update({
-        where: { walletAddress: normalizedAddress },
-        data: { 
-          registrationTxHash: transactionHash,
-          premiumUpgradedAt: new Date()
-        }
+        data: {
+          premiumUpgradedAt: new Date(),
+          registrationTxHash: transactionHash
+        },
+        where: { walletAddress: normalizedAddress }
       });
 
       // If lensProfileId is provided, link it permanently
       if (lensProfileId) {
-        const linkResult = await this.linkProfileToWallet(normalizedAddress, lensProfileId);
+        const linkResult = await this.linkProfileToWallet(
+          normalizedAddress,
+          lensProfileId
+        );
         return linkResult;
       }
 
       // Get updated status
-      const updatedStatus = await this.getUserStatus(normalizedAddress, lensProfileId);
-      
+      const updatedStatus = await this.getUserStatus(
+        normalizedAddress,
+        lensProfileId
+      );
+
       return {
-        success: true,
         message: "Premium registration completed successfully",
+        success: true,
         userStatus: updatedStatus
       };
     } catch (error) {
@@ -637,7 +697,10 @@ export class UserStatusService {
   /**
    * Validate wallet for reward claiming with enhanced logic
    */
-  async validateWalletForRewardClaiming(walletAddress: string, lensProfileId?: string): Promise<{
+  async validateWalletForRewardClaiming(
+    walletAddress: string,
+    lensProfileId?: string
+  ): Promise<{
     isValid: boolean;
     message: string;
     isPremiumWallet: boolean;
@@ -648,34 +711,43 @@ export class UserStatusService {
   }> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
-      
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
       if (!isPremium) {
         // Get wallet separation to provide better error message
-        const walletSeparation = await this.determineWalletSeparation(normalizedAddress, lensProfileId);
-        
-        if (walletSeparation.premiumWalletAddress && walletSeparation.isWalletSeparated) {
+        const walletSeparation = await this.determineWalletSeparation(
+          normalizedAddress,
+          lensProfileId
+        );
+
+        if (
+          walletSeparation.premiumWalletAddress &&
+          walletSeparation.isWalletSeparated
+        ) {
           return {
-            isValid: false,
-            message: "To claim rewards, you must use your premium wallet, which is MetaMask.",
             isPremiumWallet: false,
-            requiresNetworkSwitch: false,
-            premiumWalletAddress: walletSeparation.premiumWalletAddress,
+            isValid: false,
             lensWalletAddress: walletSeparation.lensWalletAddress,
-            rejectionReason: "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium."
-          };
-        } else {
-          return {
-            isValid: false,
-            message: "To claim rewards, you must use your premium wallet, which is MetaMask.",
-            isPremiumWallet: false,
-            requiresNetworkSwitch: false,
+            message:
+              "To claim rewards, you must use your premium wallet, which is MetaMask.",
             premiumWalletAddress: walletSeparation.premiumWalletAddress,
-            lensWalletAddress: walletSeparation.lensWalletAddress
+            rejectionReason:
+              "Your premium wallet is already connected to another one of your Lens profiles and is premium. You are not allowed to make this profile premium.",
+            requiresNetworkSwitch: false
           };
         }
+        return {
+          isPremiumWallet: false,
+          isValid: false,
+          lensWalletAddress: walletSeparation.lensWalletAddress,
+          message:
+            "To claim rewards, you must use your premium wallet, which is MetaMask.",
+          premiumWalletAddress: walletSeparation.premiumWalletAddress,
+          requiresNetworkSwitch: false
+        };
       }
 
       // Check if this is the user's premium wallet
@@ -685,30 +757,33 @@ export class UserStatusService {
 
       if (!user) {
         return {
+          isPremiumWallet: false,
           isValid: false,
           message: "This wallet is not associated with any user account.",
-          isPremiumWallet: false,
           requiresNetworkSwitch: false
         };
       }
 
       // Get wallet separation info
-      const walletSeparation = await this.determineWalletSeparation(normalizedAddress, lensProfileId);
+      const walletSeparation = await this.determineWalletSeparation(
+        normalizedAddress,
+        lensProfileId
+      );
 
       return {
-        isValid: true,
-        message: "Wallet validated for reward claiming",
         isPremiumWallet: true,
-        requiresNetworkSwitch: false,
+        isValid: true,
+        lensWalletAddress: walletSeparation.lensWalletAddress,
+        message: "Wallet validated for reward claiming",
         premiumWalletAddress: walletSeparation.premiumWalletAddress,
-        lensWalletAddress: walletSeparation.lensWalletAddress
+        requiresNetworkSwitch: false
       };
     } catch (error) {
       logger.error("Error validating wallet for reward claiming:", error);
       return {
+        isPremiumWallet: false,
         isValid: false,
         message: "Error validating wallet",
-        isPremiumWallet: false,
         requiresNetworkSwitch: false
       };
     }
@@ -717,56 +792,62 @@ export class UserStatusService {
   /**
    * Validate MetaMask wallet for premium registration
    */
-  async validateMetaMaskWallet(walletAddress: string, walletProvider?: string, networkId?: number): Promise<WalletValidationResult> {
+  async validateMetaMaskWallet(
+    walletAddress: string,
+    walletProvider?: string,
+    networkId?: number
+  ): Promise<WalletValidationResult> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium on-chain
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
-      
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
       // Validate MetaMask requirement
-      const isMetaMaskWallet = walletProvider === 'metamask';
-      
+      const isMetaMaskWallet = walletProvider === "metamask";
+
       if (!isMetaMaskWallet && !isPremium) {
         return {
-          isValid: false,
-          message: "Premium registration requires MetaMask wallet",
           isMetaMaskWallet: false,
           isPremiumWallet: false,
+          isValid: false,
+          message: "Premium registration requires MetaMask wallet",
           requiresNetworkSwitch: false
         };
       }
-      
+
       // Validate Arbitrum One network requirement
       const isCorrectNetwork = networkId === 42161; // Arbitrum One
       const requiresNetworkSwitch = !isCorrectNetwork;
-      
+
       if (requiresNetworkSwitch) {
         return {
-          isValid: false,
-          message: "Please switch to Arbitrum One network for premium registration",
           isMetaMaskWallet,
           isPremiumWallet: isPremium,
-          requiresNetworkSwitch: true,
-          networkId
+          isValid: false,
+          message:
+            "Please switch to Arbitrum One network for premium registration",
+          networkId,
+          requiresNetworkSwitch: true
         };
       }
-      
+
       return {
-        isValid: true,
-        message: "Wallet validation successful",
         isMetaMaskWallet,
         isPremiumWallet: isPremium,
-        requiresNetworkSwitch: false,
-        networkId
+        isValid: true,
+        message: "Wallet validation successful",
+        networkId,
+        requiresNetworkSwitch: false
       };
     } catch (error) {
       logger.error("Error validating MetaMask wallet:", error);
       return {
-        isValid: false,
-        message: "Error validating wallet",
         isMetaMaskWallet: false,
         isPremiumWallet: false,
+        isValid: false,
+        message: "Error validating wallet",
         requiresNetworkSwitch: false
       };
     }
@@ -776,46 +857,61 @@ export class UserStatusService {
    * Get enhanced user status with pro features and exclusive account info
    */
   async getEnhancedUserStatus(
-    walletAddress: string, 
-    lensProfileId?: string, 
-    walletProvider?: string, 
+    walletAddress: string,
+    lensProfileId?: string,
+    walletProvider?: string,
     networkId?: number
   ): Promise<EnhancedUserStatusData> {
     try {
       const baseStatus = await this.getUserStatus(walletAddress, lensProfileId);
-      
+
       // Validate MetaMask wallet if provided
-      const walletValidation = walletProvider ? 
-        await this.validateMetaMaskWallet(walletAddress, walletProvider, networkId) : 
-        null;
-      
+      const walletValidation = walletProvider
+        ? await this.validateMetaMaskWallet(
+            walletAddress,
+            walletProvider,
+            networkId
+          )
+        : null;
+
       // Determine wallet separation
-      const walletSeparation = await this.determineWalletSeparation(walletAddress, lensProfileId);
-      
+      const walletSeparation = await this.determineWalletSeparation(
+        walletAddress,
+        lensProfileId
+      );
+
       // Get pro features status
-      const proFeatures = await this.getProFeaturesStatus(walletAddress, lensProfileId);
-      
+      const proFeatures = await this.getProFeaturesStatus(
+        walletAddress,
+        lensProfileId
+      );
+
       // Get exclusive premium account info
-      const exclusivePremiumAccount = await this.getExclusivePremiumAccount(walletAddress);
+      const exclusivePremiumAccount =
+        await this.getExclusivePremiumAccount(walletAddress);
       if (exclusivePremiumAccount && lensProfileId) {
-        exclusivePremiumAccount.isCurrentAccount = exclusivePremiumAccount.profileId === lensProfileId;
+        exclusivePremiumAccount.isCurrentAccount =
+          exclusivePremiumAccount.profileId === lensProfileId;
       }
-      
+
       // Determine requirements
-      const requiresMetaMaskConnection = !baseStatus.isPremiumOnChain && baseStatus.status === UserStatus.Standard;
-      const requiresNetworkSwitch = walletValidation?.requiresNetworkSwitch ?? false;
-      
+      const requiresMetaMaskConnection =
+        !baseStatus.isPremiumOnChain &&
+        baseStatus.status === UserStatus.Standard;
+      const requiresNetworkSwitch =
+        walletValidation?.requiresNetworkSwitch ?? false;
+
       return {
         ...baseStatus,
-        walletRequirements: {
-          requiresMetaMaskConnection,
-          requiresNetworkSwitch,
-          isMetaMaskWallet: walletValidation?.isMetaMaskWallet ?? false,
-          networkId
-        },
-        walletSeparation,
+        exclusivePremiumAccount,
         proFeatures,
-        exclusivePremiumAccount
+        walletRequirements: {
+          isMetaMaskWallet: walletValidation?.isMetaMaskWallet ?? false,
+          networkId,
+          requiresMetaMaskConnection,
+          requiresNetworkSwitch
+        },
+        walletSeparation
       };
     } catch (error) {
       logger.error("Error getting enhanced user status:", error);
@@ -827,68 +923,75 @@ export class UserStatusService {
    * Get account verification status for display in account selection
    */
   async getAccountVerificationStatus(
-    walletAddress: string, 
+    walletAddress: string,
     profileId: string
   ): Promise<{
     isVerified: boolean;
     isPremiumAccount: boolean;
-    verificationType: 'premium' | 'standard' | 'none';
+    verificationType: "premium" | "standard" | "none";
     proFeatures: ProFeaturesStatus;
   }> {
     try {
       // Check if this account is the exclusive premium account
-      const isExclusivePremium = await this.isExclusivePremiumAccount(walletAddress, profileId);
-      
+      const isExclusivePremium = await this.isExclusivePremiumAccount(
+        walletAddress,
+        profileId
+      );
+
       // Get pro features status
-      const proFeatures = await this.getProFeaturesStatus(walletAddress, profileId);
-      
+      const proFeatures = await this.getProFeaturesStatus(
+        walletAddress,
+        profileId
+      );
+
       if (isExclusivePremium) {
         return {
-          isVerified: true,
           isPremiumAccount: true,
-          verificationType: 'premium',
-          proFeatures
+          isVerified: true,
+          proFeatures,
+          verificationType: "premium"
         };
       }
-      
+
       // Check if wallet is premium but this account is not the exclusive one
-      const isWalletPremium = await this.smartContractService.isWalletPremium(walletAddress);
+      const isWalletPremium =
+        await this.smartContractService.isWalletPremium(walletAddress);
       if (isWalletPremium) {
         return {
-          isVerified: false,
           isPremiumAccount: false,
-          verificationType: 'standard',
-          proFeatures
+          isVerified: false,
+          proFeatures,
+          verificationType: "standard"
         };
       }
-      
+
       return {
-        isVerified: false,
         isPremiumAccount: false,
-        verificationType: 'none',
-        proFeatures
+        isVerified: false,
+        proFeatures,
+        verificationType: "none"
       };
     } catch (error) {
       logger.error("Error getting account verification status:", error);
       return {
-        isVerified: false,
         isPremiumAccount: false,
-        verificationType: 'none',
+        isVerified: false,
         proFeatures: {
-          isActive: false,
           features: {
-            referralDashboard: false,
-            rewardClaiming: false,
-            premiumBadge: false,
+            advancedAnalytics: false,
             exclusiveContent: false,
-            advancedAnalytics: false
+            premiumBadge: false,
+            referralDashboard: false,
+            rewardClaiming: false
           },
+          isActive: false,
           linkedAccount: {
-            profileId: "",
+            isExclusive: false,
             linkedAt: new Date(0).toISOString(), // Convert Date to string
-            isExclusive: false
+            profileId: ""
           }
-        }
+        },
+        verificationType: "none"
       };
     }
   }
@@ -896,57 +999,61 @@ export class UserStatusService {
   /**
    * Determine wallet separation for the user
    */
-  private async determineWalletSeparation(walletAddress: string, lensProfileId?: string): Promise<{
+  private async determineWalletSeparation(
+    walletAddress: string,
+    lensProfileId?: string
+  ): Promise<{
     premiumWalletAddress?: string;
     lensWalletAddress?: string;
     isWalletSeparated: boolean;
   }> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       if (lensProfileId) {
         // This is a Lens profile login
         const lensWalletAddress = normalizedAddress;
-        
+
         // Find the premium wallet for this profile
         const premiumProfile = await prisma.premiumProfile.findUnique({
           where: { profileId: lensProfileId }
         });
-        
+
         const premiumWalletAddress = premiumProfile?.walletAddress;
-        const isWalletSeparated = Boolean(premiumWalletAddress && premiumWalletAddress !== lensWalletAddress);
-        
+        const isWalletSeparated = Boolean(
+          premiumWalletAddress && premiumWalletAddress !== lensWalletAddress
+        );
+
         return {
-          premiumWalletAddress,
+          isWalletSeparated,
           lensWalletAddress,
-          isWalletSeparated
+          premiumWalletAddress
         };
-      } else {
-        // This is a direct wallet login
-        const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
-        
-        if (isPremium) {
-          // This is a premium wallet
-          return {
-            premiumWalletAddress: normalizedAddress,
-            lensWalletAddress: undefined,
-            isWalletSeparated: false
-          };
-        } else {
-          // This is a standard wallet
-          return {
-            premiumWalletAddress: undefined,
-            lensWalletAddress: normalizedAddress,
-            isWalletSeparated: false
-          };
-        }
       }
-    } catch (error) {
-      logger.error("Error determining wallet separation:", error);
+      // This is a direct wallet login
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
+      if (isPremium) {
+        // This is a premium wallet
+        return {
+          isWalletSeparated: false,
+          lensWalletAddress: undefined,
+          premiumWalletAddress: normalizedAddress
+        };
+      }
+      // This is a standard wallet
       return {
-        premiumWalletAddress: undefined,
+        isWalletSeparated: false,
+        lensWalletAddress: normalizedAddress,
+        premiumWalletAddress: undefined
+      };
+    } catch {
+      logger.error("Error determining wallet separation");
+      return {
+        isWalletSeparated: false,
         lensWalletAddress: undefined,
-        isWalletSeparated: false
+        premiumWalletAddress: undefined
       };
     }
   }
@@ -954,7 +1061,10 @@ export class UserStatusService {
   /**
    * Get comprehensive user status for frontend
    */
-  async getComprehensiveUserStatus(walletAddress: string, lensProfileId?: string): Promise<{
+  async getComprehensiveUserStatus(
+    walletAddress: string,
+    lensProfileId?: string
+  ): Promise<{
     userStatus: UserStatusData;
     requiresMetaMaskConnection: boolean;
     requiresNetworkSwitch: boolean;
@@ -963,19 +1073,22 @@ export class UserStatusService {
   }> {
     try {
       const userStatus = await this.getUserStatus(walletAddress, lensProfileId);
-      const canAccessPremiumFeatures = await this.canAccessPremiumFeatures(walletAddress);
+      const canAccessPremiumFeatures =
+        await this.canAccessPremiumFeatures(walletAddress);
       const canClaimRewards = userStatus.status === UserStatus.Premium;
-      
+
       // Determine requirements
-      const requiresMetaMaskConnection = !userStatus.isPremiumOnChain && userStatus.status === UserStatus.Standard;
+      const requiresMetaMaskConnection =
+        !userStatus.isPremiumOnChain &&
+        userStatus.status === UserStatus.Standard;
       const requiresNetworkSwitch = false; // This will be handled by frontend wallet connection
 
       return {
-        userStatus,
+        canAccessPremiumFeatures,
+        canClaimRewards,
         requiresMetaMaskConnection,
         requiresNetworkSwitch,
-        canAccessPremiumFeatures,
-        canClaimRewards
+        userStatus
       };
     } catch (error) {
       logger.error("Error getting comprehensive user status:", error);
@@ -994,9 +1107,10 @@ export class UserStatusService {
   } | null> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
       if (!isPremium) {
         return null;
       }
@@ -1013,17 +1127,21 @@ export class UserStatusService {
       // Get profile details if available
       let handle: string | undefined;
       try {
-        const profile = await this.lensProfileService.getProfileById(premiumProfile.profileId);
+        const profile = await this.lensProfileService.getProfileById(
+          premiumProfile.profileId
+        );
         handle = profile?.handle;
-      } catch (error) {
-        logger.warn(`Could not fetch profile handle for ${premiumProfile.profileId}`);
+      } catch {
+        logger.warn(
+          `Could not fetch profile handle for ${premiumProfile.profileId}`
+        );
       }
 
       return {
-        profileId: premiumProfile.profileId,
         handle,
+        isCurrentAccount: false, // Will be set by caller
         linkedAt: premiumProfile.linkedAt.toISOString(), // Convert Date to string
-        isCurrentAccount: false // Will be set by caller
+        profileId: premiumProfile.profileId
       };
     } catch (error) {
       logger.error("Error getting exclusive premium account:", error);
@@ -1034,9 +1152,13 @@ export class UserStatusService {
   /**
    * Check if current account is the exclusive premium account
    */
-  async isExclusivePremiumAccount(walletAddress: string, lensProfileId: string): Promise<boolean> {
+  async isExclusivePremiumAccount(
+    walletAddress: string,
+    lensProfileId: string
+  ): Promise<boolean> {
     try {
-      const exclusiveAccount = await this.getExclusivePremiumAccount(walletAddress);
+      const exclusiveAccount =
+        await this.getExclusivePremiumAccount(walletAddress);
       return exclusiveAccount?.profileId === lensProfileId;
     } catch (error) {
       logger.error("Error checking exclusive premium account:", error);
@@ -1047,66 +1169,74 @@ export class UserStatusService {
   /**
    * Get pro features status for a user
    */
-  async getProFeaturesStatus(walletAddress: string, lensProfileId?: string): Promise<ProFeaturesStatus> {
+  async getProFeaturesStatus(
+    walletAddress: string,
+    lensProfileId?: string
+  ): Promise<ProFeaturesStatus> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       // Check if wallet is premium
-      const isPremium = await this.smartContractService.isWalletPremium(normalizedAddress);
-      
+      const isPremium =
+        await this.smartContractService.isWalletPremium(normalizedAddress);
+
       if (!isPremium) {
         return {
-          isActive: false,
           features: {
-            referralDashboard: false,
-            rewardClaiming: false,
-            premiumBadge: false,
+            advancedAnalytics: false,
             exclusiveContent: false,
-            advancedAnalytics: false
+            premiumBadge: false,
+            referralDashboard: false,
+            rewardClaiming: false
           },
+          isActive: false,
           linkedAccount: {
-            profileId: "",
+            isExclusive: false,
             linkedAt: new Date(0).toISOString(), // Convert Date to string
-            isExclusive: false
+            profileId: ""
           }
         };
       }
 
       // Get the exclusive premium profile
-      const exclusiveAccount = await this.getExclusivePremiumAccount(normalizedAddress);
-      
+      const exclusiveAccount =
+        await this.getExclusivePremiumAccount(normalizedAddress);
+
       if (!exclusiveAccount) {
         return {
-          isActive: false,
           features: {
-            referralDashboard: false,
-            rewardClaiming: false,
-            premiumBadge: false,
+            advancedAnalytics: false,
             exclusiveContent: false,
-            advancedAnalytics: false
+            premiumBadge: false,
+            referralDashboard: false,
+            rewardClaiming: false
           },
+          isActive: false,
           linkedAccount: {
-            profileId: "",
+            isExclusive: false,
             linkedAt: new Date(0).toISOString(), // Convert Date to string
-            isExclusive: false
+            profileId: ""
           }
         };
       }
 
       // Check if current account is the exclusive premium account
-      const isCurrentAccountPremium = lensProfileId ? 
-        await this.isExclusivePremiumAccount(normalizedAddress, lensProfileId) : false;
+      const isCurrentAccountPremium = lensProfileId
+        ? await this.isExclusivePremiumAccount(normalizedAddress, lensProfileId)
+        : false;
 
       return {
-        isActive: isCurrentAccountPremium,
+        activationDate: exclusiveAccount.linkedAt
+          ? new Date(exclusiveAccount.linkedAt)
+          : undefined, // Convert string back to Date for activationDate
         features: {
-          referralDashboard: isCurrentAccountPremium,
-          rewardClaiming: isCurrentAccountPremium,
-          premiumBadge: isCurrentAccountPremium,
+          advancedAnalytics: isCurrentAccountPremium,
           exclusiveContent: isCurrentAccountPremium,
-          advancedAnalytics: isCurrentAccountPremium
+          premiumBadge: isCurrentAccountPremium,
+          referralDashboard: isCurrentAccountPremium,
+          rewardClaiming: isCurrentAccountPremium
         },
-        activationDate: exclusiveAccount.linkedAt ? new Date(exclusiveAccount.linkedAt) : undefined, // Convert string back to Date for activationDate
+        isActive: isCurrentAccountPremium,
         linkedAccount: {
           ...exclusiveAccount,
           isExclusive: true
@@ -1115,18 +1245,18 @@ export class UserStatusService {
     } catch (error) {
       logger.error("Error getting pro features status:", error);
       return {
-        isActive: false,
         features: {
-          referralDashboard: false,
-          rewardClaiming: false,
-          premiumBadge: false,
+          advancedAnalytics: false,
           exclusiveContent: false,
-          advancedAnalytics: false
+          premiumBadge: false,
+          referralDashboard: false,
+          rewardClaiming: false
         },
+        isActive: false,
         linkedAccount: {
-          profileId: "",
+          isExclusive: false,
           linkedAt: new Date(0).toISOString(), // Convert Date to string
-          isExclusive: false
+          profileId: ""
         }
       };
     }
