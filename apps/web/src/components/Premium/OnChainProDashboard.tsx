@@ -65,11 +65,13 @@ const OnChainProDashboard = () => {
         <div className="text-center">
           <div className="mb-4 text-red-500">
             <svg
+              aria-hidden="true"
               className="mx-auto h-12 w-12"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
+              <title>Error Icon</title>
               <path
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                 strokeLinecap="round"
@@ -98,11 +100,13 @@ const OnChainProDashboard = () => {
         <div className="text-center">
           <div className="mb-4 text-blue-500">
             <svg
+              aria-hidden="true"
               className="mx-auto h-12 w-12"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
+              <title>Wallet Icon</title>
               <path
                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 strokeLinecap="round"
@@ -143,11 +147,13 @@ const OnChainProDashboard = () => {
             <div className="flex items-center space-x-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
                 <svg
+                  aria-hidden="true"
                   className="h-6 w-6"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
+                  <title>Lightning Icon</title>
                   <path
                     d="M13 10V3L4 14h7v7l9-11h-7z"
                     strokeLinecap="round"
@@ -189,11 +195,13 @@ const OnChainProDashboard = () => {
                   <div className="mb-4 flex items-center">
                     <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-green-600">
                       <svg
+                        aria-hidden="true"
                         className="h-5 w-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
+                        <title>Dollar Icon</title>
                         <path
                           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                           strokeLinecap="round"
@@ -207,8 +215,8 @@ const OnChainProDashboard = () => {
                     </h3>
                   </div>
                   <div className="mb-2 font-bold text-2xl text-gray-900">
-                    {userState?.data
-                      ? formatEther(userState.data.referralRewardBalance)
+                    {userState
+                      ? formatEther(userState.referralRewardBalance)
                       : "0"}{" "}
                     USDT
                   </div>
@@ -222,11 +230,13 @@ const OnChainProDashboard = () => {
                   <div className="mb-4 flex items-center">
                     <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-orange-600">
                       <svg
+                        aria-hidden="true"
                         className="h-5 w-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
+                        <title>Vault Icon</title>
                         <path
                           d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                           strokeLinecap="round"
@@ -240,9 +250,7 @@ const OnChainProDashboard = () => {
                     </h3>
                   </div>
                   <div className="mb-2 font-bold text-2xl text-gray-900">
-                    {gameRewards?.data
-                      ? formatEther(gameRewards.data.unbalanced)
-                      : "0"}{" "}
+                    {gameRewards ? formatEther(gameRewards.unbalanced) : "0"}{" "}
                     USDT
                   </div>
                   <p className="text-gray-600 text-sm">
@@ -255,11 +263,13 @@ const OnChainProDashboard = () => {
                   <div className="mb-4 flex items-center">
                     <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
                       <svg
+                        aria-hidden="true"
                         className="h-5 w-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
+                        <title>Check Icon</title>
                         <path
                           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                           strokeLinecap="round"
@@ -271,10 +281,7 @@ const OnChainProDashboard = () => {
                     <h3 className="font-semibold text-gray-900">Game Vault</h3>
                   </div>
                   <div className="mb-2 font-bold text-2xl text-gray-900">
-                    {gameRewards?.data
-                      ? formatEther(gameRewards.data.balanced)
-                      : "0"}{" "}
-                    USDT
+                    {gameRewards ? formatEther(gameRewards.balanced) : "0"} USDT
                   </div>
                   <p className="text-gray-600 text-sm">Balanced game rewards</p>
                 </div>
@@ -293,8 +300,8 @@ const OnChainProDashboard = () => {
                   className="rounded-lg bg-green-600 px-4 py-3 font-medium text-sm text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   disabled={
                     isClaimingReferral ||
-                    !userState?.data ||
-                    userState.data.referralRewardBalance === 0n
+                    !userState ||
+                    userState.referralRewardBalance === 0n
                   }
                   onClick={claimReferralReward}
                   type="button"
@@ -305,7 +312,7 @@ const OnChainProDashboard = () => {
                       Claiming...
                     </div>
                   ) : (
-                    `Claim Referral (${userState?.data ? formatEther(userState.data.referralRewardBalance) : "0"} USDT)`
+                    `Claim Referral (${userState ? formatEther(userState.referralRewardBalance) : "0"} USDT)`
                   )}
                 </button>
 
@@ -314,8 +321,8 @@ const OnChainProDashboard = () => {
                   className="rounded-lg bg-orange-600 px-4 py-3 font-medium text-sm text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   disabled={
                     isClaimingUnbalanced ||
-                    !gameRewards?.data ||
-                    gameRewards.data.unbalanced === 0n
+                    !gameRewards ||
+                    gameRewards.unbalanced === 0n
                   }
                   onClick={claimUnbalancedGameReward}
                   type="button"
@@ -326,7 +333,7 @@ const OnChainProDashboard = () => {
                       Claiming...
                     </div>
                   ) : (
-                    `Claim Unbalanced (${gameRewards?.data ? formatEther(gameRewards.data.unbalanced) : "0"} USDT)`
+                    `Claim Unbalanced (${gameRewards ? formatEther(gameRewards.unbalanced) : "0"} USDT)`
                   )}
                 </button>
 
@@ -335,8 +342,8 @@ const OnChainProDashboard = () => {
                   className="rounded-lg bg-blue-600 px-4 py-3 font-medium text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300"
                   disabled={
                     isClaimingBalanced ||
-                    !gameRewards?.data ||
-                    gameRewards.data.balanced === 0n
+                    !gameRewards ||
+                    gameRewards.balanced === 0n
                   }
                   onClick={claimBalancedGameReward}
                   type="button"
@@ -347,7 +354,7 @@ const OnChainProDashboard = () => {
                       Claiming...
                     </div>
                   ) : (
-                    `Claim Game (${gameRewards?.data ? formatEther(gameRewards.data.balanced) : "0"} USDT)`
+                    `Claim Game (${gameRewards ? formatEther(gameRewards.balanced) : "0"} USDT)`
                   )}
                 </button>
               </div>
@@ -371,7 +378,7 @@ const OnChainProDashboard = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Account Age</span>
                   <span className="font-medium text-gray-900">
-                    {userState?.data ? userState.data.accountAgeInDays : 0} days
+                    {userState ? userState.accountAgeInDays : 0} days
                   </span>
                 </div>
               </div>
@@ -386,13 +393,13 @@ const OnChainProDashboard = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Left Node</span>
                   <span className="font-medium text-gray-900">
-                    {userState?.data ? userState.data.leftNodeCount : 0}
+                    {userState ? userState.leftNodeCount : 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Right Node</span>
                   <span className="font-medium text-gray-900">
-                    {userState?.data ? userState.data.rightNodeCount : 0}
+                    {userState ? userState.rightNodeCount : 0}
                   </span>
                 </div>
                 <div className="border-gray-200 border-t pt-3">
@@ -402,21 +409,18 @@ const OnChainProDashboard = () => {
                   <div className="space-y-1">
                     <div className="font-mono text-gray-500 text-xs">
                       Left:{" "}
-                      {userState?.data
-                        ? userState.data.directReferrals.leftChild.slice(0, 6) +
+                      {userState
+                        ? userState.directReferrals.leftChild.slice(0, 6) +
                           "..." +
-                          userState.data.directReferrals.leftChild.slice(-4)
+                          userState.directReferrals.leftChild.slice(-4)
                         : "None"}
                     </div>
                     <div className="font-mono text-gray-500 text-xs">
                       Right:{" "}
-                      {userState?.data
-                        ? userState.data.directReferrals.rightChild.slice(
-                            0,
-                            6
-                          ) +
+                      {userState
+                        ? userState.directReferrals.rightChild.slice(0, 6) +
                           "..." +
-                          userState.data.directReferrals.rightChild.slice(-4)
+                          userState.directReferrals.rightChild.slice(-4)
                         : "None"}
                     </div>
                   </div>

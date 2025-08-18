@@ -27,7 +27,7 @@ export type UserStatus = "Standard" | "OnChainUnlinked" | "ProLinked";
 export type LinkedProfile = {
   profileId: string;
   handle: string;
-  linkedAt: string; // API returns string, not Date
+  linkedAt: Date; // Changed from string to Date to match component expectations
 };
 
 export type PremiumStatus = {

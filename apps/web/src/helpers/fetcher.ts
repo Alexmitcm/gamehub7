@@ -10,9 +10,9 @@ interface ApiConfig {
 }
 
 // Circuit breaker state
-let circuitBreakerState = {
-  isOpen: false,
+const circuitBreakerState = {
   failureCount: 0,
+  isOpen: false,
   lastFailureTime: 0,
   threshold: 3,
   timeout: 30000 // 30 seconds
@@ -28,21 +28,21 @@ const config: ApiConfig = {
 // Circuit breaker logic
 const shouldAllowRequest = () => {
   if (!circuitBreakerState.isOpen) return true;
-  
+
   const now = Date.now();
   if (now - circuitBreakerState.lastFailureTime > circuitBreakerState.timeout) {
     circuitBreakerState.isOpen = false;
     circuitBreakerState.failureCount = 0;
     return true;
   }
-  
+
   return false;
 };
 
 const recordFailure = () => {
   circuitBreakerState.failureCount++;
   circuitBreakerState.lastFailureTime = Date.now();
-  
+
   if (circuitBreakerState.failureCount >= circuitBreakerState.threshold) {
     circuitBreakerState.isOpen = true;
     console.warn("🔍 Circuit breaker opened due to repeated failures");
@@ -63,7 +63,9 @@ const fetchApi = async <T>(
 ): Promise<T> => {
   // Check circuit breaker first
   if (!shouldAllowRequest()) {
-    throw new Error("Service temporarily unavailable due to repeated failures. Please try again later.");
+    throw new Error(
+      "Service temporarily unavailable due to repeated failures. Please try again later."
+    );
   }
 
   const { accessToken, refreshToken } = hydrateAuthTokens();
@@ -104,40 +106,62 @@ const fetchApi = async <T>(
       if (response.status === 401) {
         throw new Error("401 (Unauthorized)");
       }
-      
+
       // Handle server errors specifically
       if (response.status >= 500) {
         if (response.status === 502) {
-          throw new Error("502 (Bad Gateway) - Server is experiencing issues. Please try again later.");
-        } else if (response.status === 503) {
-          throw new Error("503 (Service Unavailable) - Server is temporarily unavailable. Please try again later.");
-        } else if (response.status === 504) {
-          throw new Error("504 (Gateway Timeout) - Server is taking too long to respond. Please try again later.");
-        } else {
-          throw new Error(`Server Error (${response.status}) - Server is experiencing issues. Please try again later.`);
+          throw new Error(
+            "502 (Bad Gateway) - Server is experiencing issues. Please try again later."
+          );
         }
+        if (response.status === 503) {
+          throw new Error(
+            "503 (Service Unavailable) - Server is temporarily unavailable. Please try again later."
+          );
+        }
+        if (response.status === 504) {
+          throw new Error(
+            "504 (Gateway Timeout) - Server is taking too long to respond. Please try again later."
+          );
+        }
+        throw new Error(
+          `Server Error (${response.status}) - Server is experiencing issues. Please try again later.`
+        );
       }
-      
+
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     // Check content type to ensure we're getting JSON
     const contentType = response.headers.get("content-type");
     if (contentType && !contentType.includes("application/json")) {
-      console.warn("🔍 Warning: Response is not JSON, content-type:", contentType);
-      
+      console.warn(
+        "🔍 Warning: Response is not JSON, content-type:",
+        contentType
+      );
+
       // Try to get the response text to see what we actually received
       const responseText = await response.text();
-      if (responseText.trim().startsWith("<!DOCTYPE") || responseText.trim().startsWith("<html")) {
+      if (
+        responseText.trim().startsWith("<!DOCTYPE") ||
+        responseText.trim().startsWith("<html")
+      ) {
         // Record this as a failure for circuit breaker
         recordFailure();
-        throw new Error("API returned HTML instead of JSON. The endpoint may be incorrect or the server may be down.");
+        throw new Error(
+          "API returned HTML instead of JSON. The endpoint may be incorrect or the server may be down."
+        );
       }
-      
+
       // If it's not HTML but also not JSON, log the response for debugging
-      console.warn("🔍 Non-JSON response content:", responseText.substring(0, 200));
+      console.warn(
+        "🔍 Non-JSON response content:",
+        responseText.substring(0, 200)
+      );
       recordFailure();
-      throw new Error("API returned non-JSON response. Please check the endpoint configuration.");
+      throw new Error(
+        "API returned non-JSON response. Please check the endpoint configuration."
+      );
     }
 
     const result = await response.json();
@@ -164,12 +188,12 @@ const fetchApi = async <T>(
     throw new Error(result.error || "Unknown error");
   } catch (error) {
     console.error(`🔍 API request failed for ${url}:`, error);
-    
+
     // Record failure for circuit breaker (except for expected errors like 401)
     if (error instanceof Error && !error.message.includes("401")) {
       recordFailure();
     }
-    
+
     throw error;
   }
 };
@@ -257,9 +281,18 @@ export const hono = {
     ): Promise<{
       profileId: string;
       handle: string;
-      linkedAt: string;
+      linkedAt: Date;
     }> => {
       return fetchApi("/premium/auto-link", {
+        body: JSON.stringify({ walletAddress }),
+        method: "POST"
+      }).then((response) => ({
+        ...response,
+        linkedAt: new Date(response.linkedAt)
+      }));
+    },
+    checkWalletStatus: (walletAddress: string): Promise<any> => {
+      return fetchApi("/premium/check-wallet-status", {
         body: JSON.stringify({ walletAddress }),
         method: "POST"
       });
@@ -283,12 +316,28 @@ export const hono = {
       linkedProfile?: {
         profileId: string;
         handle: string;
-        linkedAt: string;
+        linkedAt: Date;
       } | null;
     }> => {
       return fetchApi("/premium/available-profiles", {
         body: JSON.stringify({ walletAddress }),
         method: "POST"
+      }).then((response) => ({
+        ...response,
+        linkedProfile: response.linkedProfile
+          ? {
+              ...response.linkedProfile,
+              linkedAt: new Date(response.linkedProfile.linkedAt)
+            }
+          : null
+      }));
+    },
+    getLinkedProfile: (): Promise<any> => {
+      return fetchApi("/premium/linked-profile", { method: "GET" });
+    },
+    getProfiles: (walletAddress: string): Promise<{ profiles: any[] }> => {
+      return fetchApi(`/premium/profiles?walletAddress=${walletAddress}`, {
+        method: "GET"
       });
     },
     getSimpleStatus: (
@@ -298,13 +347,31 @@ export const hono = {
       userStatus: "Standard" | "ProLinked";
       linkedProfile?: {
         profileId: string;
-        linkedAt: string;
+        linkedAt: Date;
       };
     }> => {
       return fetchApi("/premium/simple-status", {
         body: JSON.stringify({ profileId, walletAddress }),
         method: "POST"
-      });
+      }).then((response) => ({
+        ...response,
+        linkedProfile: response.linkedProfile
+          ? {
+              ...response.linkedProfile,
+              linkedAt: new Date(response.linkedProfile.linkedAt)
+            }
+          : undefined
+      }));
+    },
+    getStats: (): Promise<any> => {
+      return fetchApi("/premium/stats", { method: "GET" });
+    },
+    getStatus: (): Promise<{
+      userStatus: string;
+      isPremium: boolean;
+      linkedProfile?: any;
+    }> => {
+      return fetchApi("/premium/status", { method: "GET" });
     },
     getUserStatus: (
       walletAddress: string
@@ -313,13 +380,21 @@ export const hono = {
       linkedProfile?: {
         profileId: string;
         handle: string;
-        linkedAt: string;
+        linkedAt: Date;
       } | null;
     }> => {
       return fetchApi("/premium/user-status", {
         body: JSON.stringify({ walletAddress }),
         method: "POST"
-      });
+      }).then((response) => ({
+        ...response,
+        linkedProfile: response.linkedProfile
+          ? {
+              ...response.linkedProfile,
+              linkedAt: new Date(response.linkedProfile.linkedAt)
+            }
+          : null
+      }));
     },
     linkedProfile: (): Promise<any> => {
       return fetchApi("/premium/linked-profile", { method: "GET" });
@@ -330,32 +405,15 @@ export const hono = {
     ): Promise<{
       profileId: string;
       handle: string;
-      linkedAt: string;
+      linkedAt: Date;
     }> => {
       return fetchApi("/premium/link", {
         body: JSON.stringify({ profileId, walletAddress }),
         method: "POST"
-      });
-    },
-    profiles: ({
-      query
-    }: {
-      query: { walletAddress: string };
-    }): Promise<{ profiles: any[] }> => {
-      return fetchApi(
-        `/premium/profiles?walletAddress=${query.walletAddress}`,
-        { method: "GET" }
-      );
-    },
-    stats: (): Promise<any> => {
-      return fetchApi("/premium/stats", { method: "GET" });
-    },
-    status: (): Promise<{
-      userStatus: string;
-      isPremium: boolean;
-      linkedProfile?: any;
-    }> => {
-      return fetchApi("/premium/status", { method: "GET" });
+      }).then((response) => ({
+        ...response,
+        linkedAt: new Date(response.linkedAt)
+      }));
     },
     verifyRegistration: ({
       json

@@ -68,9 +68,10 @@ export const useProfileStats = () => {
 export const useLinkProfile = () => {
   const queryClient = useQueryClient();
   const { setUserStatus, setError } = usePremiumStore();
+  const { currentAccount } = useAccountStore();
 
   return useMutation({
-    mutationFn: (profileId: string) => hono.premium.linkProfile(profileId),
+    mutationFn: (profileId: string) => hono.premium.linkProfile(currentAccount!.address, profileId),
     onError: (error: Error) => {
       toast.error(error.message || "Failed to link profile");
       setError(error.message);

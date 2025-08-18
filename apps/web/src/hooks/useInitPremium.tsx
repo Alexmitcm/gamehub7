@@ -72,7 +72,7 @@ export const useInitPremium = () => {
       setUserStatus("ProLinked");
       setLinkedProfile({
         handle: data.handle,
-        linkedAt: new Date(data.linkedAt),
+        linkedAt: data.linkedAt,
         profileId: data.profileId
       });
       setError(null);
@@ -93,7 +93,7 @@ export const useInitPremium = () => {
       setUserStatus("ProLinked");
       setLinkedProfile({
         handle: data.handle,
-        linkedAt: new Date(data.linkedAt),
+        linkedAt: data.linkedAt,
         profileId: data.profileId
       });
       setError(null);

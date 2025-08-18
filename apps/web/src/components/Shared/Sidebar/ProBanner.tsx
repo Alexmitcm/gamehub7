@@ -9,14 +9,12 @@ import { useHasPremiumAccess } from "@/helpers/premiumUtils";
 import { useProModalStore } from "@/store/non-persisted/modal/useProModalStore";
 import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { useProStore } from "@/store/persisted/useProStore";
-import { useSimplePremium } from "@/hooks/useSimplePremium";
 
 const ProBanner = () => {
   const { currentAccount } = useAccountStore();
   const { proBannerDismissed, setProBannerDismissed } = useProStore();
   const { setShow: setShowProModal } = useProModalStore();
   const hasPremiumAccess = useHasPremiumAccess();
-  const { premiumStatus, isLoading } = useSimplePremium();
 
   const onError = (error: ApolloClientError) => {
     errorToast(error);
@@ -31,19 +29,7 @@ const ProBanner = () => {
     variables: { request: { post: BANNER_IDS.PRO } }
   });
 
-  // Don't show banner if:
-  // 1. User has Lens Pro subscription
-  // 2. User has premium access from our system
-  // 3. User is premium from simple premium check
-  // 4. Banner was dismissed
-  // 5. Still loading premium status
-  if (
-    currentAccount?.hasSubscribed || 
-    hasPremiumAccess || 
-    premiumStatus?.userStatus === "ProLinked" ||
-    proBannerDismissed ||
-    isLoading
-  ) {
+  if (currentAccount?.hasSubscribed || hasPremiumAccess || proBannerDismissed) {
     return null;
   }
 

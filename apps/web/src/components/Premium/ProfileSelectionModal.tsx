@@ -4,8 +4,6 @@ import {
   XMarkIcon
 } from "@heroicons/react/24/outline";
 import { Fragment, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { hono } from "@/helpers/fetcher";
 
 interface Profile {
   id: string;
@@ -21,83 +19,6 @@ interface ProfileSelectionModalProps {
   onProfileSelect: (profileId: string) => Promise<void>;
   isLoading?: boolean;
 }
-
-// Component to check if a profile is the exclusive premium account
-const ProfileWithVerification = ({ 
-  profile, 
-  selectedProfileId, 
-  setSelectedProfileId, 
-  isSubmitting 
-}: { 
-  profile: Profile; 
-  selectedProfileId: string; 
-  setSelectedProfileId: (id: string) => void; 
-  isSubmitting: boolean; 
-}) => {
-  const { data: premiumStatus } = useQuery({
-    enabled: !!profile.ownedBy,
-    queryFn: async () => {
-      try {
-        return await hono.premium.getSimpleStatus(profile.ownedBy, profile.id);
-      } catch (error) {
-        console.warn("Failed to get premium status for profile:", error);
-        return { userStatus: "Standard" as const };
-      }
-    },
-    queryKey: ["profile-premium-status", profile.ownedBy, profile.id],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-    throwOnError: false
-  });
-
-  const isExclusivePremium = premiumStatus?.userStatus === "ProLinked" && 
-    premiumStatus?.linkedProfile?.profileId === profile.id;
-
-  return (
-    <label
-      className={`flex cursor-pointer items-center rounded-lg border p-3 transition-colors ${
-        selectedProfileId === profile.id
-          ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300"
-      }`}
-      key={profile.id}
-    >
-      <input
-        checked={selectedProfileId === profile.id}
-        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
-        disabled={isSubmitting}
-        name="profile"
-        onChange={(e) => setSelectedProfileId(e.target.value)}
-        type="radio"
-        value={profile.id}
-      />
-      <div className="ml-3 flex-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900 text-sm">
-              @{profile.handle}
-            </span>
-            {isExclusivePremium && (
-              <svg className="h-4 w-4 text-brand-500" fill="currentColor" viewBox="0 0 20 20" aria-label="Verified Premium Account">
-                <title>Verified Premium Account</title>
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            )}
-          </div>
-          {profile.isDefault && (
-            <span className="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-800 text-xs">
-              Default
-            </span>
-          )}
-        </div>
-        <p className="mt-1 text-gray-500 text-xs">
-          {profile.ownedBy.slice(0, 6)}...
-          {profile.ownedBy.slice(-4)}
-        </p>
-      </div>
-    </label>
-  );
-};
 
 export default function ProfileSelectionModal({
   isOpen,
@@ -167,7 +88,6 @@ export default function ProfileSelectionModal({
                     className="rounded-full p-1 hover:bg-gray-100 disabled:opacity-50"
                     disabled={isSubmitting}
                     onClick={handleClose}
-                    type="button"
                   >
                     <XMarkIcon className="h-5 w-5 text-gray-400" />
                   </button>
@@ -194,13 +114,40 @@ export default function ProfileSelectionModal({
 
                   <div className="space-y-2">
                     {profiles.map((profile) => (
-                      <ProfileWithVerification
+                      <label
+                        className={`flex cursor-pointer items-center rounded-lg border p-3 transition-colors ${
+                          selectedProfileId === profile.id
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
                         key={profile.id}
-                        profile={profile}
-                        selectedProfileId={selectedProfileId}
-                        setSelectedProfileId={setSelectedProfileId}
-                        isSubmitting={isSubmitting}
-                      />
+                      >
+                        <input
+                          checked={selectedProfileId === profile.id}
+                          className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                          disabled={isSubmitting}
+                          name="profile"
+                          onChange={(e) => setSelectedProfileId(e.target.value)}
+                          type="radio"
+                          value={profile.id}
+                        />
+                        <div className="ml-3 flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-gray-900 text-sm">
+                              @{profile.handle}
+                            </span>
+                            {profile.isDefault && (
+                              <span className="inline-flex items-center rounded bg-gray-100 px-2 py-0.5 font-medium text-gray-800 text-xs">
+                                Default
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-gray-500 text-xs">
+                            {profile.ownedBy.slice(0, 6)}...
+                            {profile.ownedBy.slice(-4)}
+                          </p>
+                        </div>
+                      </label>
                     ))}
                   </div>
                 </div>

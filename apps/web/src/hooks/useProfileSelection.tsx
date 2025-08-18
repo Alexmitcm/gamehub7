@@ -33,20 +33,12 @@ export const useProfileSelection = () => {
   // Query to fetch available profiles with business logic enforcement
   const profilesQuery = useQuery({
     enabled: !!currentAccount?.address,
-    onError: (error) => {
-      // Completely silent for 401 errors - this is expected when not authenticated
-      if (error.message.includes("401")) {
-        return;
-      }
-      // Only log non-401 errors that might indicate real issues
-      console.error("Available profiles fetch error:", error);
-    },
     queryFn: async (): Promise<AvailableProfilesResponse> => {
       if (!currentAccount?.address) {
         throw new Error("No wallet connected");
       }
 
-      const response = await hono.premium.availableProfiles(
+      const response = await hono.premium.getAvailableProfiles(
         currentAccount.address
       );
       return response;
@@ -71,9 +63,10 @@ export const useProfileSelection = () => {
         throw new Error("No wallet connected");
       }
 
-      const response = await hono.premium.linkProfile({
-        json: { profileId, walletAddress: currentAccount.address }
-      });
+      const response = await hono.premium.linkProfile(
+        currentAccount.address,
+        profileId
+      );
 
       return response;
     },

@@ -27,7 +27,7 @@ const useUserOnChainState = () => {
     }
   });
 
-  if (!nodeData) {
+  if (!nodeData || !Array.isArray(nodeData) || nodeData.length < 10) {
     return {
       data: undefined,
       isLoading,

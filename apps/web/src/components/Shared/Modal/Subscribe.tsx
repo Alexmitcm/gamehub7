@@ -45,7 +45,7 @@ const Subscribe = () => {
     );
   }
 
-  // Check if user is Premium (from backend or simple premium check)
+  // Check if user is Premium (from backend or legacy)
   const isPremium =
     backendUser?.status === "Premium" ||
     premiumStatus?.userStatus === "ProLinked";
@@ -97,7 +97,7 @@ const Subscribe = () => {
   if (premiumStatus?.userStatus === "OnChainUnlinked") {
     const handleLinkProfile = async (profileId: string) => {
       try {
-        await linkProfile(profileId);
+        await linkProfile(currentAccount!.address, profileId);
         // The hook will handle the state update
       } catch (error) {
         console.error("Failed to link profile:", error);
@@ -107,7 +107,7 @@ const Subscribe = () => {
     const handleAutoLink = async () => {
       try {
         if (availableProfiles?.profiles.length === 1) {
-          await linkProfile(availableProfiles.profiles[0].id);
+          await linkProfile(currentAccount!.address, availableProfiles.profiles[0].id);
         } else {
           setShowProfileModal(true);
         }
@@ -187,8 +187,7 @@ const Subscribe = () => {
   // Standard users - show premium registration form
   if (
     premiumStatus?.userStatus === "Standard" ||
-    backendUser?.status === "Standard" ||
-    !premiumStatus // Fallback for when status is not loaded
+    backendUser?.status === "Standard"
   ) {
     return (
       <div className="mx-5 my-10 flex flex-col items-center gap-y-8">

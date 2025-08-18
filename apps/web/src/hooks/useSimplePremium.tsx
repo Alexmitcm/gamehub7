@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { hono } from "@/helpers/fetcher";
-import { useAccountStore } from "@/store/persisted/useAccountStore";
 import { usePremiumStore } from "@/store/premiumStore";
 
 interface PremiumStatus {
@@ -15,14 +14,12 @@ interface PremiumStatus {
 
 export const useSimplePremium = () => {
   const account = useAccount();
-  const { currentAccount } = useAccountStore();
   const { setUserStatus, setLinkedProfile } = usePremiumStore();
 
   // Safely extract wallet address with null checks
   const connectedWalletAddress = account?.address;
-  const currentProfileId = currentAccount?.id;
 
-  // Query to get premium status using the connected wallet address and current profile
+  // Query to get premium status using the connected wallet address
   const {
     data: premiumStatus,
     isLoading,
@@ -33,15 +30,11 @@ export const useSimplePremium = () => {
       if (!connectedWalletAddress) {
         throw new Error("No wallet address available");
       }
-      return hono.premium.getSimpleStatus(
-        connectedWalletAddress,
-        currentProfileId
-      );
+      return hono.premium.getSimpleStatus(connectedWalletAddress);
     },
     queryKey: [
       "simple-premium-status",
-      connectedWalletAddress,
-      currentProfileId
+      connectedWalletAddress
     ],
     retry: 2,
     staleTime: 5 * 60 * 1000 // 5 minutes
@@ -89,10 +82,10 @@ export const useSimplePremium = () => {
 
   return {
     error,
-    isConnected: Boolean(connectedWalletAddress),
     isLoading,
     isPremium: premiumStatus?.userStatus === "ProLinked",
     linkedProfile: premiumStatus?.linkedProfile,
-    premiumStatus
+    premiumStatus,
+    isConnected: Boolean(connectedWalletAddress)
   };
 };

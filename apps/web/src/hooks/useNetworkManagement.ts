@@ -211,7 +211,7 @@ export function useNetworkManagement() {
   return {
     // Current state
     currentChainId,
-    currentNetwork: chain,
+    currentNetwork: chainId,
     isArbitrumOne,
     needsNetworkSwitch,
     isSwitching,

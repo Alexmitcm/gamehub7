@@ -22,45 +22,10 @@ import { signIn } from "@/store/persisted/useAuthStore";
 import { EXPANSION_EASE } from "@/variants";
 import SignupCard from "./SignupCard";
 import WalletSelector from "./WalletSelector";
-import { useQuery } from "@tanstack/react-query";
-import { hono } from "@/helpers/fetcher";
 
 interface LoginProps {
   setHasAccounts: Dispatch<SetStateAction<boolean>>;
 }
-
-// Component to check if an account is the exclusive premium account
-const AccountWithVerification = ({ account }: { account: any }) => {
-  const { data: premiumStatus } = useQuery({
-    enabled: !!account.address,
-    queryFn: async () => {
-      try {
-        return await hono.premium.getSimpleStatus(account.address, account.id);
-      } catch (error) {
-        console.warn("Failed to get premium status for account:", error);
-        return { userStatus: "Standard" as const };
-      }
-    },
-    queryKey: ["account-premium-status", account.address, account.id],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-    throwOnError: false
-  });
-
-  const isExclusivePremium = premiumStatus?.userStatus === "ProLinked" && 
-    premiumStatus?.linkedProfile?.profileId === account.id;
-
-  return (
-    <SingleAccount
-      account={account}
-      hideFollowButton
-      hideUnfollowButton
-      isVerified={isExclusivePremium}
-      linkToAccount={false}
-      showUserPreview={false}
-    />
-  );
-};
 
 const Login = ({ setHasAccounts }: LoginProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -215,7 +180,13 @@ const Login = ({ setHasAccounts }: LoginProps) => {
                         transition: { duration: 0.2 }
                       }}
                     >
-                      <AccountWithVerification account={account} />
+                      <SingleAccount
+                        account={account}
+                        hideFollowButton
+                        hideUnfollowButton
+                        linkToAccount={false}
+                        showUserPreview={false}
+                      />
                       <Button
                         disabled={
                           isSubmitting && loggingInAccountId === account.address

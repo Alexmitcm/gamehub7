@@ -129,43 +129,21 @@ export class UserStatusService {
       });
 
       // Check if user has a linked profile
-      let linkedProfile:
-        | {
-            handle: string;
-            linkedAt: string;
-            profileId: string;
+      const linkedProfile = user?.premiumProfile
+        ? {
+            handle: user.premiumProfile.profileId, // You might want to store handle separately
+            linkedAt: user.premiumProfile.linkedAt.toISOString(), // Convert Date to ISO string
+            profileId: user.premiumProfile.profileId
           }
-        | undefined;
-
-      // Only show linked profile if this specific profile is the exclusive premium account
-      if (
-        user?.premiumProfile &&
-        lensProfileId &&
-        user.premiumProfile.profileId === lensProfileId
-      ) {
-        linkedProfile = {
-          handle: user.premiumProfile.profileId, // You might want to store handle separately
-          linkedAt: user.premiumProfile.linkedAt.toISOString(), // Convert Date to ISO string
-          profileId: user.premiumProfile.profileId
-        };
-      }
+        : undefined;
 
       // Determine user status based on the new logic
       let status: UserStatus = UserStatus.Standard;
 
-      if (isPremiumOnChain) {
-        // Check if this specific profile is the exclusive premium account
-        if (
-          lensProfileId &&
-          user?.premiumProfile?.profileId === lensProfileId
-        ) {
-          // This profile is the exclusive premium account
-          status = UserStatus.Premium;
-        } else {
-          // This profile is NOT the exclusive premium account - should be Standard
-          // Even if the wallet is premium, this profile is not the linked one
-          status = UserStatus.Standard;
-        }
+      if (isPremiumOnChain && linkedProfile) {
+        status = UserStatus.Premium;
+      } else if (isPremiumOnChain && !linkedProfile) {
+        status = UserStatus.OnChainUnlinked;
       }
 
       // Check if profile can be linked
@@ -194,7 +172,7 @@ export class UserStatusService {
 
       return {
         canLinkProfile,
-        hasLinkedProfile: !!linkedProfile, // This will be true only if current profile is linked
+        hasLinkedProfile: !!linkedProfile,
         isPremiumOnChain,
         lensProfileId,
         lensWalletAddress,
