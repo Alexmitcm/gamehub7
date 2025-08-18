@@ -4,10 +4,12 @@ import logger from "@hey/helpers/logger";
 import signer from "./signer";
 
 const guildClient = createGuildClient("heyxyz");
-const signerFunction = createSigner.custom(
+
+// Check if signer is available before creating signer function
+const signerFunction = signer ? createSigner.custom(
   (message) => signer.signMessage({ message }),
   signer.account.address
-);
+) : null;
 const {
   guild: {
     role: { requirement: requirementClient }
@@ -23,6 +25,17 @@ const syncAddressesToGuild = async ({
   requirementId: number;
   roleId: number;
 }) => {
+  // Check if signer is available
+  if (!signerFunction) {
+    logger.warn("Guild sync skipped - PRIVATE_KEY not available");
+    return {
+      status: Status.Success,
+      total: addresses.length,
+      updatedAt: new Date().toISOString(),
+      message: "Guild sync skipped - PRIVATE_KEY not available"
+    };
+  }
+
   // Run the sync operation in the background without awaiting
   requirementClient
     .update(
