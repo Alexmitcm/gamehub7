@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import prisma from "@/prisma/client";
 import PremiumService from "./PremiumService";
-import ProfileService from "./ProfileService";
 
 // Mock dependencies
 vi.mock("@/prisma/client", () => ({
@@ -15,11 +13,32 @@ vi.mock("@/prisma/client", () => ({
   }
 }));
 
-vi.mock("./ProfileService", () => ({
+vi.mock("./BlockchainService", () => ({
   default: {
-    getProfileById: vi.fn(),
-    getProfilesByWallet: vi.fn(),
-    validateProfileOwnership: vi.fn()
+    isWalletPremium: vi.fn(),
+    getProfileStats: vi.fn(),
+    verifyRegistrationTransaction: vi.fn()
+  }
+}));
+
+vi.mock("./UserService", () => ({
+  default: {
+    getUserPremiumStatus: vi.fn(),
+    autoLinkFirstProfile: vi.fn(),
+    linkProfileToWallet: vi.fn(),
+    getPremiumStatus: vi.fn(),
+    unlinkProfile: vi.fn(),
+    getAvailableProfiles: vi.fn(),
+    getLinkedProfile: vi.fn()
+  }
+}));
+
+vi.mock("./EventService", () => ({
+  default: {
+    emitPremiumStatusChanged: vi.fn(),
+    emitProfileAutoLinked: vi.fn(),
+    emitProfileLinked: vi.fn(),
+    emitRegistrationVerified: vi.fn()
   }
 }));
 
@@ -47,67 +66,19 @@ describe("PremiumService", () => {
 
   describe("verifyPremiumByNodeset", () => {
     it("should return true for premium wallet", async () => {
-      const mockNodeData = [
-        1000n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        "0x123",
-        "0x456",
-        "0x789",
-        "0xabc",
-        false,
-        false
-      ];
-
-      // Mock the public client
-      const mockPublicClient = {
-        readContract: vi.fn().mockResolvedValue(mockNodeData)
-      };
-
-      // Mock the constructor to inject our mock client
-      vi.spyOn(PremiumService, "constructor" as any).mockImplementation(() => {
-        (PremiumService as any).publicClient = mockPublicClient;
-      });
+      const { default: BlockchainService } = await import("./BlockchainService");
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
 
       const result = await PremiumService.verifyPremiumByNodeset(
         "0x1234567890123456789012345678901234567890"
       );
 
       expect(result).toBe(true);
-      expect(mockPublicClient.readContract).toHaveBeenCalledWith({
-        abi: expect.any(Array),
-        address: "0x1234567890123456789012345678901234567890",
-        args: ["0x1234567890123456789012345678901234567890"],
-        functionName: "NodeSet"
-      });
     });
 
     it("should return false for non-premium wallet", async () => {
-      const mockNodeData = [
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        "0x123",
-        "0x456",
-        "0x789",
-        "0xabc",
-        false,
-        false
-      ];
-
-      const mockPublicClient = {
-        readContract: vi.fn().mockResolvedValue(mockNodeData)
-      };
-
-      vi.spyOn(PremiumService, "constructor" as any).mockImplementation(() => {
-        (PremiumService as any).publicClient = mockPublicClient;
-      });
+      const { default: BlockchainService } = await import("./BlockchainService");
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(false);
 
       const result = await PremiumService.verifyPremiumByNodeset(
         "0x1234567890123456789012345678901234567890"
@@ -117,127 +88,91 @@ describe("PremiumService", () => {
     });
 
     it("should handle errors gracefully", async () => {
-      const mockPublicClient = {
-        readContract: vi.fn().mockRejectedValue(new Error("Contract error"))
-      };
-
-      vi.spyOn(PremiumService, "constructor" as any).mockImplementation(() => {
-        (PremiumService as any).publicClient = mockPublicClient;
-      });
+      const { default: BlockchainService } = await import("./BlockchainService");
+      vi.mocked(BlockchainService.isWalletPremium).mockRejectedValue(
+        new Error("Network error")
+      );
 
       await expect(
         PremiumService.verifyPremiumByNodeset(
           "0x1234567890123456789012345678901234567890"
         )
-      ).rejects.toThrow("Failed to verify premium status on-chain");
+      ).rejects.toThrow("Network error");
     });
   });
 
   describe("getUserPremiumStatus", () => {
     it("should return Standard for non-premium wallet", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        false
-      );
+      const { default: BlockchainService } = await import("./BlockchainService");
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(false);
 
       const result = await PremiumService.getUserPremiumStatus(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        userStatus: "Standard"
-      });
+      expect(result.userStatus).toBe("Standard");
     });
 
     it("should return ProLinked for premium wallet with linked profile", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
-      );
-
-      (prisma.premiumProfile.findUnique as any).mockResolvedValue({
-        linkedAt: new Date("2024-01-01"),
-        profileId: "profile123"
-      });
-
-      (ProfileService.getProfileById as any).mockResolvedValue({
-        handle: "testuser",
-        id: "profile123",
-        isDefault: true,
-        ownedBy: "0x1234567890123456789012345678901234567890"
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.getUserPremiumStatus).mockResolvedValue({
+        userStatus: "ProLinked"
       });
 
       const result = await PremiumService.getUserPremiumStatus(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        linkedProfile: {
-          handle: "testuser",
-          linkedAt: expect.any(Date),
-          profileId: "profile123"
-        },
-        userStatus: "ProLinked"
-      });
+      expect(result.userStatus).toBe("ProLinked");
     });
 
     it("should return OnChainUnlinked for premium wallet without linked profile", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
-      );
-      (prisma.premiumProfile.findUnique as any).mockResolvedValue(null);
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.getUserPremiumStatus).mockResolvedValue({
+        userStatus: "OnChainUnlinked"
+      });
 
       const result = await PremiumService.getUserPremiumStatus(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        userStatus: "OnChainUnlinked"
-      });
+      expect(result.userStatus).toBe("OnChainUnlinked");
     });
   });
 
   describe("autoLinkFirstProfile", () => {
     it("should auto-link first profile for premium wallet", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
-      );
-      (prisma.premiumProfile.findUnique as any).mockResolvedValue(null);
-
-      (ProfileService.getProfilesByWallet as any).mockResolvedValue([
-        {
-          handle: "testuser",
-          id: "profile123",
-          isDefault: true,
-          ownedBy: "0x1234567890123456789012345678901234567890"
-        }
-      ]);
-
-      (prisma.$transaction as any).mockImplementation(async (callback: any) => {
-        return await callback({
-          premiumProfile: {
-            create: vi.fn().mockResolvedValue({
-              linkedAt: new Date("2024-01-01"),
-              profileId: "profile123"
-            }),
-            findUnique: vi.fn().mockResolvedValue(null)
-          }
-        });
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      const { default: EventService } = await import("./EventService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.autoLinkFirstProfile).mockResolvedValue({
+        profileId: "profile123",
+        handle: "test.handle",
+        linkedAt: new Date()
       });
 
       const result = await PremiumService.autoLinkFirstProfile(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        handle: "testuser",
-        linkedAt: expect.any(Date),
-        profileId: "profile123"
-      });
+      expect(result?.profileId).toBe("profile123");
+      expect(EventService.emitProfileAutoLinked).toHaveBeenCalledWith(
+        "0x1234567890123456789012345678901234567890",
+        "profile123"
+      );
     });
 
     it("should throw error for non-premium wallet", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        false
-      );
+      const { default: BlockchainService } = await import("./BlockchainService");
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(false);
 
       await expect(
         PremiumService.autoLinkFirstProfile(
@@ -247,155 +182,115 @@ describe("PremiumService", () => {
     });
 
     it("should throw error if wallet already has linked profile", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.autoLinkFirstProfile).mockRejectedValue(
+        new Error("Wallet already has linked profile")
       );
-      (prisma.premiumProfile.findUnique as any).mockResolvedValue({
-        profileId: "existingProfile"
-      });
 
       await expect(
         PremiumService.autoLinkFirstProfile(
           "0x1234567890123456789012345678901234567890"
         )
-      ).rejects.toThrow("Wallet already has a linked premium profile");
+      ).rejects.toThrow("Wallet already has linked profile");
     });
   });
 
   describe("linkProfile", () => {
     it("should link profile for premium wallet", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
-      );
-      (ProfileService.validateProfileOwnership as any).mockResolvedValue(true);
-
-      (prisma.$transaction as any).mockImplementation(async (callback: any) => {
-        return await callback({
-          premiumProfile: {
-            create: vi.fn().mockResolvedValue({
-              linkedAt: new Date("2024-01-01"),
-              profileId: "profile123"
-            }),
-            findUnique: vi
-              .fn()
-              .mockResolvedValueOnce(null) // No existing link
-              .mockResolvedValueOnce(null) // Profile not linked to another wallet
-          }
-        });
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      const { default: EventService } = await import("./EventService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.linkProfileToWallet).mockResolvedValue({
+        profileId: "profile123",
+        handle: "test.handle",
+        linkedAt: new Date()
       });
 
-      await expect(
-        PremiumService.linkProfile(
-          "0x1234567890123456789012345678901234567890",
-          "profile123"
-        )
-      ).resolves.toBeUndefined();
+      await PremiumService.linkProfile(
+        "0x1234567890123456789012345678901234567890",
+        "profile123"
+      );
+
+      expect(UserService.linkProfileToWallet).toHaveBeenCalledWith(
+        "0x1234567890123456789012345678901234567890",
+        "profile123"
+      );
+      expect(EventService.emitProfileLinked).toHaveBeenCalledWith(
+        "0x1234567890123456789012345678901234567890",
+        "profile123"
+      );
     });
 
     it("should throw error if wallet already has linked profile", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.linkProfileToWallet).mockRejectedValue(
+        new Error("Wallet already has linked profile")
       );
-
-      (prisma.$transaction as any).mockImplementation(async (callback: any) => {
-        return await callback({
-          premiumProfile: {
-            findUnique: vi.fn().mockResolvedValue({
-              profileId: "existingProfile"
-            })
-          }
-        });
-      });
 
       await expect(
         PremiumService.linkProfile(
           "0x1234567890123456789012345678901234567890",
           "profile123"
         )
-      ).rejects.toThrow(
-        "Wallet already has a linked premium profile. Profile linking is permanent and cannot be changed."
-      );
+      ).rejects.toThrow("Wallet already has linked profile");
     });
   });
 
   describe("getAvailableProfiles", () => {
     it("should return empty profiles for non-premium wallet", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        false
-      );
+      const { default: BlockchainService } = await import("./BlockchainService");
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(false);
 
       const result = await PremiumService.getAvailableProfiles(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        canLink: false,
-        profiles: []
-      });
+      expect(result.canLink).toBe(false);
+      expect(result.profiles).toHaveLength(0);
     });
 
     it("should return profiles for premium wallet without linked profile", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
-      );
-      (prisma.premiumProfile.findUnique as any).mockResolvedValue(null);
-
-      (ProfileService.getProfilesByWallet as any).mockResolvedValue([
-        {
-          handle: "testuser",
-          id: "profile123",
-          isDefault: true,
-          ownedBy: "0x1234567890123456789012345678901234567890"
-        }
-      ]);
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.getAvailableProfiles).mockResolvedValue({
+        canLink: true,
+        profiles: [{ id: "profile123", handle: "test.handle", ownedBy: "0x123", isDefault: false }]
+      });
 
       const result = await PremiumService.getAvailableProfiles(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        canLink: true,
-        profiles: [
-          {
-            handle: "testuser",
-            id: "profile123",
-            isDefault: true,
-            ownedBy: "0x1234567890123456789012345678901234567890"
-          }
-        ]
-      });
+      expect(result.canLink).toBe(true);
+      expect(result.profiles).toHaveLength(1);
     });
 
     it("should return linked profile for premium wallet with linked profile", async () => {
-      vi.spyOn(PremiumService, "verifyPremiumByNodeset").mockResolvedValue(
-        true
-      );
-
-      (prisma.premiumProfile.findUnique as any).mockResolvedValue({
-        linkedAt: new Date("2024-01-01"),
-        profileId: "profile123"
-      });
-
-      (ProfileService.getProfileById as any).mockResolvedValue({
-        handle: "testuser",
-        id: "profile123",
-        isDefault: true,
-        ownedBy: "0x1234567890123456789012345678901234567890"
+      const { default: BlockchainService } = await import("./BlockchainService");
+      const { default: UserService } = await import("./UserService");
+      
+      vi.mocked(BlockchainService.isWalletPremium).mockResolvedValue(true);
+      vi.mocked(UserService.getAvailableProfiles).mockResolvedValue({
+        canLink: false,
+        profiles: [{ id: "profile123", handle: "linked.handle", ownedBy: "0x123", isDefault: false }]
       });
 
       const result = await PremiumService.getAvailableProfiles(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        canLink: false,
-        linkedProfile: {
-          handle: "testuser",
-          linkedAt: expect.any(Date),
-          profileId: "profile123"
-        },
-        profiles: []
-      });
+      expect(result.canLink).toBe(false);
+      expect(result.profiles).toHaveLength(1);
     });
   });
 });

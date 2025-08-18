@@ -8,6 +8,23 @@ const profilesSchema = z.object({
   walletAddress: z.string().min(1, 'Wallet address is required')
 });
 
+// GET endpoint for testing and default response
+app.get('/', async (c) => {
+  try {
+    return c.json({
+      message: 'Premium profiles endpoint',
+      description: 'Use POST with walletAddress to get available profiles',
+      example: {
+        method: 'POST',
+        body: { walletAddress: '0x1234567890123456789012345678901234567890' }
+      }
+    });
+  } catch (error) {
+    console.error('Error in premium profiles GET endpoint:', error);
+    return c.json({ error: 'Failed to process request' }, 500);
+  }
+});
+
 app.post('/', async (c) => {
   try {
     const body = await c.req.json();

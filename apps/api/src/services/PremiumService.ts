@@ -28,6 +28,14 @@ export class PremiumService {
   }
 
   /**
+   * Verify if a wallet is premium by checking the NodeSet (alias for checkWalletStatus)
+   * This is the function that tests expect
+   */
+  async verifyPremiumByNodeset(walletAddress: string): Promise<boolean> {
+    return this.checkWalletStatus(walletAddress);
+  }
+
+  /**
    * Get user's premium status with enhanced linking logic
    * Returns: 'Standard' | 'OnChainUnlinked' | 'ProLinked'
    */

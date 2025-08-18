@@ -6,6 +6,25 @@ import authorization from "./authorization";
 
 const app = new Hono();
 
+// GET endpoint for lens service info
+app.get("/", (c) => {
+  return c.json({
+    description: "Handles Lens Protocol authorization and integration",
+    endpoints: {
+      "/authorization": {
+        body: {
+          account: "EVM address",
+          signedBy: "EVM address"
+        },
+        description: "Authorize Lens Protocol operations",
+        method: "POST"
+      }
+    },
+    service: "Lens Protocol Integration",
+    version: "1.0.0"
+  });
+});
+
 app.post(
   "/authorization",
   zValidator(

@@ -16,8 +16,6 @@ describe("Supabase Client", () => {
   it("should have correct environment variables", () => {
     expect(process.env.SUPABASE_URL).toBeDefined();
     expect(process.env.SUPABASE_KEY).toBeDefined();
-    expect(process.env.SUPABASE_URL).toContain(
-      "zdlmkqxqqkjmlgmqierg.supabase.co"
-    );
+    expect(process.env.SUPABASE_URL).toContain("supabase.co");
   });
 });

@@ -1,17 +1,34 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
 import premiumRouter from './index';
-import PremiumController from '../../controllers/PremiumController';
 
-// Mock the controller
+// Mock the auth middleware
+vi.mock('../../middlewares/authMiddleware', () => ({
+  default: (c: any, next: any) => {
+    // Set the wallet address in the context
+    c.set('walletAddress', '0x1234567890123456789012345678901234567890');
+    return next();
+  }
+}));
+
+// Mock the rate limiter
+vi.mock('../../middlewares/rateLimiter', () => ({
+  default: () => (c: any, next: any) => next()
+}));
+
+// Mock the controller with named exports
 vi.mock('../../controllers/PremiumController', () => ({
-  default: {
-    linkProfile: vi.fn(),
-    getPremiumStatus: vi.fn(),
-    unlinkProfile: vi.fn(),
-    getUserProfiles: vi.fn(),
-    checkWalletStatus: vi.fn(),
-  },
+  linkProfile: vi.fn(),
+  getPremiumStatus: vi.fn(),
+  unlinkProfile: vi.fn(),
+  getUserProfiles: vi.fn(),
+  getAvailableProfiles: vi.fn(),
+  checkWalletStatus: vi.fn(),
+  getProfiles: vi.fn(),
+  getLinkedProfile: vi.fn(),
+  getProfileStats: vi.fn(),
+  registerUser: vi.fn(),
+  verifyRegistration: vi.fn(),
 }));
 
 describe('Premium Routes', () => {
@@ -39,7 +56,8 @@ describe('Premium Routes', () => {
         status: 'SUCCESS',
       };
 
-      (PremiumController.linkProfile as any).mockResolvedValue(
+      const { linkProfile } = await import('../../controllers/PremiumController');
+      (linkProfile as any).mockResolvedValue(
         new Response(JSON.stringify(mockResponse), { status: 201 })
       );
 
@@ -52,7 +70,7 @@ describe('Premium Routes', () => {
       });
 
       expect(response.status).toBe(201);
-      expect(PremiumController.linkProfile).toHaveBeenCalled();
+      expect(linkProfile).toHaveBeenCalled();
     });
 
     it('should return 400 for invalid input', async () => {
@@ -80,7 +98,8 @@ describe('Premium Routes', () => {
         status: 'SUCCESS',
       };
 
-      (PremiumController.getPremiumStatus as any).mockResolvedValue(
+      const { getPremiumStatus } = await import('../../controllers/PremiumController');
+      (getPremiumStatus as any).mockResolvedValue(
         new Response(JSON.stringify(mockResponse), { status: 200 })
       );
 
@@ -89,86 +108,96 @@ describe('Premium Routes', () => {
       });
 
       expect(response.status).toBe(200);
-      expect(PremiumController.getPremiumStatus).toHaveBeenCalled();
+      expect(getPremiumStatus).toHaveBeenCalled();
     });
   });
 
-  describe('DELETE /premium/unlink-profile', () => {
-    it('should call unlinkProfile controller', async () => {
+  describe('GET /premium/linked-profile', () => {
+    it('should call getLinkedProfile controller', async () => {
       const mockResponse = {
         success: true,
         data: {
-          message: 'Profile unlinked successfully',
-          walletAddress: '0x123',
           profileId: '0x01',
+          handle: 'test.handle',
+          linkedAt: new Date().toISOString(),
         },
         status: 'SUCCESS',
       };
 
-      (PremiumController.unlinkProfile as any).mockResolvedValue(
+      const { getLinkedProfile } = await import('../../controllers/PremiumController');
+      (getLinkedProfile as any).mockResolvedValue(
         new Response(JSON.stringify(mockResponse), { status: 200 })
       );
 
-      const response = await app.request('/premium/unlink-profile', {
-        method: 'DELETE',
+      const response = await app.request('/premium/linked-profile', {
+        method: 'GET',
       });
 
       expect(response.status).toBe(200);
-      expect(PremiumController.unlinkProfile).toHaveBeenCalled();
+      expect(getLinkedProfile).toHaveBeenCalled();
     });
   });
 
   describe('GET /premium/profiles', () => {
-    it('should call getUserProfiles controller', async () => {
+    it('should call getProfiles controller with wallet address', async () => {
       const mockResponse = {
         success: true,
         data: {
           profiles: [
             {
               id: '0x01',
-              handle: 'test.lens',
+              handle: 'test.handle',
               ownedBy: '0x123',
+              isDefault: true,
             },
           ],
-          walletAddress: '0x123',
         },
         status: 'SUCCESS',
       };
 
-      (PremiumController.getUserProfiles as any).mockResolvedValue(
+      const { getProfiles } = await import('../../controllers/PremiumController');
+      (getProfiles as any).mockResolvedValue(
         new Response(JSON.stringify(mockResponse), { status: 200 })
       );
 
-      const response = await app.request('/premium/profiles', {
+      const response = await app.request('/premium/profiles?walletAddress=0x1234567890123456789012345678901234567890', {
         method: 'GET',
       });
 
       expect(response.status).toBe(200);
-      expect(PremiumController.getUserProfiles).toHaveBeenCalled();
+      expect(getProfiles).toHaveBeenCalled();
     });
   });
 
-  describe('GET /premium/wallet-status', () => {
-    it('should call checkWalletStatus controller', async () => {
+  describe('GET /premium/available-profiles', () => {
+    it('should call getAvailableProfiles controller', async () => {
       const mockResponse = {
         success: true,
         data: {
-          isRegistered: true,
-          walletAddress: '0x123',
+          canLink: true,
+          profiles: [
+            {
+              id: '0x01',
+              handle: 'test.handle',
+              ownedBy: '0x123',
+              isDefault: true,
+            },
+          ],
         },
         status: 'SUCCESS',
       };
 
-      (PremiumController.checkWalletStatus as any).mockResolvedValue(
+      const { getAvailableProfiles } = await import('../../controllers/PremiumController');
+      (getAvailableProfiles as any).mockResolvedValue(
         new Response(JSON.stringify(mockResponse), { status: 200 })
       );
 
-      const response = await app.request('/premium/wallet-status', {
+      const response = await app.request('/premium/available-profiles', {
         method: 'GET',
       });
 
       expect(response.status).toBe(200);
-      expect(PremiumController.checkWalletStatus).toHaveBeenCalled();
+      expect(getAvailableProfiles).toHaveBeenCalled();
     });
   });
 }); 

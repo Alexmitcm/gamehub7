@@ -11,82 +11,132 @@ import generateOg from "./ogUtils";
 
 const getPost = async (ctx: Context) => {
   const { slug } = ctx.req.param();
+  
+  // Validate slug parameter
+  if (!slug || typeof slug !== 'string') {
+    return ctx.html(`
+      <html>
+        <head>
+          <title>Post Not Found - Hey</title>
+          <meta name="description" content="The requested post could not be found." />
+        </head>
+        <body>
+          <h1>Post Not Found</h1>
+          <p>The requested post could not be found.</p>
+        </body>
+      </html>
+    `, 404);
+  }
+
   const cacheKey = `og:post:${slug}`;
 
   return generateOg({
     buildHtml: (post: PostFragment, _jsonLd) => {
-      const { author, metadata } = post;
-      const { usernameWithPrefix } = getAccount(author);
-      const filteredContent = getPostData(metadata)?.content || "";
-      const title = `${post.__typename} by ${usernameWithPrefix} on Hey`;
-      const description = normalizeDescription(filteredContent, title);
-      const postUrl = `https://hey.xyz/posts/${post.slug}`;
+      try {
+        const { author, metadata } = post;
+        const { usernameWithPrefix } = getAccount(author);
+        const filteredContent = getPostData(metadata)?.content || "";
+        const title = `${post.__typename} by ${usernameWithPrefix} on Hey`;
+        const description = normalizeDescription(filteredContent, title);
+        const postUrl = `https://hey.xyz/posts/${post.slug}`;
 
-      const escTitle = escapeHtml(title);
-      const escDescription = escapeHtml(description);
+        const escTitle = escapeHtml(title);
+        const escDescription = escapeHtml(description);
 
-      return html`
-        <html>
-          <head>
-            <meta charSet="utf-8" />
-            <meta name="viewport" content="width=device-width" />
-            <meta http-equiv="content-language" content="en-US" />
-            <title>${escTitle}</title>
-            <meta name="description" content="${escDescription}" />
-            <meta property="og:title" content="${escTitle}" />
-            <meta property="og:description" content="${escDescription}" />
-            <meta property="og:type" content="article" />
-            <meta property="og:site_name" content="Hey" />
-            <meta property="og:url" content="https://hey.xyz/posts/${post.slug}" />
-            <meta property="og:logo" content="${STATIC_IMAGES_URL}/app-icon/0.png" />
-            <meta property="og:image" content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}" />
-            <meta name="twitter:card" content="summary" />
-            <meta name="twitter:title" content="${escTitle}" />
-            <meta name="twitter:description" content="${escDescription}" />
-            <meta property="twitter:image" content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}" />
-            <meta name="twitter:site" content="@heydotxyz" />
-            <link rel="canonical" href="https://hey.xyz/posts/${post.slug}" />
-          </head>
-          <body>
-            <h1>${escTitle}</h1>
-            <h2>${escDescription}</h2>
-            <div>
-              <b>Stats</b>
-              <ul>
-                <li><a href="${postUrl}">Collects: ${post.stats.collects}</a></li>
-                <li><a href="${postUrl}">Tips: ${post.stats.tips}</a></li>
-                <li><a href="${postUrl}">Comments: ${post.stats.comments}</a></li>
-                <li><a href="${postUrl}">Likes: ${post.stats.reactions}</a></li>
-                <li><a href="${postUrl}">Reposts: ${post.stats.reposts}</a></li>
-                <li><a href="${postUrl}/quotes">Quotes: ${post.stats.quotes}</a></li>
-              </ul>
-            </div>
-          </body>
-        </html>
-      `;
+        return html`
+          <html>
+            <head>
+              <meta charSet="utf-8" />
+              <meta name="viewport" content="width=device-width" />
+              <meta http-equiv="content-language" content="en-US" />
+              <title>${escTitle}</title>
+              <meta name="description" content="${escDescription}" />
+              <meta property="og:title" content="${escTitle}" />
+              <meta property="og:description" content="${escDescription}" />
+              <meta property="og:type" content="article" />
+              <meta property="og:site_name" content="Hey" />
+              <meta property="og:url" content="https://hey.xyz/posts/${post.slug}" />
+              <meta property="og:logo" content="${STATIC_IMAGES_URL}/app-icon/0.png" />
+              <meta property="og:image" content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}" />
+              <meta name="twitter:card" content="summary" />
+              <meta name="twitter:title" content="${escTitle}" />
+              <meta name="twitter:description" content="${escDescription}" />
+              <meta property="twitter:image" content="${getAvatar(author, TRANSFORMS.AVATAR_BIG)}" />
+              <meta name="twitter:site" content="@heydotxyz" />
+              <link rel="canonical" href="https://hey.xyz/posts/${post.slug}" />
+            </head>
+            <body>
+              <h1>${escTitle}</h1>
+              <h2>${escDescription}</h2>
+              <div>
+                <b>Stats</b>
+                <ul>
+                  <li><a href="${postUrl}">Collects: ${post.stats.collects}</a></li>
+                  <li><a href="${postUrl}">Tips: ${post.stats.tips}</a></li>
+                  <li><a href="${postUrl}">Comments: ${post.stats.comments}</a></li>
+                  <li><a href="${postUrl}">Likes: ${post.stats.reactions}</a></li>
+                  <li><a href="${postUrl}">Reposts: ${post.stats.reposts}</a></li>
+                  <li><a href="${postUrl}/quotes">Quotes: ${post.stats.quotes}</a></li>
+                </ul>
+              </div>
+            </body>
+          </html>
+        `;
+      } catch (error) {
+        console.error('Error building OG HTML for post:', error);
+        return html`
+          <html>
+            <head>
+              <title>Post - Hey</title>
+              <meta name="description" content="View this post on Hey" />
+            </head>
+            <body>
+              <h1>Post</h1>
+              <p>View this post on Hey</p>
+            </body>
+          </html>
+        `;
+      }
     },
     buildJsonLd: (post: PostFragment) => {
-      const { author, metadata } = post;
-      const { usernameWithPrefix } = getAccount(author);
-      const filteredContent = getPostData(metadata)?.content || "";
-      const title = `${post.__typename} by ${usernameWithPrefix} on Hey`;
-      const description = normalizeDescription(filteredContent, title);
+      try {
+        const { author, metadata } = post;
+        const { usernameWithPrefix } = getAccount(author);
+        const filteredContent = getPostData(metadata)?.content || "";
+        const title = `${post.__typename} by ${usernameWithPrefix} on Hey`;
+        const description = normalizeDescription(filteredContent, title);
 
-      return {
-        "@context": "https://schema.org",
-        "@id": `https://hey.xyz/posts/${post.slug}`,
-        "@type": "Article",
-        author: usernameWithPrefix,
-        description,
-        headline: title,
-        image: getAvatar(author, TRANSFORMS.AVATAR_BIG),
-        publisher: { "@type": "Organization", name: "Hey.xyz" },
-        url: `https://hey.xyz/posts/${post.slug}`
-      };
+        return {
+          "@context": "https://schema.org",
+          "@id": `https://hey.xyz/posts/${post.slug}`,
+          "@type": "Article",
+          author: usernameWithPrefix,
+          description,
+          headline: title,
+          image: getAvatar(author, TRANSFORMS.AVATAR_BIG),
+          publisher: { "@type": "Organization", name: "Hey.xyz" },
+          url: `https://hey.xyz/posts/${post.slug}`
+        };
+      } catch (error) {
+        console.error('Error building JSON-LD for post:', error);
+        return {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: "Post on Hey",
+          url: `https://hey.xyz/posts/${post.slug}`
+        };
+      }
     },
     cacheKey,
     ctx,
-    extractData: (data) => data.post as PostFragment | null,
+    extractData: (data) => {
+      try {
+        return data.post as PostFragment | null;
+      } catch (error) {
+        console.error('Error extracting post data:', error);
+        return null;
+      }
+    },
     query: PostDocument,
     variables: { request: { post: slug } }
   });

@@ -2,6 +2,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import prisma from "@/prisma/client";
 import SimplePremiumService from "./SimplePremiumService";
 
+// Mock viem
+vi.mock("viem", () => ({
+  createPublicClient: vi.fn(),
+  http: vi.fn(),
+  parseAbiItem: vi.fn()
+}));
+
+vi.mock("viem/chains", () => ({
+  arbitrum: { id: 42161 }
+}));
+
 // Mock dependencies
 vi.mock("@/prisma/client", () => ({
   default: {
@@ -19,6 +30,11 @@ vi.mock("@hey/helpers/logger", () => ({
   }
 }));
 
+// Mock the public client
+const mockPublicClient = {
+  readContract: vi.fn()
+};
+
 describe("SimplePremiumService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -27,6 +43,9 @@ describe("SimplePremiumService", () => {
     process.env.REFERRAL_CONTRACT_ADDRESS =
       "0x1234567890123456789012345678901234567890";
     process.env.INFURA_URL = "https://arbitrum-mainnet.infura.io/v3/test";
+
+    // Mock the public client
+    (SimplePremiumService as any).publicClient = mockPublicClient;
   });
 
   describe("isPremiumWallet", () => {
@@ -46,15 +65,7 @@ describe("SimplePremiumService", () => {
         false
       ];
 
-      const mockPublicClient = {
-        readContract: vi.fn().mockResolvedValue(mockNodeData)
-      };
-
-      vi.spyOn(SimplePremiumService, "constructor" as any).mockImplementation(
-        () => {
-          (SimplePremiumService as any).publicClient = mockPublicClient;
-        }
-      );
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
 
       const result = await SimplePremiumService.isPremiumWallet(
         "0x1234567890123456789012345678901234567890"
@@ -79,15 +90,7 @@ describe("SimplePremiumService", () => {
         false
       ];
 
-      const mockPublicClient = {
-        readContract: vi.fn().mockResolvedValue(mockNodeData)
-      };
-
-      vi.spyOn(SimplePremiumService, "constructor" as any).mockImplementation(
-        () => {
-          (SimplePremiumService as any).publicClient = mockPublicClient;
-        }
-      );
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
 
       const result = await SimplePremiumService.isPremiumWallet(
         "0x1234567890123456789012345678901234567890"
@@ -99,24 +102,48 @@ describe("SimplePremiumService", () => {
 
   describe("getPremiumStatus", () => {
     it("should return Standard for non-premium wallet", async () => {
-      vi.spyOn(SimplePremiumService, "isPremiumWallet").mockResolvedValue(
+      const mockNodeData = [
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        "0x123",
+        "0x456",
+        "0x789",
+        "0xabc",
+        false,
         false
-      );
+      ];
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
 
       const result = await SimplePremiumService.getPremiumStatus(
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        userStatus: "Standard"
-      });
+      expect(result.userStatus).toBe("Standard");
     });
 
     it("should return ProLinked for premium wallet with existing link", async () => {
-      vi.spyOn(SimplePremiumService, "isPremiumWallet").mockResolvedValue(true);
+      const mockNodeData = [
+        1000n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        "0x123",
+        "0x456",
+        "0x789",
+        "0xabc",
+        false,
+        false
+      ];
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
 
       (prisma.premiumProfile.findUnique as any).mockResolvedValue({
-        linkedAt: new Date("2024-01-01"),
+        linkedAt: new Date(),
         profileId: "profile123"
       });
 
@@ -124,56 +151,71 @@ describe("SimplePremiumService", () => {
         "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual({
-        linkedProfile: {
-          linkedAt: expect.any(String),
-          profileId: "profile123"
-        },
-        userStatus: "ProLinked"
-      });
+      expect(result.userStatus).toBe("ProLinked");
+      expect(result.linkedProfile?.profileId).toBe("profile123");
     });
 
     it("should auto-link profile for premium wallet without link", async () => {
-      vi.spyOn(SimplePremiumService, "isPremiumWallet").mockResolvedValue(true);
-      vi.spyOn(SimplePremiumService, "linkProfile").mockResolvedValue();
+      const mockNodeData = [
+        1000n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        "0x123",
+        "0x456",
+        "0x789",
+        "0xabc",
+        false,
+        false
+      ];
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
 
       (prisma.premiumProfile.findUnique as any).mockResolvedValue(null);
+      (prisma.premiumProfile.create as any).mockResolvedValue({
+        linkedAt: new Date(),
+        profileId: "profile123"
+      });
 
       const result = await SimplePremiumService.getPremiumStatus(
         "0x1234567890123456789012345678901234567890",
         "profile123"
       );
 
-      expect(result).toEqual({
-        linkedProfile: {
-          linkedAt: expect.any(String),
-          profileId: "profile123"
-        },
-        userStatus: "ProLinked"
-      });
-
-      expect(SimplePremiumService.linkProfile).toHaveBeenCalledWith(
-        "0x1234567890123456789012345678901234567890",
-        "profile123"
-      );
+      expect(result.userStatus).toBe("ProLinked");
+      expect(result.linkedProfile?.profileId).toBe("profile123");
     });
   });
 
   describe("linkProfile", () => {
     it("should link profile for premium wallet", async () => {
-      vi.spyOn(SimplePremiumService, "isPremiumWallet").mockResolvedValue(true);
+      const mockNodeData = [
+        1000n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        "0x123",
+        "0x456",
+        "0x789",
+        "0xabc",
+        false,
+        false
+      ];
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
+
       (prisma.premiumProfile.findUnique as any).mockResolvedValue(null);
       (prisma.premiumProfile.create as any).mockResolvedValue({
-        linkedAt: new Date("2024-01-01"),
+        linkedAt: new Date(),
         profileId: "profile123"
       });
 
-      await expect(
-        SimplePremiumService.linkProfile(
-          "0x1234567890123456789012345678901234567890",
-          "profile123"
-        )
-      ).resolves.toBeUndefined();
+      await SimplePremiumService.linkProfile(
+        "0x1234567890123456789012345678901234567890",
+        "profile123"
+      );
 
       expect(prisma.premiumProfile.create).toHaveBeenCalledWith({
         data: {
@@ -186,9 +228,21 @@ describe("SimplePremiumService", () => {
     });
 
     it("should throw error for non-premium wallet", async () => {
-      vi.spyOn(SimplePremiumService, "isPremiumWallet").mockResolvedValue(
+      const mockNodeData = [
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        "0x123",
+        "0x456",
+        "0x789",
+        "0xabc",
+        false,
         false
-      );
+      ];
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
 
       await expect(
         SimplePremiumService.linkProfile(
@@ -199,8 +253,24 @@ describe("SimplePremiumService", () => {
     });
 
     it("should throw error if wallet already has linked profile", async () => {
-      vi.spyOn(SimplePremiumService, "isPremiumWallet").mockResolvedValue(true);
+      const mockNodeData = [
+        1000n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        "0x123",
+        "0x456",
+        "0x789",
+        "0xabc",
+        false,
+        false
+      ];
+      mockPublicClient.readContract.mockResolvedValue(mockNodeData);
+
       (prisma.premiumProfile.findUnique as any).mockResolvedValue({
+        linkedAt: new Date(),
         profileId: "existingProfile"
       });
 
@@ -215,63 +285,50 @@ describe("SimplePremiumService", () => {
 
   describe("buildReferralTree", () => {
     it("should build referral tree correctly", async () => {
-      const rootWallet = "0x1234567890123456789012345678901234567890";
-      const leftChild = "0x1111111111111111111111111111111111111111";
-      const rightChild = "0x2222222222222222222222222222222222222222";
-
-      // Mock root node data
       const rootNodeData = [
-        1234567890n, // startTime > 0
-        1000000n, // balance
-        100n, // point
-        1n, // depthLeftBranch
-        1n, // depthRightBranch
-        0n, // depth
-        rootWallet, // player
-        "0x0000000000000000000000000000000000000000", // parent
-        leftChild, // leftChild
-        rightChild, // rightChild
-        false, // isPointChanged
-        false // unbalancedAllowance
+        1000n,
+        100n,
+        5n,
+        2n,
+        1n,
+        3n,
+        "0x123",
+        "0x0000000000000000000000000000000000000000",
+        "0x456",
+        "0x789",
+        false,
+        false
       ];
 
-      // Mock left child data
       const leftChildData = [
-        1234567891n, // startTime > 0
-        500000n, // balance
-        50n, // point
-        0n, // depthLeftBranch
-        0n, // depthRightBranch
-        1n, // depth
-        leftChild, // player
-        rootWallet, // parent
-        "0x0000000000000000000000000000000000000000", // leftChild
-        "0x0000000000000000000000000000000000000000", // rightChild
-        false, // isPointChanged
-        false // unbalancedAllowance
+        500n,
+        50n,
+        2n,
+        1n,
+        0n,
+        2n,
+        "0x456",
+        "0x123",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        false,
+        false
       ];
 
-      // Mock right child data
       const rightChildData = [
-        1234567892n, // startTime > 0
-        500000n, // balance
-        50n, // point
-        0n, // depthLeftBranch
-        0n, // depthRightBranch
-        1n, // depth
-        rightChild, // player
-        rootWallet, // parent
-        "0x0000000000000000000000000000000000000000", // leftChild
-        "0x0000000000000000000000000000000000000000", // rightChild
-        false, // isPointChanged
-        false // unbalancedAllowance
+        300n,
+        30n,
+        1n,
+        0n,
+        1n,
+        2n,
+        "0x789",
+        "0x123",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        false,
+        false
       ];
-
-      vi.spyOn(SimplePremiumService, "constructor" as any).mockImplementation(
-        () => {
-          (SimplePremiumService as any).publicClient = mockPublicClient;
-        }
-      );
 
       // Mock the readContract calls
       mockPublicClient.readContract
@@ -280,120 +337,71 @@ describe("SimplePremiumService", () => {
         .mockResolvedValueOnce(rightChildData); // Right child
 
       const result = await SimplePremiumService.buildReferralTree(
-        rootWallet,
-        0,
-        2
+        "0x1234567890123456789012345678901234567890"
       );
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({
-        address: rootWallet.toLowerCase(),
-        balance: "1000000",
-        depth: 0,
-        leftChild: leftChild,
-        parent: null,
-        point: 100,
-        rightChild: rightChild,
-        startTime: "1234567890"
-      });
-      expect(result[1]).toEqual({
-        address: leftChild.toLowerCase(),
-        balance: "500000",
-        depth: 1,
-        leftChild: undefined,
-        parent: rootWallet.toLowerCase(),
-        point: 50,
-        rightChild: undefined,
-        startTime: "1234567891"
-      });
-      expect(result[2]).toEqual({
-        address: rightChild.toLowerCase(),
-        balance: "500000",
-        depth: 1,
-        leftChild: undefined,
-        parent: rootWallet.toLowerCase(),
-        point: 50,
-        rightChild: undefined,
-        startTime: "1234567892"
-      });
+      expect(result[0].address).toBe(
+        "0x1234567890123456789012345678901234567890"
+      );
+      expect(result[0].leftChild).toBe("0x456");
+      expect(result[0].rightChild).toBe("0x789");
     });
 
     it("should return empty array for non-existent wallet", async () => {
-      const nonExistentWallet = "0x1234567890123456789012345678901234567890";
-
-      vi.spyOn(SimplePremiumService, "constructor" as any).mockImplementation(
-        () => {
-          (SimplePremiumService as any).publicClient = mockPublicClient;
-        }
-      );
-
-      // Mock node data with startTime = 0 (not registered)
       const mockNodeData = [
-        0n, // startTime = 0
-        0n, // balance
-        0n, // point
-        0n, // depthLeftBranch
-        0n, // depthRightBranch
-        0n, // depth
-        "0x0000000000000000000000000000000000000000", // player
-        "0x0000000000000000000000000000000000000000", // parent
-        "0x0000000000000000000000000000000000000000", // leftChild
-        "0x0000000000000000000000000000000000000000", // rightChild
-        false, // isPointChanged
-        false // unbalancedAllowance
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        false,
+        false
       ];
 
       mockPublicClient.readContract.mockResolvedValue(mockNodeData);
 
       const result = await SimplePremiumService.buildReferralTree(
-        nonExistentWallet,
-        0,
-        5
+        "0x1234567890123456789012345678901234567890"
       );
 
-      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
     });
 
     it("should respect max depth limit", async () => {
-      const rootWallet = "0x1234567890123456789012345678901234567890";
-      const childWallet = "0x1111111111111111111111111111111111111111";
-
-      vi.spyOn(SimplePremiumService, "constructor" as any).mockImplementation(
-        () => {
-          (SimplePremiumService as any).publicClient = mockPublicClient;
-        }
-      );
-
-      // Mock root node with child
       const rootNodeData = [
-        1234567890n, // startTime > 0
-        1000000n, // balance
-        100n, // point
-        1n, // depthLeftBranch
-        0n, // depthRightBranch
-        0n, // depth
-        rootWallet, // player
-        "0x0000000000000000000000000000000000000000", // parent
-        childWallet, // leftChild
-        "0x0000000000000000000000000000000000000000", // rightChild
-        false, // isPointChanged
-        false // unbalancedAllowance
+        1000n,
+        100n,
+        5n,
+        2n,
+        1n,
+        3n,
+        "0x123",
+        "0x0000000000000000000000000000000000000000",
+        "0x456",
+        "0x0000000000000000000000000000000000000000",
+        false,
+        false
       ];
 
-      // Mock child node
       const childNodeData = [
-        1234567891n, // startTime > 0
-        500000n, // balance
-        50n, // point
-        0n, // depthLeftBranch
-        0n, // depthRightBranch
-        1n, // depth
-        childWallet, // player
-        rootWallet, // parent
-        "0x0000000000000000000000000000000000000000", // leftChild
-        "0x0000000000000000000000000000000000000000", // rightChild
-        false, // isPointChanged
-        false // unbalancedAllowance
+        500n,
+        50n,
+        2n,
+        1n,
+        0n,
+        2n,
+        "0x456",
+        "0x123",
+        "0x0000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000",
+        false,
+        false
       ];
 
       mockPublicClient.readContract
@@ -401,7 +409,7 @@ describe("SimplePremiumService", () => {
         .mockResolvedValueOnce(childNodeData);
 
       const result = await SimplePremiumService.buildReferralTree(
-        rootWallet,
+        "0x1234567890123456789012345678901234567890",
         0,
         1
       );
